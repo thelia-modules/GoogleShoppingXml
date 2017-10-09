@@ -1,0 +1,148 @@
+<div class="panel panel-default">
+    <div class="panel-heading clearfix">
+        <div class="panel-title">
+            {intl l="Advanced Google product fields configuration"}
+        </div>
+    </div>
+    <div class="panel-body">
+
+        <div class="alert alert-info">
+            {intl l='In this tab, you can configure Google XML fields that are not natively supported by this module.'}
+            {intl l='If your store sells clothes, you must configure the following fields as they are marked "mandatory" by Google :'}
+            "<strong>age_group</strong>", "<strong>color</strong>", "<strong>gender</strong>", "<strong>size</strong>", "<strong>size_system</strong>".
+            {intl l='More information about Google fields specifications at %link.' link='<a href="https://support.google.com/merchants/answer/7052112">https://support.google.com/merchants/answer/7052112</a>'}
+        </div>
+
+        {if isset($smarty.get.error_message_advanced_tab)}
+        <div class="alert alert-danger">
+            <strong>{$smarty.get.error_message_advanced_tab}</strong>
+        </div>
+        {/if}
+
+        <div class="alert alert-help">
+            <div class="row">
+                <form method="post" action='{url path="/admin/module/googleshoppingxml/advanced/field/add"}'>
+                    <div class="form-group col-md-3">
+                        <label for="advanced_input_google_attribute_new">{intl l="Google attribute"}</label>
+                        <input id="advanced_input_google_attribute_new" class="form-control" name="google_attribute" required/>
+                    </div>
+
+                    <div class="form-group col-md-3">
+                        <label for="advanced_select_type_new">{intl l="Association type"}</label>
+                        <select id="advanced_select_type_new" class="js_advanced_select_association_type form-control" name="association_type" data-googlefieldid="new">
+                            <option value="0">-- {intl l="Select an association type"} --</option>
+                            <option value="1">{intl l="Fixed value"}</option>
+                            <option value="2">{intl l="Linked to a Thelia attribute"}</option>
+                            <option value="3">{intl l="Linked to a Thelia feature"}</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group col-md-3">
+                        <div class="js_field_related_to_association_type" data-googlefieldid="new" data-associationtype="1">
+                            <label for="advanced_input_fixed_value_new">{intl l="Fixed value"}</label>
+                            <input id="advanced_input_fixed_value_new" class="form-control" name="fixed_value"/>
+                        </div>
+
+                        <div class="js_field_related_to_association_type" data-googlefieldid="new" data-associationtype="2">
+                            <label for="advanced_select_thelia_attribute_new">{intl l="Related Thelia attribute"}</label>
+                            <select id="advanced_select_thelia_attribute_new" class="form-control" name="thelia_attribute">
+                                <option value="0">-- {intl l="Select an attribute"} --</option>
+                                {loop name="loop-attributes" type="attribute" order="manual" backend_context="1"}
+                                <option value="{$ID}">{$TITLE}</option>
+                                {/loop}
+                            </select>
+                        </div>
+
+                        <div class="js_field_related_to_association_type" data-googlefieldid="new" data-associationtype="3">
+                            <label for="advanced_select_thelia_feature_new">{intl l="Related Thelia feature"}</label>
+                            <select id="advanced_select_thelia_feature_new" class="form-control" name="thelia_feature">
+                                <option value="0">-- {intl l="Select a feature"} --</option>
+                                {loop name="loop-features" type="feature" order="manual" backend_context="1"}
+                                <option value="{$ID}">{$TITLE}</option>
+                                {/loop}
+                            </select>
+                        </div>
+                    </div>
+
+
+                    <div class="form-group col-md-3">
+                        <label class="control-label">&nbsp;</label>
+                        <button class="btn btn-default btn-primary form-control" type="submit">
+                            <span class="glyphicon glyphicon-plus"></span>
+                            {intl l="Add"}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+
+
+        {foreach from=$field_association_array item=field_association}
+        {$ID = $field_association.Id}
+        {$GOOGLE_FIELD = $field_association.GoogleField}
+        {$ASSOCIATION_TYPE = $field_association.AssociationType}
+
+        <div class="row">
+            <form method="post" action='{url path="/admin/module/googleshoppingxml/advanced/field/update"}'>
+                <input type="hidden" value="{$ID}" name="id"/>
+
+                <div class="form-group col-md-3">
+                    <input class="form-control" name="google_attribute" value="{$GOOGLE_FIELD}" required/>
+                </div>
+
+                <div class="form-group col-md-3 ">
+                    <select class="js_advanced_select_association_type form-control" name="association_type" data-googlefieldid="{$ID}">
+                        <option value="0">-- {intl l="Select an association type"} --</option>
+                        <option value="1" {if $ASSOCIATION_TYPE == 1}selected{/if}>{intl l="Fixed value"}</option>
+                        <option value="2" {if $ASSOCIATION_TYPE == 2}selected{/if}>{intl l="Linked to a Thelia attribute"}</option>
+                        <option value="3" {if $ASSOCIATION_TYPE == 3}selected{/if}>{intl l="Linked to a Thelia feature"}</option>
+                    </select>
+                </div>
+
+                <div class="form-group col-md-3 ">
+                    <div class="js_field_related_to_association_type" data-googlefieldid="{$ID}" data-associationtype="1">
+                        <input class="form-control" name="fixed_value" value="{$field_association.FixedValue}"/>
+                    </div>
+
+                    <div class="js_field_related_to_association_type" data-googlefieldid="{$ID}" data-associationtype="2">
+                        <select class="form-control" name="thelia_attribute">
+                            <option value="0">-- {intl l="Select an attribute"} --</option>
+                            {loop name="loop-attributes" type="attribute" order="manual" backend_context="1"}
+                            <option value="{$ID}" {if $ID == $field_association.IdRelatedAttribute}selected{/if}>{$TITLE}</option>
+                            {/loop}
+                        </select>
+                    </div>
+
+                    <div class="js_field_related_to_association_type" data-googlefieldid="{$ID}" data-associationtype="3">
+                        <select class="form-control" name="thelia_feature">
+                            <option value="0">-- {intl l="Select a feature"} --</option>
+                            {loop name="loop-features" type="feature" order="manual" backend_context="1"}
+                            <option value="{$ID}" {if $ID == $field_association.IdRelatedFeature}selected{/if}>{$TITLE}</option>
+                            {/loop}
+                        </select>
+                    </div>
+                </div>
+
+
+                <div class="form-group col-md-2">
+                    <button class="btn btn-success form-control" type="submit">
+                        <span class="glyphicon glyphicon-ok"></span>
+                        {intl l="Save"}
+                    </button>
+                </div>
+            </form>
+
+            <div class="form-group col-md-1">
+                <form method="post" action='{url path="/admin/module/googleshoppingxml/advanced/field/delete"}'>
+                    <input type="hidden" value="{$ID}" name="id_field_to_delete"/>
+                    <button class="btn btn-danger form-control" type="submit" title="{intl l='Remove'}">
+                        <span class="glyphicon glyphicon-trash"></span>
+                    </button>
+                </form>
+            </div>
+        </div>
+        {/foreach}
+
+    </div>
+</div>

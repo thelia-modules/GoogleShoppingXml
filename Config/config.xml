@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<config xmlns="http://thelia.net/schema/dic/config"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://thelia.net/schema/dic/config http://thelia.net/schema/dic/config/thelia-1.0.xsd">
+
+    <loops>
+        <loop name="googleshoppingxml.category.associated" class="GoogleShoppingXml\Loop\AssociatedCategoryLoop" />
+        <loop name="googleshoppingxml.category.or.parent" class="GoogleShoppingXml\Loop\GetGoogleCategoryOrParentLoop" />
+        <loop name="googleshoppingxml.feed" class="GoogleShoppingXml\Loop\FeedLoop" />
+        <loop name="googleshoppingxml.xml.shipping" class="GoogleShoppingXml\Loop\ShippingLoop" />
+    </loops>
+
+    <forms>
+        <form name="googleshoppingxml.taxonomy" class="GoogleShoppingXml\Form\TaxonomyForm" />
+        <form name="googleshoppingxml.feed.management" class="GoogleShoppingXml\Form\FeedManagementForm" />
+    </forms>
+
+    <hooks>
+        <hook id="googleshoppingxml.module.config.hook" class="GoogleShoppingXml\Hook\HookManager" scope="request">
+            <tag name="hook.event_listener" event="module.configuration" type="back" templates="render:module-configuration.html" />
+            <tag name="hook.event_listener" event="module.config-js" type="back" templates="render:assets/js/module-configuration-js.html" />
+            <tag name="hook.event_listener" event="main.head-css" type="back" />
+        </hook>
+    </hooks>
+
+</config>

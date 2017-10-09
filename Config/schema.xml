@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<database defaultIdMethod="native" name="thelia"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:noNamespaceSchemaLocation="../../../../core/vendor/propel/propel/resources/xsd/database.xsd" >
+
+    <table name="googleshoppingxml_taxonomy" namespace="GoogleShoppingXml\Model">
+        <column autoIncrement="true" name="id" primaryKey="true" required="true" type="INTEGER" />
+        <column name="thelia_category_id" type="INTEGER" required="true"/>
+        <column name="google_category" type="VARCHAR" size="255" required="true" />
+        <column name="lang_id" type="INTEGER" required="true"/>
+        <foreign-key foreignTable="category" name="fk_googleshoppingxml_thelia_category_id" onDelete="CASCADE" onUpdate="RESTRICT">
+            <reference foreign="id" local="thelia_category_id" />
+        </foreign-key>
+        <foreign-key foreignTable="lang" name="fk_googleshoppingxml_thelia_lang_id" onDelete="CASCADE" onUpdate="RESTRICT">
+            <reference foreign="id" local="lang_id" />
+        </foreign-key>
+        <unique name="googleshoppingxml_taxonomy_unique_couple_thelia_category_id_lang_id">
+            <unique-column name="thelia_category_id"/>
+            <unique-column name="lang_id"/>
+        </unique>
+    </table>
+
+    <table name="googleshoppingxml_feed"  namespace="GoogleShoppingXml\Model">
+        <column autoIncrement="true" name="id" primaryKey="true" required="true" type="INTEGER"/>
+        <column name="label" size="255" type="VARCHAR" />
+        <column name="lang_id" type="INTEGER" />
+        <column name="currency_id" type="INTEGER" />
+        <foreign-key foreignTable="lang" name="fk_googleshoppingxml_feed_lang_id" onDelete="CASCADE" onUpdate="RESTRICT">
+            <reference foreign="id" local="lang_id" />
+        </foreign-key>
+        <foreign-key foreignTable="currency" name="fk_googleshoppingxml_feed_id" onDelete="CASCADE" onUpdate="RESTRICT">
+            <reference foreign="id" local="currency_id" />
+        </foreign-key>
+    </table>
+
+    <table name="googleshoppingxml_feed_country"  namespace="GoogleShoppingXml\Model">
+        <column autoIncrement="true" name="id" primaryKey="true" required="true" type="INTEGER"/>
+        <column name="feed_id" type="INTEGER" />
+        <column name="country_id" type="INTEGER" />
+        <foreign-key foreignTable="googleshoppingxml_feed" name="fk_googleshoppingxml_feed_country_feed_id" onDelete="CASCADE" onUpdate="RESTRICT">
+            <reference foreign="id" local="feed_id" />
+        </foreign-key>
+        <foreign-key foreignTable="country" name="fk_googleshoppingxml_feed_country_country_id" onDelete="CASCADE" onUpdate="RESTRICT">
+            <reference foreign="id" local="country_id" />
+        </foreign-key>
+        <unique name="googleshoppingxml_feed_country_unique_couple_feed_id_country_id">
+            <unique-column name="feed_id"/>
+            <unique-column name="country_id"/>
+        </unique>
+    </table>
+
+    <table name="googleshoppingxml_google_field_association"  namespace="GoogleShoppingXml\Model">
+        <column autoIncrement="true" name="id" primaryKey="true" required="true" type="INTEGER"/>
+        <column name="google_field" type="VARCHAR" size="255" required="true" />
+        <column name="association_type" type="INTEGER" required="true" />
+        <column name="fixed_value" type="VARCHAR" size="255" />
+        <column name="id_related_attribute" type="INTEGER" />
+        <column name="id_related_feature" type="INTEGER" />
+        <foreign-key foreignTable="attribute" name="fk_googleshoppingxml_gl_field_association_id_attribute" onDelete="CASCADE" onUpdate="RESTRICT">
+            <reference foreign="id" local="id_related_attribute" />
+        </foreign-key>
+        <foreign-key foreignTable="feature" name="fk_googleshoppingxml_gl_field_association_id_feature" onDelete="CASCADE" onUpdate="RESTRICT">
+            <reference foreign="id" local="id_related_feature" />
+        </foreign-key>
+        <unique name="unique_googleshoppingxml_google_field_association_google_field">
+            <unique-column name="google_field"/>
+        </unique>
+    </table>
+
+    <external-schema filename="local/config/schema.xml" referenceOnly="true"/>
+</database>

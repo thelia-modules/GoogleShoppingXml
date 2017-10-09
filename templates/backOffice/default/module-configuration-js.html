@@ -1,0 +1,167 @@
+{default_translation_domain domain='googleshopping.ai'}
+
+<script>
+    $(function () {
+
+
+        // ***********************************************
+        //            FEED MANAGEMENT TAB
+        // ***********************************************
+
+
+
+
+        // Manage feed countries
+
+        $('.js_btn_feed_add_country').click(function (e) {
+            e.preventDefault();
+            var feedid = this.dataset.feedid;
+
+            var visibleSelect = document.querySelector('.js_select_visible_feed_add_country[data-feedid="' + feedid + '"]');
+            var selectedOption = visibleSelect.options[visibleSelect.selectedIndex];
+
+            if (selectedOption != null) {
+                var idCountryToAdd = selectedOption.value;
+
+                if (idCountryToAdd != 0) {
+                    var nameCountryToAdd = selectedOption.innerHTML;
+
+                    var hiddenSelect = document.querySelector('.js_select_hidden_feed_add_country[data-feedid="' + feedid + '"]');
+                    var hiddenOptionToBeSelected = $(hiddenSelect.querySelector('option[value="' + idCountryToAdd + '"]'));
+
+                    var isAlreadySelected = false;
+                    hiddenOptionToBeSelected.each(function(){
+                        isAlreadySelected = this.selected;
+                    });
+
+                    if(!isAlreadySelected) {
+                        hiddenOptionToBeSelected.attr('selected', true);
+
+                        var countryListElement = $('.feed_country_list_container[data-feedid="' + feedid + '"]');
+                        var countryLabelHtml = '<a href="#" data-idcountry="' + idCountryToAdd + '" data-feedid="' + feedid + '"><span class="label label-default">' + nameCountryToAdd + ' <span class="glyphicon glyphicon-remove"></span></span></a>';
+                        countryListElement.append(countryLabelHtml);
+
+                        countryListElement.find('a[data-idcountry="' + idCountryToAdd + '"]').click(function (e) {
+                            e.preventDefault();
+                            var idfeed = this.dataset.feedid;
+                            var idCountryToDelete = this.dataset.idcountry;
+
+                            var hiddenSelect = document.querySelector('.js_select_hidden_feed_add_country[data-feedid="' + idfeed + '"]');
+                            var hiddenOption = $(hiddenSelect.querySelector('option[value="' + idCountryToDelete + '"]'));
+                            hiddenOption.attr('selected', false);
+
+                            $(this).remove();
+                        });
+                    }
+
+                }
+            }
+        });
+
+
+        $('.js_select_hidden_feed_add_country').each(function(){
+
+            var feedid = this.dataset.feedid;
+
+            $(this).find('option:selected').each(function(){
+                var idCountry = this.value;
+                var nameCountry = this.innerHTML;
+
+                var countryListElement = $('.feed_country_list_container[data-feedid="' + feedid + '"]');
+                var countryLabelHtml = '<a href="#" data-idcountry="' + idCountry + '" data-feedid="' + feedid + '"><span class="label label-default">' + nameCountry + ' <span class="glyphicon glyphicon-remove"></span></span></a>';
+                countryListElement.append(countryLabelHtml);
+
+                countryListElement.find('a[data-idcountry="' + idCountry + '"]').click(function (e) {
+                    e.preventDefault();
+                    var idfeed = this.dataset.feedid;
+                    var idCountryToDelete = this.dataset.idcountry;
+
+                    var hiddenSelect = document.querySelector('.js_select_hidden_feed_add_country[data-feedid="' + idfeed + '"]');
+                    var hiddenOption = $(hiddenSelect.querySelector('option[value="' + idCountryToDelete + '"]'));
+                    hiddenOption.attr('selected', false);
+
+                    $(this).remove();
+                });
+            });
+        });
+
+
+
+
+        // Delete feed - Confirm dialog
+
+        $('#js_btn_modal_confirm_delete_confirm').on('click',function(e){
+            e.preventDefault();
+            var formid = this.dataset.formid;
+            this.dataset.formid = '';
+            if (formid != "" && formid != null) {
+                $('#'+formid).submit();
+            }
+            $('#js_modal_confirm_delete').modal("hide");
+        });
+
+        $('.js_btn_delete_with_warning').on('click', function(e) {
+            e.preventDefault();
+            var $warningLine1 = "{intl l='Do you really want to delete this feed ?'}";
+            var $warningLine2 = "{intl l='Please note that it won\'t delete the feed in your Google Merchant account. You will have to do it manually in the Google Merchant Center page.'}";
+            document.getElementById('js_btn_modal_confirm_delete_confirm').dataset.formid = this.dataset.formid;
+            $('#js_body_modal_confirm_delete').html('<strong>' + $warningLine1 + '</strong><p>' + $warningLine2 + '</p>');
+            $('#js_modal_confirm_delete').modal("show");
+        });
+
+
+
+
+        // ***********************************************
+        //            GOOGLE TAXONOMY TAB
+        // ***********************************************
+
+
+        var searchTimer = null;
+        $("#search-taxonomy").keyup(function () {
+            search = $(this).val();
+
+            if (searchTimer !== null) {
+                clearTimeout(searchTimer);
+            }
+
+            if (search.length > 2) {
+                searchTimer = setTimeout(function() {
+                    $.get('{url path="/admin/module/googleshoppingxml/taxonomy/{$edit_language_id}"}', function (data) {
+                        var res = "";
+                        console.log("Cats received.");
+                        $.each(data.cats, function (k, v) {
+                            var searchUp = search.toUpperCase();
+                            var googleCategoryName = v.split(' &gt; ').pop();
+                            var googleCategoryNameUp = googleCategoryName.toUpperCase();
+                            if (-1 !== googleCategoryNameUp.search(searchUp)) {
+                                res += '<option value="' + k + '">' + googleCategoryName + '</option>';
+                            }
+                        });
+                        $("#google-taxonomy").html(res);
+                    })
+                }, 350, this);
+            }
+        });
+
+
+
+        // ***********************************************
+        //         ADVANCED CONFIGURATION TAB
+        // ***********************************************
+
+        $('.js_field_related_to_association_type').hide();
+
+        var $advanced_select_association_type = $('.js_advanced_select_association_type');
+
+        $advanced_select_association_type.change(function(e){
+            var associationType = $(this).val();
+            var googleFieldId = this.dataset.googlefieldid;
+            $('.js_field_related_to_association_type[data-googlefieldid="'+googleFieldId+'"]').hide();
+            $('.js_field_related_to_association_type[data-googlefieldid="'+googleFieldId+'"][data-associationtype="'+associationType+'"]').show();
+        });
+
+        $advanced_select_association_type.trigger( "change" );
+
+    });
+</script>

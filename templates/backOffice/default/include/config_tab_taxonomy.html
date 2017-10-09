@@ -1,0 +1,112 @@
+<div class="panel panel-default">
+    <div class="panel-heading clearfix">
+        <div class="panel-title">
+            {intl l="Google taxonomy management : associate Thelia categories with Google categories"}
+        </div>
+    </div>
+
+
+    <div class="panel-body">
+
+        <div class="alert alert-info">
+            {intl l='Google has its own set of product categories. This tab allows you associate your own categories with Google\'s ones.'}
+            {intl l='The "google_product_category" attribute is mandatory in the XML output file provided to Google.'}
+            {intl l='If you did not specified a Google category for a Thelia category, it will search through its parent\'s category until it founds an association.'}
+            {intl l='However, we recommand that you associate a Google category for every category of your catalog.'}
+            {intl l='The more specific your category association will be, the more likely your product will appear in Google Shopping results.'}
+            {intl l='More information about the Google product categories at %link.' link='<a href="https://support.google.com/merchants/answer/6324436">https://support.google.com/merchants/answer/6324436</a>'}
+        </div>
+
+        <div class="alert alert-help">
+            <div class="row">
+                {form name="googleshoppingxml.taxonomy"}
+                <form action="{url path='/admin/module/googleshoppingxml/taxonomy/associate'}" method="post">
+                    {form_hidden_fields form=$form}
+                    <div class="form-group col-md-3">
+                        {form_field form=$form field="thelia_category_id"}
+                        <label for="thelia-category">{intl l="Thelia category"}</label>
+                        <select id="thelia-category" class="form-control" name="{$name}">
+                            {loop type="category" id=$not_empty_category order="alpha" name="thelia-category"}
+                            <option value="{$ID}">{$TITLE}</option>
+                            {/loop}
+                        </select>
+                        {/form_field}
+                    </div>
+                    <div class="form-group col-md-3">
+                        <label for="search-taxonomy">{intl l="Search category"}</label>
+
+                        <div class="input-group">
+                            <input class="form-control" type="text" id="search-taxonomy"/>
+                            <span class="input-group-addon">
+                                                        <span class="glyphicon glyphicon-arrow-right"></span>
+                                                    </span>
+                        </div>
+                    </div>
+                    <div class="form-group col-md-3">
+                        {form_field form=$form field="google_category_id"}
+                        <label for="google-taxonomy">{intl l="Google Category"}</label>
+                        <select class="form-control" name="{$name}"
+                                id="google-taxonomy">
+
+                        </select>
+                        {/form_field}
+                    </div>
+                    <div class="form-group col-md-3">
+                        <label class="control-label">&nbsp;</label>
+                        <button class="btn btn-default btn-primary form-control" type="submit">
+                            <span class="glyphicon glyphicon-check"></span>
+                            {intl l="Associate"}
+                        </button>
+                    </div>
+                </form>
+                {/form}
+            </div>
+        </div>
+
+        <table class="table table-striped table-condensed table-left-aligned">
+            <thead>
+            <tr>
+                <th>{intl l="Thelia category Id"}</th>
+                <th>{intl l="Thelia category Title"}</th>
+                <th>{intl l="Associated Google category"}</th>
+                <th class="text-center">{intl l="Action"}</th>
+            </tr>
+            </thead>
+
+            <tbody>
+            {loop type="googleshoppingxml.category.associated" lang_id={lang attr="id"} name="googleshoppingxml_category_associated"}
+            <tr id="tr_category_{$THELIA_CATEGORY_ID}">
+                <td>
+                    {$THELIA_CATEGORY_ID}
+                </td>
+                <td>
+                    {$THELIA_CATEGORY_TITLE}
+                </td>
+                <td>
+                    {$GOOGLE_CATEGORY}
+                </td>
+                <td class="text-right">
+                    <div class="btn-group" role="group">
+                        <form class="btn-group" action='{url path="/admin/module/googleshoppingxml/taxonomy/delete"}' method="post">
+                            <input type="hidden" name="category_id" value="{$THELIA_CATEGORY_ID}"/>
+                            <button class="btn btn-danger" type="submit" title="{intl l='Delete association'}">
+                                <span class="glyphicon glyphicon-trash"></span>
+                            </button>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+            {/loop}
+            {elseloop rel="googleshoppingxml_category_associated"}
+            <tr>
+                <td colspan="4">
+                    <p class="alert alert-info" role="alert">
+                        {intl l="No associated category"}
+                    </p>
+                </td>
+            </tr>
+            {/elseloop}
+            </tbody>
+        </table>
+    </div>
+</div>

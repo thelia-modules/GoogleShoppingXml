@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<routes xmlns="http://symfony.com/schema/routing"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://symfony.com/schema/routing http://symfony.com/schema/routing/routing-1.0.xsd">
+
+    <route id="googleshoppingxml.config" path="/admin/module/GoogleShoppingXml">
+        <default key="_controller">GoogleShoppingXml\Controller\ConfigurationController::viewConfigAction</default>
+    </route>
+
+    <!-- FEED XML -->
+
+    <route id="googleshoppingxml.getfeedxml" path="/admin/module/googleshoppingxml/feed/xml/{feedId}/feed.xml">
+        <default key="_controller">GoogleShoppingXml\Controller\ConfigurationController::getFeedXmlAction</default>
+        <requirement key="feedId">\d+</requirement>
+    </route>
+
+
+    <!-- FEED CONFIGURATION -->
+
+    <route id="googleshoppingxml.feed.add" path="/admin/module/googleshoppingxml/feed/add" methods="POST">
+        <default key="_controller">GoogleShoppingXml\Controller\FeedController::addFeedAction</default>
+    </route>
+
+    <route id="googleshoppingxml.feed.update" path="/admin/module/googleshoppingxml/feed/update" methods="POST">
+        <default key="_controller">GoogleShoppingXml\Controller\FeedController::updateFeedAction</default>
+    </route>
+
+    <route id="googleshoppingxml.feed.delete" path="/admin/module/googleshoppingxml/feed/delete" methods="POST">
+        <default key="_controller">GoogleShoppingXml\Controller\FeedController::deleteFeedAction</default>
+    </route>
+
+
+    <!-- GOOGLE TAXONOMY -->
+
+    <route id="googleshoppingxml.taxonomy.get" path="/admin/module/googleshoppingxml/taxonomy/{langId}" methods="GET">
+        <default key="_controller">GoogleShoppingXml\Controller\TaxonomyController::getJsonGoogleTaxonomyAction</default>
+        <requirement key="langId">\d+</requirement>
+    </route>
+
+    <route id="googleshoppingxml.taxonomy.associate" path="/admin/module/googleshoppingxml/taxonomy/associate" methods="POST">
+        <default key="_controller">GoogleShoppingXml\Controller\TaxonomyController::associateTaxonomyAction</default>
+    </route>
+
+    <route id="googleshoppingxml.taxonomy.delete" path="/admin/module/googleshoppingxml/taxonomy/delete" methods="POST">
+        <default key="_controller">GoogleShoppingXml\Controller\TaxonomyController::deleteTaxonomyAction</default>
+    </route>
+
+
+    <!-- GOOGLE FIELDS ASSOCIATION -->
+
+    <route id="googleshoppingxml.advanced.field.add" path="/admin/module/googleshoppingxml/advanced/field/add" methods="POST">
+        <default key="_controller">GoogleShoppingXml\Controller\GoogleFieldAssociationController::addFieldAction</default>
+    </route>
+
+    <route id="googleshoppingxml.advanced.field.update" path="/admin/module/googleshoppingxml/advanced/field/update" methods="POST">
+        <default key="_controller">GoogleShoppingXml\Controller\GoogleFieldAssociationController::updateFieldAction</default>
+    </route>
+
+    <route id="googleshoppingxml.advanced.field.delete" path="/admin/module/googleshoppingxml/advanced/field/delete" methods="POST">
+        <default key="_controller">GoogleShoppingXml\Controller\GoogleFieldAssociationController::deleteFieldAction</default>
+    </route>
+
+</routes>
