@@ -32,14 +32,9 @@ class FeedManagementForm extends BaseForm
                     'for' => 'lang_id'
                 )
             ))
-            ->add('country_list_id', 'choice', array(
+            ->add('country_id', 'text', array(
                 'required'    => true,
-                "constraints" => array(
-                    new Constraints\NotBlank(),
-                ),
-                'multiple'    => true,
-                'choices'     => $this->getCountriesIdArray(),
-                'label' => Translator::getInstance()->trans('Countries', array(), GoogleShoppingXml::DOMAIN_NAME),
+                'label' => Translator::getInstance()->trans('Country', array(), GoogleShoppingXml::DOMAIN_NAME),
                 'label_attr' => array(
                     'for' => 'country_id'
                 )
@@ -51,23 +46,6 @@ class FeedManagementForm extends BaseForm
                     'for' => 'currency_id'
                 )
             ));
-    }
-
-    private function getCountriesIdArray()
-    {
-        $countries = CountryQuery::create()
-            ->select("id")
-            ->find()
-            ->toArray()
-        ;
-
-        $ids = [];
-
-        foreach ($countries as $country) {
-            $ids[$country] = $country;
-        }
-
-        return $ids;
     }
 
     public function getName()

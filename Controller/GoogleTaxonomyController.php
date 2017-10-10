@@ -2,7 +2,7 @@
 
 namespace GoogleShoppingXml\Controller;
 
-use GoogleShoppingXml\Form\TaxonomyForm;
+use GoogleShoppingXml\Form\GoogleTaxonomyForm;
 use GoogleShoppingXml\GoogleShoppingXml;
 use GoogleShoppingXml\Model\GoogleshoppingxmlTaxonomyQuery;
 use Thelia\Controller\Admin\BaseAdminController;
@@ -12,7 +12,7 @@ use Thelia\Core\Security\Resource\AdminResources;
 use Thelia\Model\Lang;
 use Thelia\Model\LangQuery;
 
-class TaxonomyController extends BaseAdminController
+class GoogleTaxonomyController extends BaseAdminController
 {
     private function getGoogleTaxonomiesFileURL($lang)
     {
@@ -71,7 +71,7 @@ class TaxonomyController extends BaseAdminController
 
         $message = null;
 
-        $form = new TaxonomyForm($this->getRequest());
+        $form = new GoogleTaxonomyForm($this->getRequest());
 
         try {
             $formData = $this->validateForm($form)->getData();

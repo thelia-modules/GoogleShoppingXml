@@ -58,7 +58,7 @@ class GoogleshoppingxmlFeedTableMap extends TableMap
     /**
      * The total number of columns
      */
-    const NUM_COLUMNS = 4;
+    const NUM_COLUMNS = 5;
 
     /**
      * The number of lazy-loaded columns
@@ -68,7 +68,7 @@ class GoogleshoppingxmlFeedTableMap extends TableMap
     /**
      * The number of columns to hydrate (NUM_COLUMNS - NUM_LAZY_LOAD_COLUMNS)
      */
-    const NUM_HYDRATE_COLUMNS = 4;
+    const NUM_HYDRATE_COLUMNS = 5;
 
     /**
      * the column name for the ID field
@@ -91,6 +91,11 @@ class GoogleshoppingxmlFeedTableMap extends TableMap
     const CURRENCY_ID = 'googleshoppingxml_feed.CURRENCY_ID';
 
     /**
+     * the column name for the COUNTRY_ID field
+     */
+    const COUNTRY_ID = 'googleshoppingxml_feed.COUNTRY_ID';
+
+    /**
      * The default string format for model objects of the related table
      */
     const DEFAULT_STRING_FORMAT = 'YAML';
@@ -102,12 +107,12 @@ class GoogleshoppingxmlFeedTableMap extends TableMap
      * e.g. self::$fieldNames[self::TYPE_PHPNAME][0] = 'Id'
      */
     protected static $fieldNames = array (
-        self::TYPE_PHPNAME       => array('Id', 'Label', 'LangId', 'CurrencyId', ),
-        self::TYPE_STUDLYPHPNAME => array('id', 'label', 'langId', 'currencyId', ),
-        self::TYPE_COLNAME       => array(GoogleshoppingxmlFeedTableMap::ID, GoogleshoppingxmlFeedTableMap::LABEL, GoogleshoppingxmlFeedTableMap::LANG_ID, GoogleshoppingxmlFeedTableMap::CURRENCY_ID, ),
-        self::TYPE_RAW_COLNAME   => array('ID', 'LABEL', 'LANG_ID', 'CURRENCY_ID', ),
-        self::TYPE_FIELDNAME     => array('id', 'label', 'lang_id', 'currency_id', ),
-        self::TYPE_NUM           => array(0, 1, 2, 3, )
+        self::TYPE_PHPNAME       => array('Id', 'Label', 'LangId', 'CurrencyId', 'CountryId', ),
+        self::TYPE_STUDLYPHPNAME => array('id', 'label', 'langId', 'currencyId', 'countryId', ),
+        self::TYPE_COLNAME       => array(GoogleshoppingxmlFeedTableMap::ID, GoogleshoppingxmlFeedTableMap::LABEL, GoogleshoppingxmlFeedTableMap::LANG_ID, GoogleshoppingxmlFeedTableMap::CURRENCY_ID, GoogleshoppingxmlFeedTableMap::COUNTRY_ID, ),
+        self::TYPE_RAW_COLNAME   => array('ID', 'LABEL', 'LANG_ID', 'CURRENCY_ID', 'COUNTRY_ID', ),
+        self::TYPE_FIELDNAME     => array('id', 'label', 'lang_id', 'currency_id', 'country_id', ),
+        self::TYPE_NUM           => array(0, 1, 2, 3, 4, )
     );
 
     /**
@@ -117,12 +122,12 @@ class GoogleshoppingxmlFeedTableMap extends TableMap
      * e.g. self::$fieldKeys[self::TYPE_PHPNAME]['Id'] = 0
      */
     protected static $fieldKeys = array (
-        self::TYPE_PHPNAME       => array('Id' => 0, 'Label' => 1, 'LangId' => 2, 'CurrencyId' => 3, ),
-        self::TYPE_STUDLYPHPNAME => array('id' => 0, 'label' => 1, 'langId' => 2, 'currencyId' => 3, ),
-        self::TYPE_COLNAME       => array(GoogleshoppingxmlFeedTableMap::ID => 0, GoogleshoppingxmlFeedTableMap::LABEL => 1, GoogleshoppingxmlFeedTableMap::LANG_ID => 2, GoogleshoppingxmlFeedTableMap::CURRENCY_ID => 3, ),
-        self::TYPE_RAW_COLNAME   => array('ID' => 0, 'LABEL' => 1, 'LANG_ID' => 2, 'CURRENCY_ID' => 3, ),
-        self::TYPE_FIELDNAME     => array('id' => 0, 'label' => 1, 'lang_id' => 2, 'currency_id' => 3, ),
-        self::TYPE_NUM           => array(0, 1, 2, 3, )
+        self::TYPE_PHPNAME       => array('Id' => 0, 'Label' => 1, 'LangId' => 2, 'CurrencyId' => 3, 'CountryId' => 4, ),
+        self::TYPE_STUDLYPHPNAME => array('id' => 0, 'label' => 1, 'langId' => 2, 'currencyId' => 3, 'countryId' => 4, ),
+        self::TYPE_COLNAME       => array(GoogleshoppingxmlFeedTableMap::ID => 0, GoogleshoppingxmlFeedTableMap::LABEL => 1, GoogleshoppingxmlFeedTableMap::LANG_ID => 2, GoogleshoppingxmlFeedTableMap::CURRENCY_ID => 3, GoogleshoppingxmlFeedTableMap::COUNTRY_ID => 4, ),
+        self::TYPE_RAW_COLNAME   => array('ID' => 0, 'LABEL' => 1, 'LANG_ID' => 2, 'CURRENCY_ID' => 3, 'COUNTRY_ID' => 4, ),
+        self::TYPE_FIELDNAME     => array('id' => 0, 'label' => 1, 'lang_id' => 2, 'currency_id' => 3, 'country_id' => 4, ),
+        self::TYPE_NUM           => array(0, 1, 2, 3, 4, )
     );
 
     /**
@@ -143,8 +148,9 @@ class GoogleshoppingxmlFeedTableMap extends TableMap
         // columns
         $this->addPrimaryKey('ID', 'Id', 'INTEGER', true, null, null);
         $this->addColumn('LABEL', 'Label', 'VARCHAR', false, 255, null);
-        $this->addForeignKey('LANG_ID', 'LangId', 'INTEGER', 'lang', 'ID', false, null, null);
-        $this->addForeignKey('CURRENCY_ID', 'CurrencyId', 'INTEGER', 'currency', 'ID', false, null, null);
+        $this->addForeignKey('LANG_ID', 'LangId', 'INTEGER', 'lang', 'ID', true, null, null);
+        $this->addForeignKey('CURRENCY_ID', 'CurrencyId', 'INTEGER', 'currency', 'ID', true, null, null);
+        $this->addForeignKey('COUNTRY_ID', 'CountryId', 'INTEGER', 'country', 'ID', true, null, null);
     } // initialize()
 
     /**
@@ -154,17 +160,8 @@ class GoogleshoppingxmlFeedTableMap extends TableMap
     {
         $this->addRelation('Lang', '\\Thelia\\Model\\Lang', RelationMap::MANY_TO_ONE, array('lang_id' => 'id', ), 'CASCADE', 'RESTRICT');
         $this->addRelation('Currency', '\\Thelia\\Model\\Currency', RelationMap::MANY_TO_ONE, array('currency_id' => 'id', ), 'CASCADE', 'RESTRICT');
-        $this->addRelation('GoogleshoppingxmlFeedCountry', '\\GoogleShoppingXml\\Model\\GoogleshoppingxmlFeedCountry', RelationMap::ONE_TO_MANY, array('id' => 'feed_id', ), 'CASCADE', 'RESTRICT', 'GoogleshoppingxmlFeedCountries');
+        $this->addRelation('Country', '\\Thelia\\Model\\Country', RelationMap::MANY_TO_ONE, array('country_id' => 'id', ), 'CASCADE', 'RESTRICT');
     } // buildRelations()
-    /**
-     * Method to invalidate the instance pool of all tables related to googleshoppingxml_feed     * by a foreign key with ON DELETE CASCADE
-     */
-    public static function clearRelatedInstancePool()
-    {
-        // Invalidate objects in ".$this->getClassNameFromBuilder($joinedTableTableMapBuilder)." instance pool,
-        // since one or more of them may be deleted by ON DELETE CASCADE/SETNULL rule.
-                GoogleshoppingxmlFeedCountryTableMap::clearInstancePool();
-            }
 
     /**
      * Retrieves a string version of the primary key from the DB resultset row that can be used to uniquely identify a row in this table.
@@ -308,11 +305,13 @@ class GoogleshoppingxmlFeedTableMap extends TableMap
             $criteria->addSelectColumn(GoogleshoppingxmlFeedTableMap::LABEL);
             $criteria->addSelectColumn(GoogleshoppingxmlFeedTableMap::LANG_ID);
             $criteria->addSelectColumn(GoogleshoppingxmlFeedTableMap::CURRENCY_ID);
+            $criteria->addSelectColumn(GoogleshoppingxmlFeedTableMap::COUNTRY_ID);
         } else {
             $criteria->addSelectColumn($alias . '.ID');
             $criteria->addSelectColumn($alias . '.LABEL');
             $criteria->addSelectColumn($alias . '.LANG_ID');
             $criteria->addSelectColumn($alias . '.CURRENCY_ID');
+            $criteria->addSelectColumn($alias . '.COUNTRY_ID');
         }
     }
 

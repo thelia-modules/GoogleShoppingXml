@@ -4,6 +4,40 @@
 SET FOREIGN_KEY_CHECKS = 0;
 
 -- ---------------------------------------------------------------------
+-- googleshoppingxml_feed
+-- ---------------------------------------------------------------------
+
+DROP TABLE IF EXISTS `googleshoppingxml_feed`;
+
+CREATE TABLE `googleshoppingxml_feed`
+(
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `label` VARCHAR(255),
+    `lang_id` INTEGER NOT NULL,
+    `currency_id` INTEGER NOT NULL,
+    `country_id` INTEGER NOT NULL,
+    PRIMARY KEY (`id`),
+    INDEX `FI_googleshoppingxml_feed_lang_id` (`lang_id`),
+    INDEX `FI_googleshoppingxml_feed_currency_id` (`currency_id`),
+    INDEX `FI_googleshoppingxml_feed_country_id` (`country_id`),
+    CONSTRAINT `fk_googleshoppingxml_feed_lang_id`
+        FOREIGN KEY (`lang_id`)
+        REFERENCES `lang` (`id`)
+        ON UPDATE RESTRICT
+        ON DELETE CASCADE,
+    CONSTRAINT `fk_googleshoppingxml_feed_currency_id`
+        FOREIGN KEY (`currency_id`)
+        REFERENCES `currency` (`id`)
+        ON UPDATE RESTRICT
+        ON DELETE CASCADE,
+    CONSTRAINT `fk_googleshoppingxml_feed_country_id`
+        FOREIGN KEY (`country_id`)
+        REFERENCES `country` (`id`)
+        ON UPDATE RESTRICT
+        ON DELETE CASCADE
+) ENGINE=InnoDB;
+
+-- ---------------------------------------------------------------------
 -- googleshoppingxml_taxonomy
 -- ---------------------------------------------------------------------
 
@@ -18,7 +52,7 @@ CREATE TABLE `googleshoppingxml_taxonomy`
     PRIMARY KEY (`id`),
     UNIQUE INDEX `googleshoppingxml_taxonomy_unique_couple_thelia_category_id_lang` (`thelia_category_id`, `lang_id`),
     INDEX `FI_googleshoppingxml_thelia_lang_id` (`lang_id`),
-    CONSTRAINT `fk_googleshoppingxml_thelia_category_id`
+    CONSTRAINT `fk_googleshoppingxml_taxonomy_thelia_category_id`
         FOREIGN KEY (`thelia_category_id`)
         REFERENCES `category` (`id`)
         ON UPDATE RESTRICT
@@ -26,59 +60,6 @@ CREATE TABLE `googleshoppingxml_taxonomy`
     CONSTRAINT `fk_googleshoppingxml_thelia_lang_id`
         FOREIGN KEY (`lang_id`)
         REFERENCES `lang` (`id`)
-        ON UPDATE RESTRICT
-        ON DELETE CASCADE
-) ENGINE=InnoDB;
-
--- ---------------------------------------------------------------------
--- googleshoppingxml_feed
--- ---------------------------------------------------------------------
-
-DROP TABLE IF EXISTS `googleshoppingxml_feed`;
-
-CREATE TABLE `googleshoppingxml_feed`
-(
-    `id` INTEGER NOT NULL AUTO_INCREMENT,
-    `label` VARCHAR(255),
-    `lang_id` INTEGER,
-    `currency_id` INTEGER,
-    PRIMARY KEY (`id`),
-    INDEX `FI_googleshoppingxml_feed_lang_id` (`lang_id`),
-    INDEX `FI_googleshoppingxml_feed_id` (`currency_id`),
-    CONSTRAINT `fk_googleshoppingxml_feed_lang_id`
-        FOREIGN KEY (`lang_id`)
-        REFERENCES `lang` (`id`)
-        ON UPDATE RESTRICT
-        ON DELETE CASCADE,
-    CONSTRAINT `fk_googleshoppingxml_feed_id`
-        FOREIGN KEY (`currency_id`)
-        REFERENCES `currency` (`id`)
-        ON UPDATE RESTRICT
-        ON DELETE CASCADE
-) ENGINE=InnoDB;
-
--- ---------------------------------------------------------------------
--- googleshoppingxml_feed_country
--- ---------------------------------------------------------------------
-
-DROP TABLE IF EXISTS `googleshoppingxml_feed_country`;
-
-CREATE TABLE `googleshoppingxml_feed_country`
-(
-    `id` INTEGER NOT NULL AUTO_INCREMENT,
-    `feed_id` INTEGER,
-    `country_id` INTEGER,
-    PRIMARY KEY (`id`),
-    UNIQUE INDEX `googleshoppingxml_feed_country_unique_couple_feed_id_country_id` (`feed_id`, `country_id`),
-    INDEX `FI_googleshoppingxml_feed_country_country_id` (`country_id`),
-    CONSTRAINT `fk_googleshoppingxml_feed_country_feed_id`
-        FOREIGN KEY (`feed_id`)
-        REFERENCES `googleshoppingxml_feed` (`id`)
-        ON UPDATE RESTRICT
-        ON DELETE CASCADE,
-    CONSTRAINT `fk_googleshoppingxml_feed_country_country_id`
-        FOREIGN KEY (`country_id`)
-        REFERENCES `country` (`id`)
         ON UPDATE RESTRICT
         ON DELETE CASCADE
 ) ENGINE=InnoDB;

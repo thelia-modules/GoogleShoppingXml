@@ -2,15 +2,9 @@
 
 namespace GoogleShoppingXml\Controller;
 
-use GoogleShoppingXml\Form\FeedManagementForm;
 use GoogleShoppingXml\GoogleShoppingXml;
-use GoogleShoppingXml\Model\GoogleshoppingxmlFeed;
-use GoogleShoppingXml\Model\GoogleshoppingxmlFeedCountry;
-use GoogleShoppingXml\Model\GoogleshoppingxmlFeedCountryQuery;
-use GoogleShoppingXml\Model\GoogleshoppingxmlFeedQuery;
 use GoogleShoppingXml\Model\GoogleshoppingxmlGoogleFieldAssociation;
 use GoogleShoppingXml\Model\GoogleshoppingxmlGoogleFieldAssociationQuery;
-use Propel\Runtime\ActiveQuery\Criteria;
 use Thelia\Controller\Admin\BaseAdminController;
 use Thelia\Core\HttpFoundation\Request;
 use Thelia\Core\Security\AccessManager;
@@ -73,7 +67,7 @@ class GoogleFieldAssociationController extends BaseAdminController
                 $this->hydrateFieldAssociationObjectWithRequestContent($field_association, $this->getRequest());
                 $field_association->save();
             } else {
-                throw new \Exception($this->getTranslator()->trans('Unable to find the field association to update.', [], GoogleShoppingXml::DOMAIN_BO_DEFAULT));
+                throw new \Exception($this->getTranslator()->trans('Unable to find the field association to update.', [], GoogleShoppingXml::DOMAIN_NAME));
             }
         } catch (\Exception $e) {
             $message = $e->getMessage();
@@ -107,7 +101,7 @@ class GoogleFieldAssociationController extends BaseAdminController
             if ($field_association != null) {
                 $field_association->delete();
             } else {
-                throw new \Exception($this->getTranslator()->trans('Unable to find the field association to delete.', [], GoogleShoppingXml::DOMAIN_BO_DEFAULT));
+                throw new \Exception($this->getTranslator()->trans('Unable to find the field association to delete.', [], GoogleShoppingXml::DOMAIN_NAME));
             }
         } catch (\Exception $e) {
             $message = $e->getMessage();
@@ -140,7 +134,7 @@ class GoogleFieldAssociationController extends BaseAdminController
         $google_attribute = $request->get('google_attribute');
 
         if (empty($google_attribute)) {
-            throw new \Exception($this->getTranslator()->trans('The Google attribute cannot be empty.', [], GoogleShoppingXml::DOMAIN_BO_DEFAULT));
+            throw new \Exception($this->getTranslator()->trans('The Google attribute cannot be empty.', [], GoogleShoppingXml::DOMAIN_NAME));
         }
 
         // 'g:' is the beginning of the XML tag. If the user added it manually, remove it, it will be added afterwards.
@@ -153,7 +147,7 @@ class GoogleFieldAssociationController extends BaseAdminController
             throw new \Exception($this->getTranslator()->trans(
                 'The Google attribute "%name" cannot be redefined here as it is already defined natively by the module.',
                 array('%name' => $google_attribute),
-                GoogleShoppingXml::DOMAIN_BO_DEFAULT
+                GoogleShoppingXml::DOMAIN_NAME
             ));
         }
 
@@ -168,26 +162,26 @@ class GoogleFieldAssociationController extends BaseAdminController
             case self::ASSO_TYPE_FIXED_VALUE:
                 $fixed_value = $request->get('fixed_value');
                 if (empty($fixed_value)) {
-                    throw new \Exception($this->getTranslator()->trans('The fixed value cannot be empty if you have chosen the "Fixed value" association type.', [], GoogleShoppingXml::DOMAIN_BO_DEFAULT));
+                    throw new \Exception($this->getTranslator()->trans('The fixed value cannot be empty if you have chosen the "Fixed value" association type.', [], GoogleShoppingXml::DOMAIN_NAME));
                 }
                 $field_association->setFixedValue($fixed_value);
                 break;
             case self::ASSO_TYPE_RELATED_TO_THELIA_ATTRIBUTE:
                 $thelia_attribute_id = $request->get('thelia_attribute');
                 if (empty($thelia_attribute_id)) {
-                    throw new \Exception($this->getTranslator()->trans('The Thelia attribute cannot be empty if you have chosen the "Linked to a Thelia attribute" association type.', [], GoogleShoppingXml::DOMAIN_BO_DEFAULT));
+                    throw new \Exception($this->getTranslator()->trans('The Thelia attribute cannot be empty if you have chosen the "Linked to a Thelia attribute" association type.', [], GoogleShoppingXml::DOMAIN_NAME));
                 }
                 $field_association->setIdRelatedAttribute($thelia_attribute_id);
                 break;
             case self::ASSO_TYPE_RELATED_TO_THELIA_FEATURE:
                 $thelia_feature_id = $request->get('thelia_feature');
                 if (empty($thelia_feature_id)) {
-                    throw new \Exception($this->getTranslator()->trans('The Thelia feature cannot be empty if you have chosen the "Linked to a Thelia feature" association type.', [], GoogleShoppingXml::DOMAIN_BO_DEFAULT));
+                    throw new \Exception($this->getTranslator()->trans('The Thelia feature cannot be empty if you have chosen the "Linked to a Thelia feature" association type.', [], GoogleShoppingXml::DOMAIN_NAME));
                 }
                 $field_association->setIdRelatedFeature($thelia_feature_id);
                 break;
             default:
-                throw new \Exception($this->getTranslator()->trans('The chosen association type is unknown.', [], GoogleShoppingXml::DOMAIN_BO_DEFAULT));
+                throw new \Exception($this->getTranslator()->trans('The chosen association type is unknown.', [], GoogleShoppingXml::DOMAIN_NAME));
         }
 
         $field_association->setAssociationType($association_type);

@@ -1,6 +1,11 @@
 {default_translation_domain domain='googleshopping.ai'}
 
 <script>
+
+    $(document).ready(function(){
+        $('[data-toggle="tooltip"]').tooltip();
+    });
+
     $(function () {
 
 
@@ -8,83 +13,52 @@
         //            FEED MANAGEMENT TAB
         // ***********************************************
 
+        // Copy link to clipboard
 
-
-
-        // Manage feed countries
-
-        $('.js_btn_feed_add_country').click(function (e) {
+        $('.js_btn_clipboard').on('click', function(e){
             e.preventDefault();
-            var feedid = this.dataset.feedid;
-
-            var visibleSelect = document.querySelector('.js_select_visible_feed_add_country[data-feedid="' + feedid + '"]');
-            var selectedOption = visibleSelect.options[visibleSelect.selectedIndex];
-
-            if (selectedOption != null) {
-                var idCountryToAdd = selectedOption.value;
-
-                if (idCountryToAdd != 0) {
-                    var nameCountryToAdd = selectedOption.innerHTML;
-
-                    var hiddenSelect = document.querySelector('.js_select_hidden_feed_add_country[data-feedid="' + feedid + '"]');
-                    var hiddenOptionToBeSelected = $(hiddenSelect.querySelector('option[value="' + idCountryToAdd + '"]'));
-
-                    var isAlreadySelected = false;
-                    hiddenOptionToBeSelected.each(function(){
-                        isAlreadySelected = this.selected;
-                    });
-
-                    if(!isAlreadySelected) {
-                        hiddenOptionToBeSelected.attr('selected', true);
-
-                        var countryListElement = $('.feed_country_list_container[data-feedid="' + feedid + '"]');
-                        var countryLabelHtml = '<a href="#" data-idcountry="' + idCountryToAdd + '" data-feedid="' + feedid + '"><span class="label label-default">' + nameCountryToAdd + ' <span class="glyphicon glyphicon-remove"></span></span></a>';
-                        countryListElement.append(countryLabelHtml);
-
-                        countryListElement.find('a[data-idcountry="' + idCountryToAdd + '"]').click(function (e) {
-                            e.preventDefault();
-                            var idfeed = this.dataset.feedid;
-                            var idCountryToDelete = this.dataset.idcountry;
-
-                            var hiddenSelect = document.querySelector('.js_select_hidden_feed_add_country[data-feedid="' + idfeed + '"]');
-                            var hiddenOption = $(hiddenSelect.querySelector('option[value="' + idCountryToDelete + '"]'));
-                            hiddenOption.attr('selected', false);
-
-                            $(this).remove();
-                        });
-                    }
-
-                }
+            if(setClipboardText(this.dataset.clipboardtext)){
+                var btn = this;
+                setTimeout(function(){
+                    btn.dataset.originalTitle = "{intl l='Copied!'}";
+                    $(btn).tooltip('show');
+                }, 100)
             }
         });
 
+        function setClipboardText(text){
+            var id = "mycustom-clipboard-textarea-hidden-id";
+            var existsTextarea = document.getElementById(id);
 
-        $('.js_select_hidden_feed_add_country').each(function(){
+            if(!existsTextarea){
+                var textarea = document.createElement("textarea");
+                textarea.id = id;
+                textarea.style.position = 'fixed';
+                textarea.style.top = 0;
+                textarea.style.left = 0;
+                textarea.style.width = '1px';
+                textarea.style.height = '1px';
+                textarea.style.padding = 0;
+                textarea.style.border = 'none';
+                textarea.style.outline = 'none';
+                textarea.style.boxShadow = 'none';
+                textarea.style.background = 'transparent';
+                document.querySelector("body").appendChild(textarea);
+                existsTextarea = document.getElementById(id);
+            }
 
-            var feedid = this.dataset.feedid;
+            existsTextarea.value = text;
+            existsTextarea.select();
 
-            $(this).find('option:selected').each(function(){
-                var idCountry = this.value;
-                var nameCountry = this.innerHTML;
+            try {
+                var status = document.execCommand('copy');
+                if(status){
+                    return true;
+                }
+            } catch (err) { }
 
-                var countryListElement = $('.feed_country_list_container[data-feedid="' + feedid + '"]');
-                var countryLabelHtml = '<a href="#" data-idcountry="' + idCountry + '" data-feedid="' + feedid + '"><span class="label label-default">' + nameCountry + ' <span class="glyphicon glyphicon-remove"></span></span></a>';
-                countryListElement.append(countryLabelHtml);
-
-                countryListElement.find('a[data-idcountry="' + idCountry + '"]').click(function (e) {
-                    e.preventDefault();
-                    var idfeed = this.dataset.feedid;
-                    var idCountryToDelete = this.dataset.idcountry;
-
-                    var hiddenSelect = document.querySelector('.js_select_hidden_feed_add_country[data-feedid="' + idfeed + '"]');
-                    var hiddenOption = $(hiddenSelect.querySelector('option[value="' + idCountryToDelete + '"]'));
-                    hiddenOption.attr('selected', false);
-
-                    $(this).remove();
-                });
-            });
-        });
-
+            return false;
+        }
 
 
 
@@ -111,6 +85,48 @@
 
 
 
+        // Configure custom XML modal
+
+        $('.js_btn_configure_custom_xml').on('click',function(e){
+            e.preventDefault();
+            var $modalCustomXml = $('#js_modal_custom_xml');
+            $modalCustomXml.modal();
+            document.getElementById('js_btn_generate_custom_xml').dataset.feedid = this.dataset.feedid;
+        });
+
+
+        $('#js_btn_generate_custom_xml').on('click',function(e){
+            e.preventDefault();
+            var feedid = this.dataset.feedid;
+            var numberOfDivisions = $('#js_input_xml_divide_time').val();
+            var nb_pse = {$pse_count};
+            var base_url = $('.js_download_xml_feed[data-feedid='+feedid+']').attr('href');
+            console.log(base_url);
+
+            var limit = Math.ceil(nb_pse / numberOfDivisions);
+
+            var html = '<ul>';
+            for (var i=0; i < numberOfDivisions; i++){
+                var offset = i * limit;
+                if (offset+1 > nb_pse){
+                    break;
+                }
+                var url = base_url+'?offset='+offset+'&limit='+limit;
+
+                var end = offset+limit;
+                if (end > nb_pse){
+                    end = nb_pse;
+                }
+                html += '<li><a href="'+url+'" download>Xml file part '+(i+1)+' : items '+(offset+1)+' to ' + end +'</a></li>';
+            }
+            html += '</ul>';
+            document.getElementById('js_xml_divided_link_container').innerHTML = html;
+
+            console.log(nb_pse);
+            console.log(limit);
+        });
+
+
 
         // ***********************************************
         //            GOOGLE TAXONOMY TAB
@@ -127,7 +143,7 @@
 
             if (search.length > 2) {
                 searchTimer = setTimeout(function() {
-                    $.get('{url path="/admin/module/googleshoppingxml/taxonomy/{$edit_language_id}"}', function (data) {
+                    $.get('{url path="/admin/module/googleshoppingxml/taxonomy/{lang attr="id"}"}', function (data) {
                         var res = "";
                         console.log("Cats received.");
                         $.each(data.cats, function (k, v) {
@@ -149,6 +165,7 @@
         // ***********************************************
         //         ADVANCED CONFIGURATION TAB
         // ***********************************************
+
 
         $('.js_field_related_to_association_type').hide();
 

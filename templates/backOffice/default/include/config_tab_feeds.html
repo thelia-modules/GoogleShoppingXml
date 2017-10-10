@@ -7,20 +7,13 @@
     <div class="panel-body">
 
         <div class="alert alert-info">
-            <li>
-            {intl l='To upload your products in Google Shopping, you must first create a Google Merchant Account at %link.' link='<a href="https://merchants.google.com/">https://merchants.google.com/</a>'}
-            </li>
-            <li>
-            {intl l='Within the Google Merchant Center, you have to create "feeds" for each language and currency that you target.'}
-            {intl l='You can then add multiple countries to each of your feeds.'}
-            </li>
-            <li>
-            {intl l='Once your feeds are set up in Google Merchant, re-create your feeds below with the same informations.'}
-            </li>
-            <li>
+            <p>- {intl l='To upload your products in Google Shopping, you must first create a Google Merchant Account at %link.' link='<a href="https://merchants.google.com/">https://merchants.google.com/</a>'}</p>
+            <p>- {intl l='Within the Google Merchant Center, you have to create "feeds" for each language, currency and country that you target.'}</p>
+            <p>- {intl l='Once your feeds are set up in Google Merchant, re-create your feeds below with the same informations.'}</p>
+            <p>-
             {intl l='Finally, you will provide your product list to Google for each feed through a XML file.'}
             {intl l='For that, you can set up a automated fetch in Google Merchant Center by providing the link to the XML file (Right-click the "XML" blue button, then "Copy link address") or upload the file manually.'}
-            </li>
+            </p>
         </div>
 
         <div class="alert alert-help">
@@ -39,7 +32,7 @@
                     <div class="form-group col-md-2 {if $error}has-error{/if}">
                         <label for="{$label_attr.for}">{$label}</label>
                         <select id="{$label_attr.for}" class="form-control" name="{$name}">
-                            {loop type="lang" name="lang_id"}
+                            {loop type="lang" name="loop_lang_add_feed"}
                             <option value="{$ID}">{$TITLE}</option>
                             {/loop}
                         </select>
@@ -50,40 +43,19 @@
                     <div class="form-group col-md-2 {if $error}has-error{/if}">
                         <label for="{$label_attr.for}">{$label}</label>
                         <select id="{$label_attr.for}" class="form-control" name="{$name}">
-                            {loop type="currency" name="currency_id"}
+                            {loop type="currency" name="loop_currency_add_feed"}
                             <option value="{$ID}">{$SYMBOL}</option>
                             {/loop}
                         </select>
                     </div>
                     {/form_field}
 
-                    {form_field form=$form field="country_list_id"}
+                    {form_field form=$form field="country_id"}
                     <div class="form-group col-md-3 {if $error}has-error{/if}">
                         <label for="{$label_attr.for}">{$label}</label>
-
-                        <div class="well feed_country_list_container" data-feedid="new">
-                        </div>
-
-                        <div class="input-group">
-                            <select class="js_select_visible_feed_add_country form-control" data-feedid="new">
-                                <option value="0">-- {intl l="Add a country"} --</option>
-
-                                {loop type="country" name="loop_country_add_feed"}
-                                <option value="{$ID}">{$TITLE}</option>
-                                {/loop}
-                            </select>
-
-                            <span class="input-group-btn">
-                                <a href="#" class="btn btn-secondary js_btn_feed_add_country" data-feedid="new">
-                                    <span class="glyphicon glyphicon-plus"></span>
-                                </a>
-                            </span>
-                        </div>
-
-
-                        <select id="{$label_attr.for}" class="form-control js_select_hidden_feed_add_country" name="{$name}" data-feedid="new" multiple hidden>
-                            {loop type="country" name="country_id"}
-                            <option value="{$ID}">{$TITLE}</option>
+                        <select id="{$label_attr.for}" class="form-control" name="{$name}">
+                            {loop type="country" name="loop_country_add_feed"}
+                            <option value="{$ID}" {if $ID==64}selected{/if}>{$TITLE}</option>
                             {/loop}
                         </select>
                     </div>
@@ -124,7 +96,7 @@
                 {form_field form=$form field="lang_id"}
                 <div class="form-group col-md-2 {if $error}has-error{/if}">
                     <select class="form-control" name="{$name}">
-                        {loop type="lang" name="lang_id"}
+                        {loop type="lang" name="loop_lang_update_feed"}
                         <option value="{$ID}" {if $ID==$LANG_ID}selected{/if}>{$TITLE}</option>
                         {/loop}
                     </select>
@@ -134,72 +106,87 @@
                 {form_field form=$form field="currency_id"}
                 <div class="form-group col-md-2 {if $error}has-error{/if}">
                     <select class="form-control" name="{$name}">
-                        {loop type="currency" name="currency_id"}
+                        {loop type="currency" name="loop_currency_update_feed"}
                         <option value="{$ID}" {if $ID==$CURRENCY_ID}selected{/if}>{$SYMBOL}</option>
                         {/loop}
                     </select>
                 </div>
                 {/form_field}
 
-                {form_field form=$form field="country_list_id"}
+                {form_field form=$form field="country_id"}
                 <div class="form-group col-md-3 {if $error}has-error{/if}">
-                    <div class="well feed_country_list_container" data-feedid="{$ID}">
-                    </div>
-
-                    <div class="input-group">
-                        <select class="js_select_visible_feed_add_country form-control" data-feedid="{$ID}">
-                            <option value="0">-- {intl l="Add a country"} --</option>
-
-                            {loop type="country" name="loop_country_update_feed"}
-                            <option value="{$ID}">{$TITLE}</option>
-                            {/loop}
-                        </select>
-
-                        <span class="input-group-btn">
-                            <a href="#" class="btn btn-secondary js_btn_feed_add_country" data-feedid="{$ID}">
-                                <span class="glyphicon glyphicon-plus"></span>
-                            </a>
-                        </span>
-                    </div>
-
-
-                    <select class="form-control js_select_hidden_feed_add_country" name="{$name}" data-feedid="{$ID}" multiple>
-                        {loop type="country" name="loop_hidden_country_update_feed"}
-                        {$selected = in_array($ID, $COUNTRY_LIST_ID)}
-                        <option value="{$ID}" {if $selected}selected{/if}>{$TITLE}</option>
+                    <select id="{$label_attr.for}" class="form-control" name="{$name}">
+                        {loop type="country" name="loop_country_update_feed"}
+                        <option value="{$ID}" {if $ID==$COUNTRY_ID}selected{/if}>{$TITLE}</option>
                         {/loop}
                     </select>
                 </div>
                 {/form_field}
 
-
-                <div class="form-group col-md-2">
+                <div class="form-group col-md-1">
                     <div class='btn-group'>
                         <button class="btn btn-success" type="submit">
                             <span class="glyphicon glyphicon-ok"></span>
                             {intl l="Save"}
                         </button>
-                        <a class="btn btn-info" href="{url path="/admin/module/googleshoppingxml/feed/xml/{$ID}/feed.xml"}" style="margin-left:5px" download>
-                            <span class="glyphicon glyphicon-chevron-left"></span>
-                            {intl l="XML"}
-                            <span class="glyphicon glyphicon-chevron-right"></span>
-                        </a>
                     </div>
                 </div>
             </form>
             {/form}
 
-            <div class="form-group col-md-1">
-                <form id="js_form_delete_feed_{$ID_FEED}" method="post" action="{url path='/admin/module/googleshoppingxml/feed/delete'}">
+            <div class="form-group col-md-2">
+                <a class="js_download_xml_feed btn btn-info" style="margin-right:5px;" href="{url path="/admin/module/googleshoppingxml/feed/xml/{$ID}/feed.xml"}" data-feedid="{$ID_FEED}" download>
+                    <span class="glyphicon glyphicon-chevron-left"></span>
+                    {intl l="XML"}
+                    <span class="glyphicon glyphicon-chevron-right"></span>
+                </a>
+                <a href="#" class="js_btn_clipboard btn btn-primary" style="margin-right:5px;" data-toggle="tooltip" title="{intl l='Copy XML link into clipboard'}" data-clipboardtext="{url path="/admin/module/googleshoppingxml/feed/xml/{$ID}/feed.xml"}">
+                    <span class="glyphicon glyphicon-link"></span>
+                </a>
+                <a href="#" class="js_btn_configure_custom_xml btn btn-info" data-toggle="tooltip" title="{intl l='Configure custom XML'}" data-feedid="{$ID_FEED}">
+                    <span class="glyphicon glyphicon-wrench"></span>
+                </a>
+                <form id="js_form_delete_feed_{$ID_FEED}" method="post" action="{url path='/admin/module/googleshoppingxml/feed/delete'}" style="display:inline-block">
                     <input type="hidden" name="id_feed_to_delete" value="{$ID_FEED}"/>
                     <a class="btn btn-danger js_btn_delete_with_warning" style="margin-left:5px" data-formid="js_form_delete_feed_{$ID_FEED}">
                         <span class="glyphicon glyphicon-trash"></span>
-                        {intl l="Delete"}
                     </a>
                 </form>
             </div>
         </div>
         {/loop}
+    </div>
+</div>
 
+<div class="modal fade" id="js_modal_custom_xml" role="dialog" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h3>{intl l="Custom XML generation"}</h3>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-info">
+                    {intl l='The default XML file generated currently contains <strong>%count</strong> product items (all your catalog).' count={$pse_count}}
+                    {intl l='If you have too many products and have difficulties to generate the big XML file, you can generate multiple smaller XML files below.'}
+                    {intl l='However, the automated Google fetch schedule allows only one file per feed.'}
+                    {intl l='If you choose the custom XML files generation, you will have to upload them manually in Google Merchant Center.'}
+                </div>
+
+                <div class="form-group">
+                    <label for="js_input_xml_divide_time">{intl l='Divide your catalog into X parts'} : </label>
+                    <input class="form-control" id="js_input_xml_divide_time" type="number"/>
+                </div>
+
+                <a id="js_btn_generate_custom_xml" href="#" class="btn btn-primary">{intl l='Generate custom XML links'}</a>
+
+                <div id="js_xml_divided_link_container" class="well">
+
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal" aria-hidden="true"><span class="glyphicon glyphicon-remove"></span>{intl l="Close"}</button>
+            </div>
+        </div>
     </div>
 </div>

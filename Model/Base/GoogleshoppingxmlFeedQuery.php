@@ -15,6 +15,7 @@ use Propel\Runtime\Collection\Collection;
 use Propel\Runtime\Collection\ObjectCollection;
 use Propel\Runtime\Connection\ConnectionInterface;
 use Propel\Runtime\Exception\PropelException;
+use Thelia\Model\Country;
 use Thelia\Model\Currency;
 use Thelia\Model\Lang;
 
@@ -27,11 +28,13 @@ use Thelia\Model\Lang;
  * @method     ChildGoogleshoppingxmlFeedQuery orderByLabel($order = Criteria::ASC) Order by the label column
  * @method     ChildGoogleshoppingxmlFeedQuery orderByLangId($order = Criteria::ASC) Order by the lang_id column
  * @method     ChildGoogleshoppingxmlFeedQuery orderByCurrencyId($order = Criteria::ASC) Order by the currency_id column
+ * @method     ChildGoogleshoppingxmlFeedQuery orderByCountryId($order = Criteria::ASC) Order by the country_id column
  *
  * @method     ChildGoogleshoppingxmlFeedQuery groupById() Group by the id column
  * @method     ChildGoogleshoppingxmlFeedQuery groupByLabel() Group by the label column
  * @method     ChildGoogleshoppingxmlFeedQuery groupByLangId() Group by the lang_id column
  * @method     ChildGoogleshoppingxmlFeedQuery groupByCurrencyId() Group by the currency_id column
+ * @method     ChildGoogleshoppingxmlFeedQuery groupByCountryId() Group by the country_id column
  *
  * @method     ChildGoogleshoppingxmlFeedQuery leftJoin($relation) Adds a LEFT JOIN clause to the query
  * @method     ChildGoogleshoppingxmlFeedQuery rightJoin($relation) Adds a RIGHT JOIN clause to the query
@@ -45,9 +48,9 @@ use Thelia\Model\Lang;
  * @method     ChildGoogleshoppingxmlFeedQuery rightJoinCurrency($relationAlias = null) Adds a RIGHT JOIN clause to the query using the Currency relation
  * @method     ChildGoogleshoppingxmlFeedQuery innerJoinCurrency($relationAlias = null) Adds a INNER JOIN clause to the query using the Currency relation
  *
- * @method     ChildGoogleshoppingxmlFeedQuery leftJoinGoogleshoppingxmlFeedCountry($relationAlias = null) Adds a LEFT JOIN clause to the query using the GoogleshoppingxmlFeedCountry relation
- * @method     ChildGoogleshoppingxmlFeedQuery rightJoinGoogleshoppingxmlFeedCountry($relationAlias = null) Adds a RIGHT JOIN clause to the query using the GoogleshoppingxmlFeedCountry relation
- * @method     ChildGoogleshoppingxmlFeedQuery innerJoinGoogleshoppingxmlFeedCountry($relationAlias = null) Adds a INNER JOIN clause to the query using the GoogleshoppingxmlFeedCountry relation
+ * @method     ChildGoogleshoppingxmlFeedQuery leftJoinCountry($relationAlias = null) Adds a LEFT JOIN clause to the query using the Country relation
+ * @method     ChildGoogleshoppingxmlFeedQuery rightJoinCountry($relationAlias = null) Adds a RIGHT JOIN clause to the query using the Country relation
+ * @method     ChildGoogleshoppingxmlFeedQuery innerJoinCountry($relationAlias = null) Adds a INNER JOIN clause to the query using the Country relation
  *
  * @method     ChildGoogleshoppingxmlFeed findOne(ConnectionInterface $con = null) Return the first ChildGoogleshoppingxmlFeed matching the query
  * @method     ChildGoogleshoppingxmlFeed findOneOrCreate(ConnectionInterface $con = null) Return the first ChildGoogleshoppingxmlFeed matching the query, or a new ChildGoogleshoppingxmlFeed object populated from the query conditions when no match is found
@@ -56,11 +59,13 @@ use Thelia\Model\Lang;
  * @method     ChildGoogleshoppingxmlFeed findOneByLabel(string $label) Return the first ChildGoogleshoppingxmlFeed filtered by the label column
  * @method     ChildGoogleshoppingxmlFeed findOneByLangId(int $lang_id) Return the first ChildGoogleshoppingxmlFeed filtered by the lang_id column
  * @method     ChildGoogleshoppingxmlFeed findOneByCurrencyId(int $currency_id) Return the first ChildGoogleshoppingxmlFeed filtered by the currency_id column
+ * @method     ChildGoogleshoppingxmlFeed findOneByCountryId(int $country_id) Return the first ChildGoogleshoppingxmlFeed filtered by the country_id column
  *
  * @method     array findById(int $id) Return ChildGoogleshoppingxmlFeed objects filtered by the id column
  * @method     array findByLabel(string $label) Return ChildGoogleshoppingxmlFeed objects filtered by the label column
  * @method     array findByLangId(int $lang_id) Return ChildGoogleshoppingxmlFeed objects filtered by the lang_id column
  * @method     array findByCurrencyId(int $currency_id) Return ChildGoogleshoppingxmlFeed objects filtered by the currency_id column
+ * @method     array findByCountryId(int $country_id) Return ChildGoogleshoppingxmlFeed objects filtered by the country_id column
  *
  */
 abstract class GoogleshoppingxmlFeedQuery extends ModelCriteria
@@ -149,7 +154,7 @@ abstract class GoogleshoppingxmlFeedQuery extends ModelCriteria
      */
     protected function findPkSimple($key, $con)
     {
-        $sql = 'SELECT ID, LABEL, LANG_ID, CURRENCY_ID FROM googleshoppingxml_feed WHERE ID = :p0';
+        $sql = 'SELECT ID, LABEL, LANG_ID, CURRENCY_ID, COUNTRY_ID FROM googleshoppingxml_feed WHERE ID = :p0';
         try {
             $stmt = $con->prepare($sql);
             $stmt->bindValue(':p0', $key, PDO::PARAM_INT);
@@ -395,6 +400,49 @@ abstract class GoogleshoppingxmlFeedQuery extends ModelCriteria
     }
 
     /**
+     * Filter the query on the country_id column
+     *
+     * Example usage:
+     * <code>
+     * $query->filterByCountryId(1234); // WHERE country_id = 1234
+     * $query->filterByCountryId(array(12, 34)); // WHERE country_id IN (12, 34)
+     * $query->filterByCountryId(array('min' => 12)); // WHERE country_id > 12
+     * </code>
+     *
+     * @see       filterByCountry()
+     *
+     * @param     mixed $countryId The value to use as filter.
+     *              Use scalar values for equality.
+     *              Use array values for in_array() equivalent.
+     *              Use associative array('min' => $minValue, 'max' => $maxValue) for intervals.
+     * @param     string $comparison Operator to use for the column comparison, defaults to Criteria::EQUAL
+     *
+     * @return ChildGoogleshoppingxmlFeedQuery The current query, for fluid interface
+     */
+    public function filterByCountryId($countryId = null, $comparison = null)
+    {
+        if (is_array($countryId)) {
+            $useMinMax = false;
+            if (isset($countryId['min'])) {
+                $this->addUsingAlias(GoogleshoppingxmlFeedTableMap::COUNTRY_ID, $countryId['min'], Criteria::GREATER_EQUAL);
+                $useMinMax = true;
+            }
+            if (isset($countryId['max'])) {
+                $this->addUsingAlias(GoogleshoppingxmlFeedTableMap::COUNTRY_ID, $countryId['max'], Criteria::LESS_EQUAL);
+                $useMinMax = true;
+            }
+            if ($useMinMax) {
+                return $this;
+            }
+            if (null === $comparison) {
+                $comparison = Criteria::IN;
+            }
+        }
+
+        return $this->addUsingAlias(GoogleshoppingxmlFeedTableMap::COUNTRY_ID, $countryId, $comparison);
+    }
+
+    /**
      * Filter the query by a related \Thelia\Model\Lang object
      *
      * @param \Thelia\Model\Lang|ObjectCollection $lang The related object(s) to use as filter
@@ -427,7 +475,7 @@ abstract class GoogleshoppingxmlFeedQuery extends ModelCriteria
      *
      * @return ChildGoogleshoppingxmlFeedQuery The current query, for fluid interface
      */
-    public function joinLang($relationAlias = null, $joinType = Criteria::LEFT_JOIN)
+    public function joinLang($relationAlias = null, $joinType = Criteria::INNER_JOIN)
     {
         $tableMap = $this->getTableMap();
         $relationMap = $tableMap->getRelation('Lang');
@@ -462,7 +510,7 @@ abstract class GoogleshoppingxmlFeedQuery extends ModelCriteria
      *
      * @return   \Thelia\Model\LangQuery A secondary query class using the current class as primary query
      */
-    public function useLangQuery($relationAlias = null, $joinType = Criteria::LEFT_JOIN)
+    public function useLangQuery($relationAlias = null, $joinType = Criteria::INNER_JOIN)
     {
         return $this
             ->joinLang($relationAlias, $joinType)
@@ -502,7 +550,7 @@ abstract class GoogleshoppingxmlFeedQuery extends ModelCriteria
      *
      * @return ChildGoogleshoppingxmlFeedQuery The current query, for fluid interface
      */
-    public function joinCurrency($relationAlias = null, $joinType = Criteria::LEFT_JOIN)
+    public function joinCurrency($relationAlias = null, $joinType = Criteria::INNER_JOIN)
     {
         $tableMap = $this->getTableMap();
         $relationMap = $tableMap->getRelation('Currency');
@@ -537,7 +585,7 @@ abstract class GoogleshoppingxmlFeedQuery extends ModelCriteria
      *
      * @return   \Thelia\Model\CurrencyQuery A secondary query class using the current class as primary query
      */
-    public function useCurrencyQuery($relationAlias = null, $joinType = Criteria::LEFT_JOIN)
+    public function useCurrencyQuery($relationAlias = null, $joinType = Criteria::INNER_JOIN)
     {
         return $this
             ->joinCurrency($relationAlias, $joinType)
@@ -545,40 +593,42 @@ abstract class GoogleshoppingxmlFeedQuery extends ModelCriteria
     }
 
     /**
-     * Filter the query by a related \GoogleShoppingXml\Model\GoogleshoppingxmlFeedCountry object
+     * Filter the query by a related \Thelia\Model\Country object
      *
-     * @param \GoogleShoppingXml\Model\GoogleshoppingxmlFeedCountry|ObjectCollection $googleshoppingxmlFeedCountry  the related object to use as filter
+     * @param \Thelia\Model\Country|ObjectCollection $country The related object(s) to use as filter
      * @param string $comparison Operator to use for the column comparison, defaults to Criteria::EQUAL
      *
      * @return ChildGoogleshoppingxmlFeedQuery The current query, for fluid interface
      */
-    public function filterByGoogleshoppingxmlFeedCountry($googleshoppingxmlFeedCountry, $comparison = null)
+    public function filterByCountry($country, $comparison = null)
     {
-        if ($googleshoppingxmlFeedCountry instanceof \GoogleShoppingXml\Model\GoogleshoppingxmlFeedCountry) {
+        if ($country instanceof \Thelia\Model\Country) {
             return $this
-                ->addUsingAlias(GoogleshoppingxmlFeedTableMap::ID, $googleshoppingxmlFeedCountry->getFeedId(), $comparison);
-        } elseif ($googleshoppingxmlFeedCountry instanceof ObjectCollection) {
+                ->addUsingAlias(GoogleshoppingxmlFeedTableMap::COUNTRY_ID, $country->getId(), $comparison);
+        } elseif ($country instanceof ObjectCollection) {
+            if (null === $comparison) {
+                $comparison = Criteria::IN;
+            }
+
             return $this
-                ->useGoogleshoppingxmlFeedCountryQuery()
-                ->filterByPrimaryKeys($googleshoppingxmlFeedCountry->getPrimaryKeys())
-                ->endUse();
+                ->addUsingAlias(GoogleshoppingxmlFeedTableMap::COUNTRY_ID, $country->toKeyValue('PrimaryKey', 'Id'), $comparison);
         } else {
-            throw new PropelException('filterByGoogleshoppingxmlFeedCountry() only accepts arguments of type \GoogleShoppingXml\Model\GoogleshoppingxmlFeedCountry or Collection');
+            throw new PropelException('filterByCountry() only accepts arguments of type \Thelia\Model\Country or Collection');
         }
     }
 
     /**
-     * Adds a JOIN clause to the query using the GoogleshoppingxmlFeedCountry relation
+     * Adds a JOIN clause to the query using the Country relation
      *
      * @param     string $relationAlias optional alias for the relation
      * @param     string $joinType Accepted values are null, 'left join', 'right join', 'inner join'
      *
      * @return ChildGoogleshoppingxmlFeedQuery The current query, for fluid interface
      */
-    public function joinGoogleshoppingxmlFeedCountry($relationAlias = null, $joinType = Criteria::LEFT_JOIN)
+    public function joinCountry($relationAlias = null, $joinType = Criteria::INNER_JOIN)
     {
         $tableMap = $this->getTableMap();
-        $relationMap = $tableMap->getRelation('GoogleshoppingxmlFeedCountry');
+        $relationMap = $tableMap->getRelation('Country');
 
         // create a ModelJoin object for this join
         $join = new ModelJoin();
@@ -593,14 +643,14 @@ abstract class GoogleshoppingxmlFeedQuery extends ModelCriteria
             $this->addAlias($relationAlias, $relationMap->getRightTable()->getName());
             $this->addJoinObject($join, $relationAlias);
         } else {
-            $this->addJoinObject($join, 'GoogleshoppingxmlFeedCountry');
+            $this->addJoinObject($join, 'Country');
         }
 
         return $this;
     }
 
     /**
-     * Use the GoogleshoppingxmlFeedCountry relation GoogleshoppingxmlFeedCountry object
+     * Use the Country relation Country object
      *
      * @see useQuery()
      *
@@ -608,13 +658,13 @@ abstract class GoogleshoppingxmlFeedQuery extends ModelCriteria
      *                                   to be used as main alias in the secondary query
      * @param     string $joinType Accepted values are null, 'left join', 'right join', 'inner join'
      *
-     * @return   \GoogleShoppingXml\Model\GoogleshoppingxmlFeedCountryQuery A secondary query class using the current class as primary query
+     * @return   \Thelia\Model\CountryQuery A secondary query class using the current class as primary query
      */
-    public function useGoogleshoppingxmlFeedCountryQuery($relationAlias = null, $joinType = Criteria::LEFT_JOIN)
+    public function useCountryQuery($relationAlias = null, $joinType = Criteria::INNER_JOIN)
     {
         return $this
-            ->joinGoogleshoppingxmlFeedCountry($relationAlias, $joinType)
-            ->useQuery($relationAlias ? $relationAlias : 'GoogleshoppingxmlFeedCountry', '\GoogleShoppingXml\Model\GoogleshoppingxmlFeedCountryQuery');
+            ->joinCountry($relationAlias, $joinType)
+            ->useQuery($relationAlias ? $relationAlias : 'Country', '\Thelia\Model\CountryQuery');
     }
 
     /**
