@@ -35,15 +35,15 @@ class GoogleTaxonomyController extends BaseAdminController
         array_pop($rows); // Remove the last empty line
 
         foreach ($rows as $row) {
-            $line_parts = explode(' - ', $row);
-            $cat_id = array_shift($line_parts);
-            $cat_fullname = implode(' - ', $line_parts);
+            $lineParts = explode(' - ', $row);
+            $categoryId = array_shift($lineParts);
+            $categoryFullname = implode(' - ', $lineParts);
 
             if ($htmlEncode) {
-                $cat_fullname = htmlspecialchars($cat_fullname);
+                $categoryFullname = htmlspecialchars($categoryFullname);
             }
 
-            $categories[$cat_id] =  $cat_fullname;
+            $categories[$categoryId] =  $categoryFullname;
         }
 
         return $categories;
@@ -51,15 +51,15 @@ class GoogleTaxonomyController extends BaseAdminController
 
     protected function fetchGoogleCatNameFromId($google_cat_id, $langId)
     {
-        $google_cats_array = $this->fetchGoogleTaxonomy($langId, false);
-        return $google_cats_array[$google_cat_id];
+        $googleCatsArray = $this->fetchGoogleTaxonomy($langId, false);
+        return $googleCatsArray[$google_cat_id];
     }
 
     public function getJsonGoogleTaxonomyAction($langId = null)
     {
-        $google_cats_array = $this->fetchGoogleTaxonomy($langId, true);
+        $googleCatsArray = $this->fetchGoogleTaxonomy($langId, true);
 
-        return new JsonResponse(['cats' => $google_cats_array]);
+        return new JsonResponse(['cats' => $googleCatsArray]);
     }
 
 

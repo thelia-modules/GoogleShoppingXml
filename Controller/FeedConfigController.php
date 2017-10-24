@@ -73,9 +73,9 @@ class FeedConfigController extends BaseAdminController
             return $response;
         }
 
-        $feed_id = $this->getRequest()->request->get('id_feed_to_delete');
+        $feedId = $this->getRequest()->request->get('id_feed_to_delete');
 
-        $feed = GoogleshoppingxmlFeedQuery::create()->findOneById($feed_id);
+        $feed = GoogleshoppingxmlFeedQuery::create()->findOneById($feedId);
         if ($feed != null) {
             $feed->delete();
         }

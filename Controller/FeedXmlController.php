@@ -44,15 +44,15 @@ class FeedXmlController extends BaseAdminController
 
         $shippingArray = $this->buildShippingArray($feed);
 
-        $pse_array = $this->getProductItems($feed, $limit, $offset);
-        $this->injectGoogleCategories($pse_array, $feed);
-        $this->injectUrls($pse_array, $feed);
-        $this->injectTaxedPrices($pse_array, $feed);
-        $this->injectCustomAssociationFields($pse_array, $feed);
-        $this->injectAttributesInTitle($pse_array, $feed);
-        $this->injectImages($pse_array);
+        $pseArray = $this->getProductItems($feed, $limit, $offset);
+        $this->injectGoogleCategories($pseArray, $feed);
+        $this->injectUrls($pseArray, $feed);
+        $this->injectTaxedPrices($pseArray, $feed);
+        $this->injectCustomAssociationFields($pseArray, $feed);
+        $this->injectAttributesInTitle($pseArray, $feed);
+        $this->injectImages($pseArray);
 
-        $content = $this->renderXmlAll($feed, $pse_array, $shippingArray);
+        $content = $this->renderXmlAll($feed, $pseArray, $shippingArray);
 
         $response = new Response();
         $response->setContent($content);
@@ -61,7 +61,7 @@ class FeedXmlController extends BaseAdminController
         return $response;
     }
 
-    protected function renderXmlAll($feed, &$pse_array, $shippingArray)
+    protected function renderXmlAll($feed, &$pseArray, $shippingArray)
     {
         $checkAvailability = ConfigQuery::checkAvailableStock();
 
@@ -82,7 +82,7 @@ class FeedXmlController extends BaseAdminController
             $shippingStr .= '</g:shipping>'.PHP_EOL;
         }
 
-        foreach ($pse_array as &$pse) {
+        foreach ($pseArray as &$pse) {
             $str .= $this->renderXmlOnePse($feed, $pse, $shippingStr, $checkAvailability);
         }
 
@@ -166,10 +166,10 @@ class FeedXmlController extends BaseAdminController
         return htmlspecialchars($str, ENT_XML1);
     }
 
-    protected function hasCustomField($pse, $field_name)
+    protected function hasCustomField($pse, $fieldName)
     {
         foreach ($pse['CUSTOM_FIELD_ARRAY'] as $field) {
-            if ($field['FIELD_NAME'] == $field_name) {
+            if ($field['FIELD_NAME'] == $fieldName) {
                 return true;
             }
         }
@@ -235,9 +235,9 @@ class FeedXmlController extends BaseAdminController
         $stmt->bindValue(':currate', $feed->getCurrency()->getRate(), \PDO::PARAM_STR);
 
         $stmt->execute();
-        $pse_array = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+        $pseArray = $stmt->fetchAll(\PDO::FETCH_ASSOC);
 
-        return $pse_array;
+        return $pseArray;
     }
 
     protected function checkPositiveInteger($var)
@@ -248,9 +248,9 @@ class FeedXmlController extends BaseAdminController
 
     /**
      * @param GoogleshoppingxmlFeed $feed
-     * @param array $pse_array
+     * @param array $pseArray
      */
-    protected function injectGoogleCategories(&$pse_array, $feed)
+    protected function injectGoogleCategories(&$pseArray, $feed)
     {
         $con = Propel::getConnection();
 
@@ -264,9 +264,9 @@ class FeedXmlController extends BaseAdminController
         $stmt->execute();
         $rows = $stmt->fetchAll(\PDO::FETCH_ASSOC);
 
-        $google_categories = array();
+        $googleCategories = array();
         foreach ($rows as $row) {
-            $google_categories[$row['ID_CAT_THELIA']] = $row['GOOGLE_CAT'];
+            $googleCategories[$row['ID_CAT_THELIA']] = $row['GOOGLE_CAT'];
         }
 
         // Get Thelia category hierarchy
@@ -279,75 +279,75 @@ class FeedXmlController extends BaseAdminController
         $stmt->execute();
         $rows = $stmt->fetchAll(\PDO::FETCH_ASSOC);
 
-        $thelia_categories = array();
+        $theliaCategories = array();
         foreach ($rows as $row) {
             $row['PATH'] = null;
-            $thelia_categories[$row['ID']] = $row;
+            $theliaCategories[$row['ID']] = $row;
         }
 
-        foreach ($thelia_categories as $row) {
-            $this->recursiveSetCategoryPath($thelia_categories, $row);
+        foreach ($theliaCategories as $row) {
+            $this->recursiveSetCategoryPath($theliaCategories, $row);
         }
 
 
         // Add google category or parent's and thelia category path
 
-        foreach ($pse_array as &$pse) {
-            $has_reach_root = false;
-            $category_id = $pse['CATEGORY_ID'];
+        foreach ($pseArray as &$pse) {
+            $hasReachRoot = false;
+            $categoryId = $pse['CATEGORY_ID'];
 
-            $category_row = $thelia_categories[$category_id];
+            $categoryRow = $theliaCategories[$categoryId];
 
-            if ($category_row['PATH'] != null) {
-                $pse['CATEGORY_PATH'] = $category_row['PATH'];
+            if ($categoryRow['PATH'] != null) {
+                $pse['CATEGORY_PATH'] = $categoryRow['PATH'];
             }
 
-            while (!array_key_exists($category_id, $google_categories)) {
-                $parent = $thelia_categories[$category_id]['PARENT'];
+            while (!array_key_exists($categoryId, $googleCategories)) {
+                $parent = $theliaCategories[$categoryId]['PARENT'];
                 if ($parent == 0) {
-                    $has_reach_root = true;
+                    $hasReachRoot = true;
                     break;
                 }
 
-                $category_id = $parent;
+                $categoryId = $parent;
             }
 
-            if (!$has_reach_root) {
-                $pse['GOOGLE_CATEGORY'] = $google_categories[$category_id];
+            if (!$hasReachRoot) {
+                $pse['GOOGLE_CATEGORY'] = $googleCategories[$categoryId];
             }
         }
     }
 
 
-    protected function recursiveSetCategoryPath(&$thelia_categories, $category_row)
+    protected function recursiveSetCategoryPath(&$theliaCategories, $categoryRow)
     {
-        if ($category_row['PARENT'] == 0 || $category_row['PATH'] != null || $category_row['TITLE'] == null) {
-            if ($category_row['PARENT'] == 0 && $category_row['PATH'] == null && $category_row['TITLE'] != null) {
-                $thelia_categories[$category_row['ID']]['PATH'] = $category_row['TITLE'];
+        if ($categoryRow['PARENT'] == 0 || $categoryRow['PATH'] != null || $categoryRow['TITLE'] == null) {
+            if ($categoryRow['PARENT'] == 0 && $categoryRow['PATH'] == null && $categoryRow['TITLE'] != null) {
+                $theliaCategories[$categoryRow['ID']]['PATH'] = $categoryRow['TITLE'];
             }
             return;
         }
 
-        $parent_row = $thelia_categories[$category_row['PARENT']];
+        $parentRow = $theliaCategories[$categoryRow['PARENT']];
 
-        if ($parent_row['PATH'] != null) {
-            $this->recursiveSetCategoryPath($thelia_categories, $parent_row);
+        if ($parentRow['PATH'] != null) {
+            $this->recursiveSetCategoryPath($theliaCategories, $parentRow);
         }
 
-        if ($parent_row['PATH'] != null) {
-            $thelia_categories[$category_row['ID']]['PATH'] = $parent_row['PATH'] . ' > ' . $category_row['TITLE'];
+        if ($parentRow['PATH'] != null) {
+            $theliaCategories[$categoryRow['ID']]['PATH'] = $parentRow['PATH'] . ' > ' . $categoryRow['TITLE'];
         }
     }
 
 
     /**
      * @param GoogleshoppingxmlFeed $feed
-     * @param array $pse_array
+     * @param array $pseArray
      */
-    protected function injectUrls(&$pse_array, $feed)
+    protected function injectUrls(&$pseArray, $feed)
     {
         $urlManager = URL::getInstance();
-        foreach ($pse_array as &$pse) {
+        foreach ($pseArray as &$pse) {
             if ($pse['REWRITTEN_URL'] == null) {
                 $pse['URL'] = $urlManager->retrieve('product', $pse['ID_PRODUCT'], $feed->getLang()->getLocale())->toString();
             } else {
@@ -359,29 +359,29 @@ class FeedXmlController extends BaseAdminController
 
     /**
      * @param GoogleshoppingxmlFeed $feed
-     * @param array $pse_array
+     * @param array $pseArray
      */
-    protected function injectTaxedPrices(&$pse_array, $feed)
+    protected function injectTaxedPrices(&$pseArray, $feed)
     {
-        $tax_rules_collection = TaxRuleQuery::create()->find();
-        $tax_rules_array = [];
-        /** @var TaxRule $tax_rule **/
-        foreach ($tax_rules_collection as $tax_rule) {
-            $tax_rules_array[$tax_rule->getId()] = $tax_rule;
+        $taxRulesCollection = TaxRuleQuery::create()->find();
+        $taxRulesArray = [];
+        /** @var TaxRule $taxRule **/
+        foreach ($taxRulesCollection as $taxRule) {
+            $taxRulesArray[$taxRule->getId()] = $taxRule;
         }
 
-        $tax_calculators_array = [];
+        $taxCalculatorsArray = [];
 
-        foreach ($pse_array as &$pse) {
-            $tax_rule_id = $pse['TAX_RULE_ID'];
-            $tax_rule = $tax_rules_array[$tax_rule_id];
+        foreach ($pseArray as &$pse) {
+            $taxRuleId = $pse['TAX_RULE_ID'];
+            $taxRule = $taxRulesArray[$taxRuleId];
 
-            if (!array_key_exists($tax_rule_id, $tax_calculators_array)) {
+            if (!array_key_exists($taxRuleId, $taxCalculatorsArray)) {
                 $calculator = new Calculator();
-                $calculator->loadTaxRuleWithoutProduct($tax_rule, $feed->getCountry());
-                $tax_calculators_array[$tax_rule_id] = $calculator;
+                $calculator->loadTaxRuleWithoutProduct($taxRule, $feed->getCountry());
+                $taxCalculatorsArray[$taxRuleId] = $calculator;
             } else {
-                $calculator = $tax_calculators_array[$tax_rule_id];
+                $calculator = $taxCalculatorsArray[$taxRuleId];
             }
 
             $pse['TAXED_PRICE'] = $calculator->getTaxedPrice($pse['PRICE']);
@@ -391,74 +391,74 @@ class FeedXmlController extends BaseAdminController
 
     /**
      * @param GoogleshoppingxmlFeed $feed
-     * @param array $pse_array
+     * @param array $pseArray
      */
-    protected function injectCustomAssociationFields(&$pse_array, $feed)
+    protected function injectCustomAssociationFields(&$pseArray, $feed)
     {
-        $attributes_array = [];
-        $features_array = [];
+        $attributesArray = [];
+        $featuresArray = [];
 
         $fieldAssociationCollection = GoogleshoppingxmlGoogleFieldAssociationQuery::create()->find();
 
-        foreach ($pse_array as &$pse) {
-            $custom_field_array = [];
+        foreach ($pseArray as &$pse) {
+            $customFieldArray = [];
             /** @var GoogleshoppingxmlGoogleFieldAssociation $fieldAssociation */
             foreach ($fieldAssociationCollection as $fieldAssociation) {
                 $found = false;
-                $custom_field = ['FIELD_NAME' => $fieldAssociation->getGoogleField()];
+                $customField = ['FIELD_NAME' => $fieldAssociation->getGoogleField()];
                 switch ($fieldAssociation->getAssociationType()) {
                     case GoogleFieldAssociationController::ASSO_TYPE_FIXED_VALUE:
-                        $custom_field['FIELD_VALUE'] = $fieldAssociation->getFixedValue();
+                        $customField['FIELD_VALUE'] = $fieldAssociation->getFixedValue();
                         $found = true;
                         break;
                     case GoogleFieldAssociationController::ASSO_TYPE_RELATED_TO_THELIA_ATTRIBUTE:
-                        $id_attribute = $fieldAssociation->getIdRelatedAttribute();
-                        if (!array_key_exists($id_attribute, $attributes_array)) {
-                            $attributes_array[$id_attribute] = $this->getArrayAttributesConcatValues($feed->getLang()->getLocale(), $id_attribute);
+                        $idAttribute = $fieldAssociation->getIdRelatedAttribute();
+                        if (!array_key_exists($idAttribute, $attributesArray)) {
+                            $attributesArray[$idAttribute] = $this->getArrayAttributesConcatValues($feed->getLang()->getLocale(), $idAttribute);
                         }
-                        if ($found = array_key_exists($pse['ID'], $attributes_array[$id_attribute])) {
-                            $custom_field['FIELD_VALUE'] = $attributes_array[$id_attribute][$pse['ID']];
+                        if ($found = array_key_exists($pse['ID'], $attributesArray[$idAttribute])) {
+                            $customField['FIELD_VALUE'] = $attributesArray[$idAttribute][$pse['ID']];
                         }
                         break;
                     case GoogleFieldAssociationController::ASSO_TYPE_RELATED_TO_THELIA_FEATURE:
-                        $id_feature = $fieldAssociation->getIdRelatedFeature();
-                        if (!array_key_exists($id_feature, $features_array)) {
-                            $features_array[$id_feature] = $this->getArrayFeaturesConcatValues($feed->getLang()->getLocale(), $id_feature);
+                        $idFeature = $fieldAssociation->getIdRelatedFeature();
+                        if (!array_key_exists($idFeature, $featuresArray)) {
+                            $featuresArray[$idFeature] = $this->getArrayFeaturesConcatValues($feed->getLang()->getLocale(), $idFeature);
                         }
-                        if ($found = array_key_exists($pse['ID_PRODUCT'], $features_array[$id_feature])) {
-                            $custom_field['FIELD_VALUE'] = $features_array[$id_feature][$pse['ID_PRODUCT']];
+                        if ($found = array_key_exists($pse['ID_PRODUCT'], $featuresArray[$idFeature])) {
+                            $customField['FIELD_VALUE'] = $featuresArray[$idFeature][$pse['ID_PRODUCT']];
                         }
                         break;
                 }
                 if ($found) {
-                    $custom_field_array[] = $custom_field;
+                    $customFieldArray[] = $customField;
                 }
             }
-            $pse['CUSTOM_FIELD_ARRAY'] = $custom_field_array;
+            $pse['CUSTOM_FIELD_ARRAY'] = $customFieldArray;
         }
     }
 
     /**
      * @param GoogleshoppingxmlFeed $feed
-     * @param array $pse_array
+     * @param array $pseArray
      */
-    protected function injectAttributesInTitle(&$pse_array, $feed)
+    protected function injectAttributesInTitle(&$pseArray, $feed)
     {
-        $attributes_concat_array = $this->getArrayAttributesConcatValues($feed->getLang()->getLocale(), null, ' - ');
-        foreach ($pse_array as &$pse) {
-            if (array_key_exists($pse['ID'], $attributes_concat_array)) {
-                $pse['TITLE'] .= ' - ' . $attributes_concat_array[$pse['ID']];
+        $attributesConcatArray = $this->getArrayAttributesConcatValues($feed->getLang()->getLocale(), null, ' - ');
+        foreach ($pseArray as &$pse) {
+            if (array_key_exists($pse['ID'], $attributesConcatArray)) {
+                $pse['TITLE'] .= ' - ' . $attributesConcatArray[$pse['ID']];
             }
         }
     }
 
 
     /**
-     * @param array $pse_array
+     * @param array $pseArray
      */
-    protected function injectImages(&$pse_array)
+    protected function injectImages(&$pseArray)
     {
-        foreach ($pse_array as &$pse) {
+        foreach ($pseArray as &$pse) {
             if ($pse['IMAGE_NAME'] != null) {
                 $imageEvent = $this->createImageEvent($pse['IMAGE_NAME'], 'product');
                 $this->dispatch(TheliaEvents::IMAGE_PROCESS, $imageEvent);
