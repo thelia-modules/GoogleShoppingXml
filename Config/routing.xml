@@ -10,7 +10,7 @@
 
     <!-- FEED XML -->
 
-    <route id="googleshoppingxml.getfeedxml" path="/admin/module/googleshoppingxml/feed/xml/{feedId}/feed.xml">
+    <route id="googleshoppingxml.getfeedxml" path="/googleshoppingxml/feed/xml/{feedId}/feed.xml">
         <default key="_controller">GoogleShoppingXml\Controller\FeedXmlController::getFeedXmlAction</default>
         <requirement key="feedId">\d+</requirement>
     </route>

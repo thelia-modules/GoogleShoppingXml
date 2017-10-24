@@ -9,7 +9,7 @@ use GoogleShoppingXml\Model\GoogleshoppingxmlGoogleFieldAssociationQuery;
 use Propel\Runtime\ActiveQuery\Criteria;
 use Propel\Runtime\Propel;
 use Thelia\Action\Image;
-use Thelia\Controller\Admin\BaseAdminController;
+use Thelia\Controller\Front\BaseFrontController;
 use Thelia\Core\Event\Image\ImageEvent;
 use Thelia\Core\Event\TheliaEvents;
 use Thelia\Core\HttpFoundation\Response;
@@ -27,7 +27,7 @@ use Thelia\TaxEngine\Calculator;
 use Thelia\Tools\MoneyFormat;
 use Thelia\Tools\URL;
 
-class FeedXmlController extends BaseAdminController
+class FeedXmlController extends BaseFrontController
 {
     public function getFeedXmlAction($feedId)
     {
@@ -39,7 +39,7 @@ class FeedXmlController extends BaseAdminController
         $offset = $request->get('offset', null);
 
         if ($feed == null) {
-            return $this->pageNotFound();
+            $this->pageNotFound();
         }
 
         $shippingArray = $this->buildShippingArray($feed);
