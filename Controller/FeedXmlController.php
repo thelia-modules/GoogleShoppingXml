@@ -9,7 +9,7 @@ use GoogleShoppingXml\Model\GoogleshoppingxmlGoogleFieldAssociationQuery;
 use Propel\Runtime\ActiveQuery\Criteria;
 use Propel\Runtime\Propel;
 use Thelia\Action\Image;
-use Thelia\Controller\Admin\BaseAdminController;
+use Thelia\Controller\Front\BaseFrontController;
 use Thelia\Core\Event\Image\ImageEvent;
 use Thelia\Core\Event\TheliaEvents;
 use Thelia\Core\HttpFoundation\Response;
@@ -27,7 +27,7 @@ use Thelia\TaxEngine\Calculator;
 use Thelia\Tools\MoneyFormat;
 use Thelia\Tools\URL;
 
-class FeedXmlController extends BaseAdminController
+class FeedXmlController extends BaseFrontController
 {
     public function getFeedXmlAction($feedId)
     {
@@ -39,7 +39,7 @@ class FeedXmlController extends BaseAdminController
         $offset = $request->get('offset', null);
 
         if ($feed == null) {
-            return $this->pageNotFound();
+            $this->pageNotFound();
         }
 
         $shippingArray = $this->buildShippingArray($feed);
@@ -562,7 +562,7 @@ class FeedXmlController extends BaseAdminController
     {
         $resultArray = [];
 
-        $shippingInfoArray = $this->getShippings($feed->getCountry(), $feed->getCurrency());
+        $shippingInfoArray = $this->getShippings($feed);
 
         foreach ($shippingInfoArray as $moduleTitle => $postagePrice) {
             $shippingItem = [];
@@ -577,12 +577,13 @@ class FeedXmlController extends BaseAdminController
     }
 
     /**
-     * @param Country $country
-     * @param Currency $currency
+     * @param GoogleshoppingxmlFeed $feed
      * @return array
      */
-    protected function getShippings($country, $currency)
+    protected function getShippings($feed)
     {
+        $country = $feed->getCountry();
+
         $search = ModuleQuery::create()
             ->filterByActivate(1)
             ->filterByType(BaseModule::DELIVERY_MODULE_TYPE, Criteria::EQUAL)
@@ -592,6 +593,8 @@ class FeedXmlController extends BaseAdminController
 
         /** @var Module $deliveryModule */
         foreach ($search as $deliveryModule) {
+            $deliveryModule->setLocale($feed->getLang()->getLocale());
+
             $areaDeliveryModule = AreaDeliveryModuleQuery::create()
                 ->findByCountryAndModule($country, $deliveryModule);
 
@@ -603,7 +606,7 @@ class FeedXmlController extends BaseAdminController
 
             if ($moduleInstance->isValidDelivery($country)) {
                 $postage = OrderPostage::loadFromPostage($moduleInstance->getPostage($country));
-                $price = $postage->getAmount() * $currency->getRate();
+                $price = $postage->getAmount() * $feed->getCurrency()->getRate();
 
                 $deliveries[$deliveryModule->getTitle()] = $price;
             }
