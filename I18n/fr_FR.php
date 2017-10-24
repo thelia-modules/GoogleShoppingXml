@@ -1,7 +1,7 @@
 <?php
 
 return array(
-    'Countries' => 'Pays',
+    'Country' => 'Pays',
     'Currency' => 'Devise',
     'Feed label' => 'Nom du flux',
     'GoogleShoppingXml configuration' => 'Configuration de GoogleShoppingXml',

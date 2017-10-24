@@ -27,7 +27,7 @@ class ModuleConfigController extends BaseAdminController
         );
     }
 
-    private function getNumberOfPse()
+    protected function getNumberOfPse()
     {
         $sql = 'SELECT COUNT(*) AS nb FROM product_sale_elements';
         $stmt = Propel::getConnection()->prepare($sql);

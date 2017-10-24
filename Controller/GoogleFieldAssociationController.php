@@ -18,7 +18,7 @@ class GoogleFieldAssociationController extends BaseAdminController
 
     // The following are already defined in the XML output file by the module and cannot be overwritten.
     const FIELDS_NATIVELY_DEFINED = array(
-        'id', 'title', 'description', 'link', 'image_link', 'price', 'brand', 'identifier_exists',
+        'id', 'title', 'description', 'link', 'image_link', 'price', 'identifier_exists',
         'shipping', 'google_product_category', 'product_type'
     );
 
@@ -125,7 +125,7 @@ class GoogleFieldAssociationController extends BaseAdminController
      * @param GoogleshoppingxmlGoogleFieldAssociation $field_association
      * @return GoogleshoppingxmlGoogleFieldAssociation
      */
-    private function hydrateFieldAssociationObjectWithRequestContent(&$field_association, $http_request)
+    protected function hydrateFieldAssociationObjectWithRequestContent(&$field_association, $http_request)
     {
         $request = $http_request->request;
 

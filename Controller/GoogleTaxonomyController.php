@@ -14,12 +14,12 @@ use Thelia\Model\LangQuery;
 
 class GoogleTaxonomyController extends BaseAdminController
 {
-    private function getGoogleTaxonomiesFileURL($lang)
+    protected function getGoogleTaxonomiesFileURL($lang)
     {
-        return "http://www.google.com/basepages/producttype/taxonomy-with-ids.".str_replace("_", "-", $lang->getLocale()).".txt";
+        return "https://www.google.com/basepages/producttype/taxonomy-with-ids.".str_replace("_", "-", $lang->getLocale()).".txt";
     }
 
-    private function fetchGoogleTaxonomy($langId = null, $htmlEncode = false)
+    protected function fetchGoogleTaxonomy($langId = null, $htmlEncode = false)
     {
         $lang = LangQuery::create()->findOneById($langId);
 
@@ -49,7 +49,7 @@ class GoogleTaxonomyController extends BaseAdminController
         return $categories;
     }
 
-    private function fetchGoogleCatNameFromId($google_cat_id, $langId)
+    protected function fetchGoogleCatNameFromId($google_cat_id, $langId)
     {
         $google_cats_array = $this->fetchGoogleTaxonomy($langId, false);
         return $google_cats_array[$google_cat_id];

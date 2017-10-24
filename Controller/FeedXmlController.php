@@ -44,13 +44,13 @@ class FeedXmlController extends BaseAdminController
 
         $shippingArray = $this->buildShippingArray($feed);
 
-        $pse_array = $this->getAllProductItems($feed, $limit, $offset);
+        $pse_array = $this->getProductItems($feed, $limit, $offset);
         $this->injectGoogleCategories($pse_array, $feed);
         $this->injectUrls($pse_array, $feed);
         $this->injectTaxedPrices($pse_array, $feed);
         $this->injectCustomAssociationFields($pse_array, $feed);
         $this->injectAttributesInTitle($pse_array, $feed);
-        $this->injectImages($pse_array, $feed);
+        $this->injectImages($pse_array);
 
         $content = $this->renderXmlAll($feed, $pse_array, $shippingArray);
 
@@ -127,7 +127,10 @@ class FeedXmlController extends BaseAdminController
             $str .= '<g:sale_price>'.$formattedTaxedPromoPrice.'</g:sale_price>'.PHP_EOL;
         }
 
-        $str .= '<g:brand>'.$this->xmlSafeEncode($pse['BRAND_TITLE']).'</g:brand>'.PHP_EOL;
+        if (!$this->hasCustomField($pse, "brand")) {
+            $str .= '<g:brand>' . $this->xmlSafeEncode($pse['BRAND_TITLE']) . '</g:brand>' . PHP_EOL;
+        }
+
         if (!empty($pse['EAN_CODE'])) {
             $str .= '<g:gtin>'.$pse['EAN_CODE'].'</g:gtin>'.PHP_EOL;
             $str .= '<g:identifier_exists>yes</g:identifier_exists>'.PHP_EOL;
@@ -147,6 +150,10 @@ class FeedXmlController extends BaseAdminController
             $str .= '<g:product_type>'.$this->xmlSafeEncode($pse['CATEGORY_PATH']).'</g:product_type>'.PHP_EOL;
         }
 
+        if (!$this->hasCustomField($pse, "condition")) {
+            $str .= '<g:condition>new</g:condition>'.PHP_EOL;
+        }
+
         foreach ($pse['CUSTOM_FIELD_ARRAY'] as $field) {
             $str .= '<g:'.$field['FIELD_NAME'].'>'.$this->xmlSafeEncode($field['FIELD_VALUE']).'</g:'.$field['FIELD_NAME'].'>'.PHP_EOL;
         }
@@ -159,10 +166,20 @@ class FeedXmlController extends BaseAdminController
         return htmlspecialchars($str, ENT_XML1);
     }
 
+    protected function hasCustomField($pse, $field_name)
+    {
+        foreach ($pse['CUSTOM_FIELD_ARRAY'] as $field) {
+            if ($field['FIELD_NAME'] == $field_name) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     /**
      * @param GoogleshoppingxmlFeed $feed
      */
-    protected function getAllProductItems($feed, $limit = null, $offset = null)
+    protected function getProductItems($feed, $limit = null, $offset = null)
     {
         $sql = 'SELECT 
 
@@ -383,19 +400,6 @@ class FeedXmlController extends BaseAdminController
 
         $fieldAssociationCollection = GoogleshoppingxmlGoogleFieldAssociationQuery::create()->find();
 
-        if ($fieldAssociationCollection->isEmpty()) {
-            return;
-        }
-
-        $isConditionDefined = false;
-
-        /** @var GoogleshoppingxmlGoogleFieldAssociation $fieldAssociation */
-        foreach ($fieldAssociationCollection as $fieldAssociation) {
-            if ($fieldAssociation->getGoogleField() == 'condition') {
-                $isConditionDefined = true;
-            }
-        }
-
         foreach ($pse_array as &$pse) {
             $custom_field_array = [];
             /** @var GoogleshoppingxmlGoogleFieldAssociation $fieldAssociation */
@@ -430,12 +434,6 @@ class FeedXmlController extends BaseAdminController
                     $custom_field_array[] = $custom_field;
                 }
             }
-            if (!$isConditionDefined) {
-                $custom_field_array[] = array(
-                    'FIELD_NAME' => 'condition',
-                    'FIELD_VALUE' => 'new'
-                );
-            }
             $pse['CUSTOM_FIELD_ARRAY'] = $custom_field_array;
         }
     }
@@ -456,10 +454,9 @@ class FeedXmlController extends BaseAdminController
 
 
     /**
-     * @param GoogleshoppingxmlFeed $feed
      * @param array $pse_array
      */
-    protected function injectImages(&$pse_array, $feed)
+    protected function injectImages(&$pse_array)
     {
         foreach ($pse_array as &$pse) {
             if ($pse['IMAGE_NAME'] != null) {
