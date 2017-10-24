@@ -562,7 +562,7 @@ class FeedXmlController extends BaseFrontController
     {
         $resultArray = [];
 
-        $shippingInfoArray = $this->getShippings($feed->getCountry(), $feed->getCurrency());
+        $shippingInfoArray = $this->getShippings($feed);
 
         foreach ($shippingInfoArray as $moduleTitle => $postagePrice) {
             $shippingItem = [];
@@ -577,12 +577,13 @@ class FeedXmlController extends BaseFrontController
     }
 
     /**
-     * @param Country $country
-     * @param Currency $currency
+     * @param GoogleshoppingxmlFeed $feed
      * @return array
      */
-    protected function getShippings($country, $currency)
+    protected function getShippings($feed)
     {
+        $country = $feed->getCountry();
+
         $search = ModuleQuery::create()
             ->filterByActivate(1)
             ->filterByType(BaseModule::DELIVERY_MODULE_TYPE, Criteria::EQUAL)
@@ -592,6 +593,8 @@ class FeedXmlController extends BaseFrontController
 
         /** @var Module $deliveryModule */
         foreach ($search as $deliveryModule) {
+            $deliveryModule->setLocale($feed->getLang()->getLocale());
+
             $areaDeliveryModule = AreaDeliveryModuleQuery::create()
                 ->findByCountryAndModule($country, $deliveryModule);
 
@@ -603,7 +606,7 @@ class FeedXmlController extends BaseFrontController
 
             if ($moduleInstance->isValidDelivery($country)) {
                 $postage = OrderPostage::loadFromPostage($moduleInstance->getPostage($country));
-                $price = $postage->getAmount() * $currency->getRate();
+                $price = $postage->getAmount() * $feed->getCurrency()->getRate();
 
                 $deliveries[$deliveryModule->getTitle()] = $price;
             }
