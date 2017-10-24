@@ -54,9 +54,6 @@ class FeedXmlController extends BaseAdminController
 
         $content = $this->renderXmlAll($feed, $pse_array, $shippingArray);
 
-        //$nb_pse = count($pse_array);
-        //$nb_line_xml = substr_count($content, PHP_EOL);
-
         $response = new Response();
         $response->setContent($content);
         $response->headers->set('Content-Type', 'application/xml');
@@ -188,14 +185,13 @@ class FeedXmlController extends BaseAdminController
                 
                 INNER JOIN product ON (pse.PRODUCT_ID = product.ID)
                 INNER JOIN product_i18n ON (pse.PRODUCT_ID = product_i18n.ID)
-                INNER JOIN brand_i18n ON (product.BRAND_ID = brand_i18n.ID)
                 INNER JOIN product_category ON (pse.PRODUCT_ID = product_category.PRODUCT_ID)
                 INNER JOIN product_price ON (pse.ID = product_price.PRODUCT_SALE_ELEMENTS_ID)
+                LEFT OUTER JOIN brand_i18n ON (product.BRAND_ID = brand_i18n.ID AND brand_i18n.LOCALE = :locale)
                 LEFT OUTER JOIN rewriting_url ON (pse.PRODUCT_ID = rewriting_url.VIEW_ID AND rewriting_url.view = \'product\' AND rewriting_url.view_locale = :locale AND rewriting_url.redirected IS NULL)
                 LEFT OUTER JOIN product_image ON (pse.PRODUCT_ID = product_image.PRODUCT_ID AND product_image.POSITION = 1)
                 
                 WHERE product_i18n.LOCALE = :locale
-                AND brand_i18n.LOCALE = :locale
                 AND product_category.DEFAULT_CATEGORY = 1
                 AND product_price.CURRENCY_ID = :currid
                 
