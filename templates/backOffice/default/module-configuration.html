@@ -47,6 +47,9 @@
                         <li class="{if $tab eq 'advanced'}active{/if}">
                             <a data-toggle="tab" href="#advanced">{intl l="Advanced configuration"}</a>
                         </li>
+                        <li class="{if $tab eq 'log'}active{/if}">
+                            <a class="js_tab_gsxml_log" data-toggle="tab" href="#log">{intl l="Error log"}</a>
+                        </li>
                     </ul>
 
                     <div class="tab-content">
@@ -60,6 +63,10 @@
 
                         <div id="advanced" class="tab-pane {if $tab eq 'advanced'}active{/if} form-container">
                         {include file="include/config_tab_advanced.html"}
+                        </div>
+
+                        <div id="log" class="tab-pane {if $tab eq 'log'}active{/if} form-container">
+                        {include file="include/config_tab_log.html"}
                         </div>
                     </div>
                 </div>

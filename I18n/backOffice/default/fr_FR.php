@@ -47,7 +47,7 @@ return array(
     'No' => 'Non',
     'No associated category' => 'Aucune catégorie associée',
     'Once your feeds are set up in Google Merchant, re-create your feeds below with the same informations.' => 'Lorsque que vous avez configuré vos flux dans Google Merchant, reportez ces informations dans Thelia en ajoutant chaque flux ci-dessous avec les mêmes informations.',
-    'Please note that it won\'t delete the feed in your Google Merchant account. You will have to do it manually in the Google Merchant Center page.' => 'Veuillez noter que cela ne supprimera le flux dans votre compte Google Merchant. Vous devrez le faire manuellement.',
+    'Please note that it won\'t delete the feed in your Google Merchant account. You will have to do it manually in the Google Merchant Center page.' => 'Veuillez noter que cela ne supprimera pas le flux dans votre compte Google Merchant. Vous devrez le faire manuellement.',
     'Related Thelia attribute' => 'Déclinaison associé',
     'Related Thelia feature' => 'Caractéristique associé',
     'Remove' => 'Supprimer',

@@ -1,4 +1,4 @@
-{default_translation_domain domain='googleshopping.ai'}
+{default_translation_domain domain='googleshoppingxml.bo.default'}
 
 <script>
 
@@ -7,6 +7,9 @@
     });
 
     $(function () {
+
+        var $loader = $('<div class="loader"></div>');
+        $('body').append($loader);
 
 
         // ***********************************************
@@ -179,6 +182,163 @@
         });
 
         $advanced_select_association_type.trigger( "change" );
+
+
+
+        // ***********************************************
+        //                ERROR LOG TAB
+        // ***********************************************
+
+        var errorLogResult = null;
+        var logCurrentPage = 1;
+
+        function getXmlLogAjax() {
+            $loader.show();
+            var limit = $("select#js_select_log_limit option:checked").val();
+
+            var offset = 0;
+            if (errorLogResult != null) {
+                offset = (logCurrentPage - 1) * limit;
+            }
+
+            $.ajax({
+                url      : '{url path="/admin/module/googleshoppingxml/log/get"}',
+                data     : {
+                    limit : limit,
+                    offset : offset
+                },
+                type     : 'get',
+                dataType : 'json',
+                success  : function(data){
+                    errorLogResult = data;
+                    console.log(errorLogResult);
+                    updateLogTable();
+                    $loader.hide();
+                },
+                error : function(jqXHR, textStatus, errorThrown) {
+                    $("#js_tab_xml_log").html('<tr><td colspan="5">{intl l="An error has occurred during the server request."}</td></tr>');
+                    $loader.hide();
+                }
+            });
+        }
+
+
+        $('.js_btn_gsxml_log_refresh').on('click',function(e){
+            e.preventDefault();
+            logCurrentPage = 1;
+            getXmlLogAjax();
+        });
+
+        $('.js_tab_gsxml_log').on('click',function(e){
+            logCurrentPage = 1;
+            getXmlLogAjax();
+        });
+
+        $('#js_select_log_limit').on('change', function(e){
+            logCurrentPage = 1;
+            getXmlLogAjax();
+        });
+
+        $('.js_checkbox_level_log').on('change', function(e){
+            updateLogTable();
+        });
+
+        $('.js_log_first_page').on('click',function (e) {
+            logCurrentPage = 1;
+            getXmlLogAjax();
+        });
+
+        $('.js_log_previous_page').on('click',function (e) {
+            if (logCurrentPage > 1) {
+                logCurrentPage--;
+                getXmlLogAjax();
+            }
+        });
+
+        $('.js_log_next_page').on('click',function (e) {
+            if (errorLogResult != null && errorLogResult.length > 0) {
+                logCurrentPage++;
+                getXmlLogAjax();
+            }
+        });
+
+        var errorLevelInfo = {
+            1 : {
+                className : '',
+                label : '{intl l="INFO"}'
+            },
+            2 : {
+                className : 'tr_log_success',
+                label : '{intl l="SUCCESS"}'
+            },
+            3 : {
+                className : 'tr_log_warning',
+                label : '{intl l="WARNING"}'
+            },
+            4 : {
+                className : 'tr_log_error',
+                label : '{intl l="ERROR"}'
+            },
+            5 : {
+                className : 'tr_log_fatal',
+                label : '{intl l="FATAL"}'
+            }
+        };
+
+
+        function updateLogTable(){
+            if (errorLogResult != null && errorLogResult.length) {
+                $('.js_log_next_page').removeClass("disabled");
+            }else{
+                $('.js_log_next_page').addClass("disabled");
+            }
+
+            if (logCurrentPage > 1){
+                $('.js_log_first_page').removeClass("disabled");
+                $('.js_log_previous_page').removeClass("disabled");
+            }else{
+                $('.js_log_first_page').addClass("disabled");
+                $('.js_log_previous_page').addClass("disabled");
+            }
+
+            if (errorLogResult == null) {
+                return;
+            }
+
+            var innerHtml = "<tr><th>{intl l='Date'}</th><th>{intl l='Feed'}</th><th>{intl l='Level'}</th><th>{intl l='Message'}</th><th>{intl l='Product item'}</th></tr>";
+
+            if (errorLogResult.length > 0) {
+                errorLogResult.forEach(function(log){
+                    var checkbox = document.querySelector(".js_checkbox_level_log[data-level='"+log.level+"']");
+                    if (checkbox != null && checkbox.checked) {
+                        var levelArray = errorLevelInfo[log.level];
+                        var helpTooltip = '';
+                        if (log.help) {
+                            helpTooltip += ' <a href="#" data-toggle="tooltip" title="' + log.help + '"><span class="glyphicon glyphicon-question-sign"></span></a>';
+                        }
+
+                        innerHtml += '<tr class="' + levelArray.className + '">';
+                        innerHtml += '<td>' + log.date + '</td>';
+                        innerHtml += '<td>' + log.feed_label + '</td>';
+                        innerHtml += '<td>' + levelArray.label + '</td>';
+                        innerHtml += '<td>' + log.message + helpTooltip + '</td>';
+                        if (log.product_id) {
+                            innerHtml += '<td><a href="' + '{url path = '/admin/products/update'}' + '?product_id=' + log.product_id + '">' + log.product_ref + '</a></td>';
+                        }else{
+                            innerHtml += '<td>-</td>';
+                        }
+                        innerHtml += '</tr>';
+                    }
+                });
+            } else {
+                innerHtml += '<tr><td colspan="5">{intl l="Nothing to show."}</td></tr>';
+            }
+
+            var $table = $('#js_table_xml_log');
+            $table.html(innerHtml);
+            $('[data-toggle="tooltip"]').tooltip()
+        }
+
 
     });
 </script>

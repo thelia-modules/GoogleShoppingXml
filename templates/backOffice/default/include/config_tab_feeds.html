@@ -12,7 +12,7 @@
             <p>- {intl l='Once your feeds are set up in Google Merchant, re-create your feeds below with the same informations.'}</p>
             <p>-
             {intl l='Finally, you will provide your product list to Google for each feed through a XML file.'}
-            {intl l='For that, you can set up a automated fetch in Google Merchant Center by providing the link to the XML file (Right-click the "XML" blue button, then "Copy link address") or upload the file manually.'}
+            {intl l='For that, you can set up a automated fetch in Google Merchant Center by providing the link to the XML file (click on <span class="glyphicon glyphicon-link"></span> to copy the link address) or upload the file manually.'}
             </p>
         </div>
 
@@ -135,15 +135,16 @@
             {/form}
 
             <div class="form-group col-md-2">
-                <a class="js_download_xml_feed btn btn-info" style="margin-right:5px;" href="{url path="/googleshoppingxml/feed/xml/{$ID}/feed.xml"}" data-feedid="{$ID_FEED}" download>
-                    <span class="glyphicon glyphicon-chevron-left"></span>
-                    {intl l="XML"}
-                    <span class="glyphicon glyphicon-chevron-right"></span>
-                </a>
-                <a href="#" class="js_btn_clipboard btn btn-primary" style="margin-right:5px;" data-toggle="tooltip" title="{intl l='Copy XML link into clipboard'}" data-clipboardtext="{url path="/googleshoppingxml/feed/xml/{$ID}/feed.xml"}">
-                    <span class="glyphicon glyphicon-link"></span>
-                </a>
-                <a href="#" class="js_btn_configure_custom_xml btn btn-info" data-toggle="tooltip" title="{intl l='Configure custom XML'}" data-feedid="{$ID_FEED}">
+                <div class="btn-group">
+                    <a class="js_download_xml_feed btn btn-info" href="{url path="/googleshoppingxml/feed/xml/{$ID}/feed.xml"}" data-feedid="{$ID_FEED}" download>
+                        {intl l="XML"}
+                    </a>
+                    <a href="#" class="js_btn_clipboard btn btn-default" style="margin-right:5px;" data-toggle="tooltip" title="{intl l='Copy XML link into clipboard'}" data-clipboardtext="{url path="/googleshoppingxml/feed/xml/{$ID}/feed.xml"}">
+                        <span class="glyphicon glyphicon-link"></span>
+                    </a>
+                </div>
+
+                <a href="#" class="js_btn_configure_custom_xml btn btn-primary" data-toggle="tooltip" title="{intl l='Configure custom XML'}" data-feedid="{$ID_FEED}">
                     <span class="glyphicon glyphicon-wrench"></span>
                 </a>
                 <form id="js_form_delete_feed_{$ID_FEED}" method="post" action="{url path='/admin/module/googleshoppingxml/feed/delete'}" style="display:inline-block">

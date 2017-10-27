@@ -18,8 +18,20 @@ class GoogleFieldAssociationController extends BaseAdminController
 
     // The following are already defined in the XML output file by the module and cannot be overwritten.
     const FIELDS_NATIVELY_DEFINED = array(
-        'id', 'title', 'description', 'link', 'image_link', 'price', 'identifier_exists',
-        'shipping', 'google_product_category', 'product_type'
+        'id', 'title', 'description', 'link', 'image_link', 'availability', 'price', 'sale_price', 'identifier_exists',
+        'shipping', 'google_product_category', 'product_type', 'gtin', 'identifier_exists', 'item_group_id'
+    );
+
+    const GOOGLE_FIELD_LIST = array(
+        'id', 'title', 'description', 'link', 'image_link', 'mobile_link', 'additionnal_image_link', 'availability',
+        'availability_date', 'expiration_date', 'price', 'sale_price', 'sale_price_effective_date',
+        'unit_pricing_measure', 'unit_pricing_base_measure', 'installment', 'loyalty_points', 'google_product_category',
+        'identifier_exists', 'product_type', 'brand', 'gtin', 'mpn', 'identifier_exists', 'condition', 'adult',
+        'multipack', 'is_bundle', 'energy_efficiency_class', 'age_group', 'color', 'gender', 'material', 'pattern',
+        'size', 'size_type', 'size_system', 'item_group_id', 'adwords_redirect', 'custom_label_0', 'custom_label_1',
+        'custom_label_2', 'custom_label_3', 'custom_label_4', 'promotion_id', 'shipping', 'included_destination',
+        'excluded_destination', 'shipping_label', 'shipping_weight', 'shipping_length', 'shipping_width',
+        'shipping_height', 'min_handling_time', 'max_handling_time', 'tax'
     );
 
     public function addFieldAction()
@@ -137,7 +149,10 @@ class GoogleFieldAssociationController extends BaseAdminController
             throw new \Exception($this->getTranslator()->trans('The Google attribute cannot be empty.', [], GoogleShoppingXml::DOMAIN_NAME));
         }
 
+        $googleAttribute = strtolower($googleAttribute);
+
         // 'g:' is the beginning of the XML tag. If the user added it manually, remove it, it will be added afterwards.
+
         $prefix = 'g:';
         if (substr($googleAttribute, 0, strlen($prefix)) == $prefix) {
             $googleAttribute = substr($googleAttribute, strlen($prefix));

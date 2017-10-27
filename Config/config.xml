@@ -15,9 +15,12 @@
     </forms>
 
     <hooks>
-        <hook id="googleshoppingxml.module.config.hook" scope="request">
+        <hook id="googleshoppingxml.module.config.hook" class="GoogleShoppingXml\Hook\HookManager" scope="request">
             <tag name="hook.event_listener" event="module.configuration" type="back" templates="render:module-configuration.html" />
-            <tag name="hook.event_listener" event="module.config-js" type="back" templates="render:assets/js/module-configuration-js.html" />
+            <tag name="hook.event_listener" event="module.config-js" type="back" templates="render:module-configuration-js.html" />
+            <tag name="hook.event_listener" event="main.head-css" type="back" />
+            <tag name="hook.event_listener" event="home.bottom" type="back" templates="render:home-bottom.html" />
+            <tag name="hook.event_listener" event="home.js" type="back" templates="render:home-js.html" />
         </hook>
     </hooks>
 

@@ -1,0 +1,83 @@
+{default_translation_domain domain='googleshoppingxml.bo.default'}
+
+<script>
+
+    $(function () {
+
+        // ***********************************************
+        //                ERROR LOG TAB
+        // ***********************************************
+
+        var errorLogResult = null;
+
+        $.ajax({
+            url      : '{url path="/admin/module/googleshoppingxml/log/get"}',
+            data     : {
+                limit      : 10
+            },
+            type     : 'get',
+            dataType : 'json',
+            success  : function(data){
+                errorLogResult = data;
+                console.log(errorLogResult);
+                updateLogTable();
+            },
+            error : function(jqXHR, textStatus, errorThrown) {
+                $("#js_tab_xml_log").html('<tr><td colspan="5">{intl l="An error has occurred during the server request." d="googleshoppingxml.bo.default"}</td></tr>');
+            }
+        });
+
+        $('.js_checkbox_level_log').on('change', function(e){
+            updateLogTable();
+        });
+
+        var errorLevelInfo = {
+            1 : {
+                className : '',
+                label : '{intl l="INFO"}'
+            },
+            2 : {
+                className : 'tr_log_success',
+                label : '{intl l="SUCCESS" d="googleshoppingxml.bo.default"}'
+            },
+            3 : {
+                className : 'tr_log_warning',
+                label : '{intl l="WARNING" d="googleshoppingxml.bo.default"}'
+            },
+            4 : {
+                className : 'tr_log_error',
+                label : '{intl l="ERROR" d="googleshoppingxml.bo.default"}'
+            },
+            5 : {
+                className : 'tr_log_fatal',
+                label : '{intl l="FATAL" d="googleshoppingxml.bo.default"}'
+            }
+        };
+
+
+        function updateLogTable(){
+            if(errorLogResult == null){
+                return;
+            }
+
+            var innerHtml = "<tr><th>{intl l='Date' d='googleshoppingxml.bo.default'}</th><th>{intl l='Level' d='googleshoppingxml.bo.default'}</th><th>{intl l='Message' d='googleshoppingxml.bo.default'}</th></tr>";
+
+            if (errorLogResult.length > 0) {
+                errorLogResult.forEach(function(log){
+                    var levelArray = errorLevelInfo[log.level];
+
+                    innerHtml += '<tr class="' + levelArray.className + '">';
+                    innerHtml += '<td>' + log.date + '</td>';
+                    innerHtml += '<td>' + levelArray.label + '</td>';
+                    innerHtml += '<td>' + log.message + '</td>';
+                    innerHtml += '</tr>';
+                });
+            } else {
+                innerHtml += '<tr><td colspan="5">{intl l="Nothing to show." d='googleshoppingxml.bo.default'}</td></tr>';
+            }
+
+            var $table = $('#js_table_xml_log');
+            $table.html(innerHtml);
+        }
+    });
+</script>
