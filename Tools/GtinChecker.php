@@ -4,32 +4,15 @@ namespace GoogleShoppingXml\Tools;
 
 class GtinChecker
 {
-    public function checkGtin($gtin)
+    public function isValidGtin($gtin)
     {
-        $cleanedCode = $this->clean($gtin);
-
-        return $this->isValidGtin($cleanedCode);
-    }
-
-    protected function clean($gtin, $fill = 14)
-    {
-        if (is_numeric($gtin)) {
-            return $this->zfill($gtin, $fill);
-        } elseif (is_string($gtin)) {
-            return $this->zfill(trim(str_replace("-", "", $gtin)), $fill);
-        }
-        return false;
-    }
-
-    protected function isValidGtin($cleanedCode)
-    {
-        if (!is_numeric($cleanedCode)) {
+        if (!is_numeric($gtin)) {
             return false;
-        } elseif (!in_array(strlen($cleanedCode), array(8, 12, 13, 14, 18))) {
+        } elseif (!in_array(strlen($gtin), array(8, 12, 13, 14, 18))) {
             return false;
         }
 
-        return $this->isGtinChecksumValid($cleanedCode);
+        return $this->isGtinChecksumValid($gtin);
     }
 
     protected function isGtinChecksumValid($code)
@@ -53,15 +36,5 @@ class GtinChecker
         }
         $checkDigit = (10 - ($total % 10)) % 10;
         return $checkDigit;
-    }
-
-    protected function zfill($int, $cnt)
-    {
-        $int = intval($int);
-        $nulls = "";
-        for ($i=0; $i<($cnt-strlen($int)); $i++) {
-            $nulls .= '0';
-        }
-        return $nulls.$int;
     }
 }

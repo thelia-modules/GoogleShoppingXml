@@ -19,6 +19,8 @@ use Thelia\Core\HttpFoundation\Response;
 use Thelia\Core\Translation\Translator;
 use Thelia\Model\AreaDeliveryModuleQuery;
 use Thelia\Model\ConfigQuery;
+use Thelia\Model\Currency;
+use Thelia\Model\CurrencyQuery;
 use Thelia\Model\Module;
 use Thelia\Model\ModuleQuery;
 use Thelia\Model\OrderPostage;
@@ -36,9 +38,19 @@ class FeedXmlController extends BaseFrontController
      */
     private $logger;
 
+    private $ean_rule;
+
+    const EAN_RULE_ALL = "all";
+    const EAN_RULE_CHECK_FLEXIBLE = "check_flexible";
+    const EAN_RULE_CHECK_STRICT = "check_strict";
+    const EAN_RULE_NONE = "none";
+
+    const DEFAULT_EAN_RULE = self::EAN_RULE_CHECK_STRICT;
+
     public function getFeedXmlAction($feedId)
     {
         $this->logger = GoogleshoppingxmlLogQuery::create();
+        $this->ean_rule = GoogleShoppingXml::getConfigValue("ean_rule", self::DEFAULT_EAN_RULE);
 
         $feed = GoogleshoppingxmlFeedQuery::create()->findOneById($feedId);
 
@@ -62,19 +74,19 @@ class FeedXmlController extends BaseFrontController
             $this->injectAttributesInTitle($pseArray, $feed);
             $this->injectImages($pseArray);
 
+            $nb_pse = 0;
             $nb_pse_invisible = 0;
-            $content = $this->renderXmlAll($feed, $pseArray, $shippingArray, $nb_pse_invisible);
+            $content = $this->renderXmlAll($feed, $pseArray, $shippingArray, $nb_pse, $nb_pse_invisible);
 
             if ($nb_pse_invisible > 0) {
                 $this->logger->logInfo(
                     $feed,
                     null,
                     Translator::getInstance()->trans('%nb product item(s) have been skipped because they were set as not visible.', ['%nb' => $nb_pse_invisible], GoogleShoppingXml::DOMAIN_NAME),
-                    Translator::getInstance()->trans('You can set your product\'s visibility in the product edit tool by checking the box \'This product is online\'.', [], GoogleShoppingXml::DOMAIN_NAME)
+                    Translator::getInstance()->trans('You can set your product s visibility in the product edit tool by checking the box [This product is online].', [], GoogleShoppingXml::DOMAIN_NAME)
                 );
             }
 
-            $nb_pse = count($pseArray) - $nb_pse_invisible;
             if ($nb_pse <= 0) {
                 $this->logger->logFatal(
                     $feed,
@@ -103,12 +115,12 @@ class FeedXmlController extends BaseFrontController
             return $response;
 
         } catch (\Exception $ex) {
-            $this->logger->logFatal($feed, null, $ex->getMessage(), $ex->getTraceAsString());
+            $this->logger->logFatal($feed, null, $ex->getMessage(), $ex->getFile()." at line ".$ex->getLine());
             throw $ex;
         }
     }
 
-    protected function renderXmlAll($feed, &$pseArray, $shippingArray, &$nb_pse_invisible)
+    protected function renderXmlAll($feed, &$pseArray, $shippingArray, &$nb_pse, &$nb_pse_invisible)
     {
         $checkAvailability = ConfigQuery::checkAvailableStock();
 
@@ -153,11 +165,16 @@ class FeedXmlController extends BaseFrontController
             $shippingStr .= '</g:shipping>'.PHP_EOL;
         }
 
+        $nb_pse = 0;
         $nb_pse_invisible = 0;
 
         foreach ($pseArray as &$pse) {
             if ($pse['PRODUCT_VISIBLE'] == 1) {
-                $str .= $this->renderXmlOnePse($feed, $pse, $shippingStr, $checkAvailability);
+                $xmlPse = $this->renderXmlOnePse($feed, $pse, $shippingStr, $checkAvailability);
+                if(!empty($xmlPse)){
+                    $nb_pse++;
+                }
+                $str .= $xmlPse;
             } else {
                 $nb_pse_invisible++;
             }
@@ -253,11 +270,21 @@ class FeedXmlController extends BaseFrontController
 
         // **************** Price ****************
 
+        if (empty($pse['TAXED_PRICE'])) {
+            $this->logger->logError(
+                $feed,
+                $pse['ID'],
+                Translator::getInstance()->trans('Missing product price for the currency "%code"', ['%code' => $feed->getCurrency()->getCode()], GoogleShoppingXml::DOMAIN_NAME),
+                Translator::getInstance()->trans('Unable to compute a price for this product and this currency. Specify one manually or check [Apply exchange rates] in the Edit Product page for this currency.' , [], GoogleShoppingXml::DOMAIN_NAME)
+            );
+            return '';
+        }
+
         $formattedTaxedPrice = MoneyFormat::getInstance($this->getRequest())->formatByCurrency($pse['TAXED_PRICE'], null, null, null, $feed->getCurrencyId());
 
         $str .= '<g:price>'.$formattedTaxedPrice.'</g:price>'.PHP_EOL;
 
-        if ($pse['TAXED_PROMO_PRICE'] != 0 && $pse['TAXED_PROMO_PRICE'] < $pse['TAXED_PRICE']) {
+        if (!empty($pse['TAXED_PROMO_PRICE']) && $pse['TAXED_PROMO_PRICE'] < $pse['TAXED_PRICE']) {
             $formattedTaxedPromoPrice = MoneyFormat::getInstance($this->getRequest())->formatByCurrency($pse['TAXED_PROMO_PRICE'], null, null, null, $feed->getCurrencyId());
             $str .= '<g:sale_price>'.$formattedTaxedPromoPrice.'</g:sale_price>'.PHP_EOL;
         }
@@ -271,7 +298,7 @@ class FeedXmlController extends BaseFrontController
                     $feed,
                     $pse['ID'],
                     Translator::getInstance()->trans('Missing product brand for the language "%lang"', ['%lang' => $feed->getLang()->getTitle()], GoogleShoppingXml::DOMAIN_NAME),
-                    Translator::getInstance()->trans('The product has no brand or the brand doesn\'t have a title in this language. If none of your product has a brand, please add a \'brand\' field with a fixed value in the \'Advanded Configuration\' tab as this field is required by Google.' , [], GoogleShoppingXml::DOMAIN_NAME)
+                    Translator::getInstance()->trans('The product has no brand or the brand doesn t have a title in this language. If none of your product has a brand, please add a [brand] field with a fixed value in the [Advanded Configuration] tab as this field is required by Google.' , [], GoogleShoppingXml::DOMAIN_NAME)
                 );
                 return '';
             }
@@ -282,16 +309,31 @@ class FeedXmlController extends BaseFrontController
 
         // **************** EAN / GTIN code ****************
 
-        if (!empty($pse['EAN_CODE'])) {
-            if ((new GtinChecker())->checkGtin($pse['EAN_CODE'])) {
-                $this->logger->logWarning(
-                    $feed,
-                    $pse['ID'],
-                    Translator::getInstance()->trans('Invalid GTIN/EAN code', [], GoogleShoppingXml::DOMAIN_NAME),
-                    Translator::getInstance()->trans('The product\'s identification code seems invalid. Make sure it doesn\'t cause issues during the XML upload in Google Merchant Center.', [], GoogleShoppingXml::DOMAIN_NAME)
-                );
-                return '';
+        $include_ean = false;
+
+        if (empty($pse['EAN_CODE']) || $this->ean_rule == self::EAN_RULE_NONE) {
+            $include_ean = false;
+        } elseif ($this->ean_rule == self::EAN_RULE_ALL) {
+            $include_ean = true;
+        } else {
+            if ((new GtinChecker())->isValidGtin($pse['EAN_CODE'])) {
+                $include_ean = true;
+            } else {
+                if ($this->ean_rule == self::EAN_RULE_CHECK_FLEXIBLE) {
+                    $include_ean = false;
+                } elseif ($this->ean_rule == self::EAN_RULE_CHECK_STRICT) {
+                    $this->logger->logError(
+                        $feed,
+                        $pse['ID'],
+                        Translator::getInstance()->trans('Invalid GTIN/EAN code : "%code"', ["%code" => $pse['EAN_CODE']], GoogleShoppingXml::DOMAIN_NAME),
+                        Translator::getInstance()->trans('The product s identification code seems invalid. You can set a valid EAN code in the Edit product page or disable the verification in the [Advanced configuration] tab.', [], GoogleShoppingXml::DOMAIN_NAME)
+                    );
+                    return '';
+                }
             }
+        }
+
+        if ($include_ean) {
             $str .= '<g:gtin>'.$pse['EAN_CODE'].'</g:gtin>'.PHP_EOL;
             $str .= '<g:identifier_exists>yes</g:identifier_exists>'.PHP_EOL;
         } else {
@@ -312,7 +354,7 @@ class FeedXmlController extends BaseFrontController
                 $feed,
                 $pse['ID'],
                 Translator::getInstance()->trans('No Google category related to the Thelia category "%cat".', ['%cat' => $pse['CATEGORY_PATH']], GoogleShoppingXml::DOMAIN_NAME),
-                Translator::getInstance()->trans('This product\'s category is not related to any Google category. It is required by Google for most products. Please add one in the \'Google Taxonomy\' tab.', [], GoogleShoppingXml::DOMAIN_NAME)
+                Translator::getInstance()->trans('This product s category is not related to any Google category. It is required by Google for most products. Please add one in the [Google Taxonomy] tab.', [], GoogleShoppingXml::DOMAIN_NAME)
             );
         }
 
@@ -364,23 +406,24 @@ class FeedXmlController extends BaseFrontController
                 pse.EAN_CODE AS EAN_CODE,
                 product_category.CATEGORY_ID AS CATEGORY_ID,
                 product.TAX_RULE_ID AS TAX_RULE_ID,
-                ROUND(CASE WHEN ISNULL(product_price.PRICE) OR product_price.FROM_DEFAULT_CURRENCY = 1 THEN product_price.PRICE * :currate ELSE product_price.PRICE END, 6) AS PRICE,
-                ROUND(CASE WHEN ISNULL(product_price.PRICE) OR product_price.FROM_DEFAULT_CURRENCY = 1 THEN product_price.PROMO_PRICE  * :currate ELSE product_price.PROMO_PRICE END, 6) AS PROMO_PRICE,
-                rewriting_url.url AS REWRITTEN_URL,
-                product_image.file AS IMAGE_NAME
+                COALESCE(price_on_currency.PRICE, CASE WHEN NOT ISNULL(price_default.PRICE) THEN ROUND(price_default.PRICE * :currate, 2) END) AS PRICE,
+                COALESCE(price_on_currency.PROMO_PRICE, CASE WHEN NOT ISNULL(price_default.PROMO_PRICE) THEN ROUND(price_default.PROMO_PRICE * :currate, 2) END) AS PROMO_PRICE,
+                rewriting_url.URL AS REWRITTEN_URL,
+                COALESCE(product_image_on_pse.FILE, product_image_default.FILE) AS IMAGE_NAME
                 
                 FROM product_sale_elements AS pse
                 
                 INNER JOIN product ON (pse.PRODUCT_ID = product.ID)
-                INNER JOIN product_price ON (pse.ID = product_price.PRODUCT_SALE_ELEMENTS_ID)
+                LEFT OUTER JOIN product_price price_on_currency ON (pse.ID = price_on_currency.PRODUCT_SALE_ELEMENTS_ID AND price_on_currency.CURRENCY_ID = :currid)
+                LEFT OUTER JOIN product_price price_default ON (pse.ID = price_default.PRODUCT_SALE_ELEMENTS_ID AND price_default.FROM_DEFAULT_CURRENCY = 1)
                 LEFT OUTER JOIN product_category ON (pse.PRODUCT_ID = product_category.PRODUCT_ID AND product_category.DEFAULT_CATEGORY = 1)
                 LEFT OUTER JOIN product_i18n ON (pse.PRODUCT_ID = product_i18n.ID AND product_i18n.LOCALE = :locale)
                 LEFT OUTER JOIN brand_i18n ON (product.BRAND_ID = brand_i18n.ID AND brand_i18n.LOCALE = :locale)
                 LEFT OUTER JOIN rewriting_url ON (pse.PRODUCT_ID = rewriting_url.VIEW_ID AND rewriting_url.view = \'product\' AND rewriting_url.view_locale = :locale AND rewriting_url.redirected IS NULL)
-                LEFT OUTER JOIN product_image ON (pse.PRODUCT_ID = product_image.PRODUCT_ID AND product_image.POSITION = 1)
-                
-                WHERE product_price.CURRENCY_ID = :currid
-                
+                LEFT OUTER JOIN product_sale_elements_product_image pse_image ON (pse.ID = pse_image.PRODUCT_SALE_ELEMENTS_ID)
+                LEFT OUTER JOIN product_image product_image_default ON (pse.PRODUCT_ID = product_image_default.PRODUCT_ID AND product_image_default.POSITION = 1)
+                LEFT OUTER JOIN product_image product_image_on_pse ON (product_image_on_pse.ID = pse_image.PRODUCT_IMAGE_ID)
+
                 GROUP BY pse.ID';
 
         $limit = $this->checkPositiveInteger($limit);
@@ -478,6 +521,8 @@ class FeedXmlController extends BaseFrontController
 
             if ($categoryRow['PATH'] != null) {
                 $pse['CATEGORY_PATH'] = $categoryRow['PATH'];
+            } else {
+                $pse['CATEGORY_PATH'] = null;
             }
 
             while (!array_key_exists($categoryId, $googleCategories)) {
@@ -562,8 +607,8 @@ class FeedXmlController extends BaseFrontController
                 $calculator = $taxCalculatorsArray[$taxRuleId];
             }
 
-            $pse['TAXED_PRICE'] = $calculator->getTaxedPrice($pse['PRICE']);
-            $pse['TAXED_PROMO_PRICE'] = $calculator->getTaxedPrice($pse['PROMO_PRICE']);
+            $pse['TAXED_PRICE'] = !empty($pse['PRICE']) ? $calculator->getTaxedPrice($pse['PRICE']) : null;
+            $pse['TAXED_PROMO_PRICE'] = !empty($pse['TAXED_PROMO_PRICE']) ? $calculator->getTaxedPrice($pse['TAXED_PROMO_PRICE']) : null;
         }
     }
 
@@ -775,7 +820,7 @@ class FeedXmlController extends BaseFrontController
                 $feed,
                 null,
                 Translator::getInstance()->trans('No shipping informations.', [], GoogleShoppingXml::DOMAIN_NAME),
-                Translator::getInstance()->trans('The feed doesn\'t have any shippings informations. Check that at least one delivery module covers the country aimed by your feed.', [], GoogleShoppingXml::DOMAIN_NAME)
+                Translator::getInstance()->trans('The feed doesn t have any shippings informations. Check that at least one delivery module covers the country aimed by your feed.', [], GoogleShoppingXml::DOMAIN_NAME)
             );
         }
 

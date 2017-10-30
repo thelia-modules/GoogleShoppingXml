@@ -139,17 +139,17 @@
                     <a class="js_download_xml_feed btn btn-info" href="{url path="/googleshoppingxml/feed/xml/{$ID}/feed.xml"}" data-feedid="{$ID_FEED}" download>
                         {intl l="XML"}
                     </a>
-                    <a href="#" class="js_btn_clipboard btn btn-default" style="margin-right:5px;" data-toggle="tooltip" title="{intl l='Copy XML link into clipboard'}" data-clipboardtext="{url path="/googleshoppingxml/feed/xml/{$ID}/feed.xml"}">
+                    <a href="#" class="js_btn_clipboard btn-control-feed btn btn-default" data-toggle="tooltip" title="{intl l='Copy XML link into clipboard'}" data-clipboardtext="{url path="/googleshoppingxml/feed/xml/{$ID}/feed.xml"}">
                         <span class="glyphicon glyphicon-link"></span>
                     </a>
                 </div>
 
-                <a href="#" class="js_btn_configure_custom_xml btn btn-primary" data-toggle="tooltip" title="{intl l='Configure custom XML'}" data-feedid="{$ID_FEED}">
+                <a href="#" class="js_btn_configure_custom_xml btn btn-primary btn-control-feed" data-toggle="tooltip" title="{intl l='Configure custom XML'}" data-feedid="{$ID_FEED}">
                     <span class="glyphicon glyphicon-wrench"></span>
                 </a>
-                <form id="js_form_delete_feed_{$ID_FEED}" method="post" action="{url path='/admin/module/googleshoppingxml/feed/delete'}" style="display:inline-block">
+                <form id="js_form_delete_feed_{$ID_FEED}" class="custom-form-inline" method="post" action="{url path='/admin/module/googleshoppingxml/feed/delete'}">
                     <input type="hidden" name="id_feed_to_delete" value="{$ID_FEED}"/>
-                    <a class="btn btn-danger js_btn_delete_with_warning" style="margin-left:5px" data-formid="js_form_delete_feed_{$ID_FEED}">
+                    <a class="btn btn-danger js_btn_delete_with_warning" data-formid="js_form_delete_feed_{$ID_FEED}">
                         <span class="glyphicon glyphicon-trash"></span>
                     </a>
                 </form>

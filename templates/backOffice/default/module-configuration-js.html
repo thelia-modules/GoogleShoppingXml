@@ -216,7 +216,7 @@
                     $loader.hide();
                 },
                 error : function(jqXHR, textStatus, errorThrown) {
-                    $("#js_tab_xml_log").html('<tr><td colspan="5">{intl l="An error has occurred during the server request."}</td></tr>');
+                    $("#js_tab_xml_log").html("<tr><td colspan=\"5\">{intl l='An error has occurred during the server request.'}</td></tr>");
                     $loader.hide();
                 }
             });
@@ -331,7 +331,7 @@
                     }
                 });
             } else {
-                innerHtml += '<tr><td colspan="5">{intl l="Nothing to show."}</td></tr>';
+                innerHtml += "<tr><td colspan=\"5\">{intl l='Nothing to show.'}</td></tr>";
             }
 
             var $table = $('#js_table_xml_log');

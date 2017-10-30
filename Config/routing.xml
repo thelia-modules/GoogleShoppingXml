@@ -61,6 +61,10 @@
         <default key="_controller">GoogleShoppingXml\Controller\GoogleFieldAssociationController::deleteFieldAction</default>
     </route>
 
+    <route id="googleshoppingxml.advanced.seteanrule" path="/admin/module/googleshoppingxml/advanced/setEanRule" methods="POST">
+        <default key="_controller">GoogleShoppingXml\Controller\GoogleFieldAssociationController::setEanRuleAction</default>
+    </route>
+
 
     <!-- XML ERROR LOG -->
 

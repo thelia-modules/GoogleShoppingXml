@@ -23,7 +23,7 @@
                 updateLogTable();
             },
             error : function(jqXHR, textStatus, errorThrown) {
-                $("#js_tab_xml_log").html('<tr><td colspan="5">{intl l="An error has occurred during the server request." d="googleshoppingxml.bo.default"}</td></tr>');
+                $("#js_tab_xml_log").html("<tr><td colspan=\"5\">{intl l='An error has occurred during the server request.' d='googleshoppingxml.bo.default'}</td></tr>");
             }
         });
 
@@ -73,7 +73,7 @@
                     innerHtml += '</tr>';
                 });
             } else {
-                innerHtml += '<tr><td colspan="5">{intl l="Nothing to show." d='googleshoppingxml.bo.default'}</td></tr>';
+                innerHtml += "<tr><td colspan=\"5\">{intl l='Nothing to show.' d='googleshoppingxml.bo.default'}</td></tr>";
             }
 
             var $table = $('#js_table_xml_log');

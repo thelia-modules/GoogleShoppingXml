@@ -58,3 +58,11 @@ tr.tr_log_warning > td{
 .gsxml_btn_more_log{
     width : 30%;
 }
+
+.btn-control-feed{
+    margin-right: 5px;
+}
+
+.custom-form-inline{
+    display: inline-block;
+}

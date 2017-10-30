@@ -160,7 +160,7 @@ class GoogleFieldAssociationController extends BaseAdminController
 
         if (in_array($googleAttribute, self::FIELDS_NATIVELY_DEFINED)) {
             throw new \Exception($this->getTranslator()->trans(
-                'The Google attribute "%name" cannot be redefined here as it is already defined natively by the module.',
+                'The Google attribute "%name" cannot be redefined here as it is already defined by the module.',
                 array('%name' => $googleAttribute),
                 GoogleShoppingXml::DOMAIN_NAME
             ));
@@ -201,5 +201,36 @@ class GoogleFieldAssociationController extends BaseAdminController
 
         $fieldAssociation->setAssociationType($associationType);
         return $fieldAssociation;
+    }
+
+    public function setEanRuleAction()
+    {
+        if (null !== $response = $this->checkAuth(array(AdminResources::MODULE), array('GoogleShoppingXml'), AccessManager::UPDATE)) {
+            return $response;
+        }
+
+        $ruleArray = [
+            FeedXmlController::EAN_RULE_ALL,
+            FeedXmlController::EAN_RULE_CHECK_FLEXIBLE,
+            FeedXmlController::EAN_RULE_CHECK_STRICT,
+            FeedXmlController::EAN_RULE_NONE
+        ];
+
+        $httpRequest = $this->getRequest();
+        $gtinRule = $httpRequest->request->get('gtin_rule');
+        if ($gtinRule != null && in_array($gtinRule, $ruleArray)) {
+            GoogleShoppingXml::setConfigValue("ean_rule", $gtinRule);
+        }
+
+        $redirectParameters = array(
+            'module_code' => 'GoogleShoppingXml',
+            'current_tab' => 'advanced'
+        );
+
+        if (!empty($message)) {
+            $redirectParameters['error_message_advanced_tab'] = $message;
+        }
+
+        return $this->generateRedirectFromRoute("admin.module.configure", array(), $redirectParameters);
     }
 }
