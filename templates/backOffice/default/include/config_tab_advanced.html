@@ -146,3 +146,38 @@
 
     </div>
 </div>
+
+<div class="row">
+    <div class="col-md-4">
+        <div class="panel panel-default">
+            <div class="panel-heading clearfix">
+                <div class="panel-title">
+                    {intl l='Field "gtin" configuration'}
+                    <a href="https://support.google.com/merchants/answer/6324461?hl=fr&ref_topic=6324338"><span class="glyphicon glyphicon-question-sign"></span></a>
+                </div>
+            </div>
+            <div class="panel-body">
+                <small>{intl l='Which product\'s EAN code should be included in the XML field "gtin" ?'}</small>
+                <form action="{url path='/admin/module/googleshoppingxml/advanced/setEanRule'}" method="post">
+                    <div class="form-group">
+                        <div class="radio">
+                            <label><input type="radio" name="gtin_rule" value="all" {if $ean_rule == "all"}checked="checked"{/if} >{intl l="Include all EAN codes without verification, ignore empty"}</label>
+                        </div>
+                        <div class="radio">
+                            <label><input type="radio" name="gtin_rule" value="check_flexible" {if $ean_rule == "check_flexible"}checked="checked"{/if}>{intl l="Include only valid EAN codes, ignore invalid or empty"}</label>
+                        </div>
+                        <div class="radio">
+                            <label><input type="radio" name="gtin_rule" value="check_strict" {if $ean_rule == "check_strict"}checked="checked"{/if}>{intl l="Include only valid EAN codes, launch error when invalid, ignore empty"}</label>
+                        </div>
+                        <div class="radio">
+                            <label><input type="radio" name="gtin_rule" value="none" {if $ean_rule == "none"}checked="checked"{/if}>{intl l="Do not include any EAN code"}</label>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <button class="btn btn-success form-control" type="submit"><span class="glyphicon glyphicon-ok"></span> {intl l="Save"}</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
