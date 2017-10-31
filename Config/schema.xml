@@ -55,5 +55,22 @@
         </unique>
     </table>
 
+    <table name="googleshoppingxml_log"  namespace="GoogleShoppingXml\Model">
+        <column autoIncrement="true" name="id" primaryKey="true" required="true" type="INTEGER"/>
+        <column name="feed_id" type="INTEGER" required="true" />
+        <column name="separation" type="BOOLEAN" required="true" />
+        <column name="level" type="INTEGER" required="true" />
+        <column name="pse_id" type="INTEGER" />
+        <column name="message" type="LONGVARCHAR" required="true" />
+        <column name="help" type="LONGVARCHAR" />
+        <foreign-key foreignTable="googleshoppingxml_feed" name="fk_googleshoppingxml_log_feed_id" onDelete="CASCADE" onUpdate="RESTRICT">
+            <reference foreign="id" local="feed_id" />
+        </foreign-key>
+        <foreign-key foreignTable="product_sale_elements" name="fk_googleshoppingxml_log_pse_id" onDelete="CASCADE" onUpdate="RESTRICT">
+            <reference foreign="id" local="pse_id" />
+        </foreign-key>
+        <behavior name="timestampable" />
+    </table>
+
     <external-schema filename="local/config/schema.xml" referenceOnly="true"/>
 </database>
