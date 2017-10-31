@@ -1,0 +1,40 @@
+<div class="panel panel-default">
+    <div class="panel-heading clearfix">
+        <a href="#" class="js_btn_gsxml_log_refresh btn btn-info" ><span class="glyphicon glyphicon-refresh"></span> {intl l="Refresh log"}</a>
+
+        <span class="gsxml_checkbox_container">
+        <label class="checkbox-inline"><input type="checkbox" class="js_checkbox_level_log" data-level="1" checked>{intl l="INFO"}</label>
+        <label class="checkbox-inline gsxml_checkbox_success"><input type="checkbox" class="js_checkbox_level_log" data-level="2" checked>{intl l="SUCCESS"}</label>
+        <label class="checkbox-inline gsxml_checkbox_warning"><input type="checkbox" class="js_checkbox_level_log" data-level="3" checked>{intl l="WARNING"}</label>
+        <label class="checkbox-inline gsxml_checkbox_error"><input type="checkbox" class="js_checkbox_level_log" data-level="4" checked>{intl l="ERROR"}</label>
+        <label class="checkbox-inline gsxml_checkbox_fatal"><input type="checkbox" class="js_checkbox_level_log" data-level="5" checked>{intl l="FATAL"}</label>
+        </span>
+
+        <div class="pull-right">
+            <select class="form-control" id="js_select_log_limit">
+                <option value="20">20</option>
+                <option value="50" selected>50</option>
+                <option value="100">100</option>
+                <option value="200">200</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="panel-body gsxml_panel_table_log_container">
+        <div class="text-center">
+            <a href="#" class="btn btn-default js_log_first_page"><span class="glyphicon glyphicon-fast-backward"></span></a>
+            <a href="#" class="btn btn-default js_log_previous_page"><span class="glyphicon glyphicon-chevron-left"></span></a>
+            <a href="#" class="btn btn-default js_log_next_page"><span class="glyphicon glyphicon-chevron-right"></span></a>
+        </div>
+        <table id="js_table_xml_log" class="table">
+            <tr>
+                <td colspan="5">{intl l="Please click on the refresh button."}</td>
+            </tr>
+        </table>
+        <div class="text-center">
+            <a href="#" class="btn btn-default js_log_first_page"><span class="glyphicon glyphicon-fast-backward"></span></a>
+            <a href="#" class="btn btn-default js_log_previous_page"><span class="glyphicon glyphicon-chevron-left"></span></a>
+            <a href="#" class="btn btn-default js_log_next_page"><span class="glyphicon glyphicon-chevron-right"></span></a>
+        </div>
+    </div>
+</div>

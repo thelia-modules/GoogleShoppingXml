@@ -2,8 +2,8 @@
 
 namespace GoogleShoppingXml\Model\Map;
 
-use GoogleShoppingXml\Model\GoogleshoppingxmlFeed;
-use GoogleShoppingXml\Model\GoogleshoppingxmlFeedQuery;
+use GoogleShoppingXml\Model\GoogleshoppingxmlLog;
+use GoogleShoppingXml\Model\GoogleshoppingxmlLogQuery;
 use Propel\Runtime\Propel;
 use Propel\Runtime\ActiveQuery\Criteria;
 use Propel\Runtime\ActiveQuery\InstancePoolTrait;
@@ -16,7 +16,7 @@ use Propel\Runtime\Map\TableMapTrait;
 
 
 /**
- * This class defines the structure of the 'googleshoppingxml_feed' table.
+ * This class defines the structure of the 'googleshoppingxml_log' table.
  *
  *
  *
@@ -26,14 +26,14 @@ use Propel\Runtime\Map\TableMapTrait;
  * (i.e. if it's a text column type).
  *
  */
-class GoogleshoppingxmlFeedTableMap extends TableMap
+class GoogleshoppingxmlLogTableMap extends TableMap
 {
     use InstancePoolTrait;
     use TableMapTrait;
     /**
      * The (dot-path) name of this class
      */
-    const CLASS_NAME = 'GoogleShoppingXml.Model.Map.GoogleshoppingxmlFeedTableMap';
+    const CLASS_NAME = 'GoogleShoppingXml.Model.Map.GoogleshoppingxmlLogTableMap';
 
     /**
      * The default database name for this class
@@ -43,22 +43,22 @@ class GoogleshoppingxmlFeedTableMap extends TableMap
     /**
      * The table name for this class
      */
-    const TABLE_NAME = 'googleshoppingxml_feed';
+    const TABLE_NAME = 'googleshoppingxml_log';
 
     /**
      * The related Propel class for this table
      */
-    const OM_CLASS = '\\GoogleShoppingXml\\Model\\GoogleshoppingxmlFeed';
+    const OM_CLASS = '\\GoogleShoppingXml\\Model\\GoogleshoppingxmlLog';
 
     /**
      * A class that can be returned by this tableMap
      */
-    const CLASS_DEFAULT = 'GoogleShoppingXml.Model.GoogleshoppingxmlFeed';
+    const CLASS_DEFAULT = 'GoogleShoppingXml.Model.GoogleshoppingxmlLog';
 
     /**
      * The total number of columns
      */
-    const NUM_COLUMNS = 5;
+    const NUM_COLUMNS = 9;
 
     /**
      * The number of lazy-loaded columns
@@ -68,32 +68,52 @@ class GoogleshoppingxmlFeedTableMap extends TableMap
     /**
      * The number of columns to hydrate (NUM_COLUMNS - NUM_LAZY_LOAD_COLUMNS)
      */
-    const NUM_HYDRATE_COLUMNS = 5;
+    const NUM_HYDRATE_COLUMNS = 9;
 
     /**
      * the column name for the ID field
      */
-    const ID = 'googleshoppingxml_feed.ID';
+    const ID = 'googleshoppingxml_log.ID';
 
     /**
-     * the column name for the LABEL field
+     * the column name for the FEED_ID field
      */
-    const LABEL = 'googleshoppingxml_feed.LABEL';
+    const FEED_ID = 'googleshoppingxml_log.FEED_ID';
 
     /**
-     * the column name for the LANG_ID field
+     * the column name for the SEPARATION field
      */
-    const LANG_ID = 'googleshoppingxml_feed.LANG_ID';
+    const SEPARATION = 'googleshoppingxml_log.SEPARATION';
 
     /**
-     * the column name for the CURRENCY_ID field
+     * the column name for the LEVEL field
      */
-    const CURRENCY_ID = 'googleshoppingxml_feed.CURRENCY_ID';
+    const LEVEL = 'googleshoppingxml_log.LEVEL';
 
     /**
-     * the column name for the COUNTRY_ID field
+     * the column name for the PSE_ID field
      */
-    const COUNTRY_ID = 'googleshoppingxml_feed.COUNTRY_ID';
+    const PSE_ID = 'googleshoppingxml_log.PSE_ID';
+
+    /**
+     * the column name for the MESSAGE field
+     */
+    const MESSAGE = 'googleshoppingxml_log.MESSAGE';
+
+    /**
+     * the column name for the HELP field
+     */
+    const HELP = 'googleshoppingxml_log.HELP';
+
+    /**
+     * the column name for the CREATED_AT field
+     */
+    const CREATED_AT = 'googleshoppingxml_log.CREATED_AT';
+
+    /**
+     * the column name for the UPDATED_AT field
+     */
+    const UPDATED_AT = 'googleshoppingxml_log.UPDATED_AT';
 
     /**
      * The default string format for model objects of the related table
@@ -107,12 +127,12 @@ class GoogleshoppingxmlFeedTableMap extends TableMap
      * e.g. self::$fieldNames[self::TYPE_PHPNAME][0] = 'Id'
      */
     protected static $fieldNames = array (
-        self::TYPE_PHPNAME       => array('Id', 'Label', 'LangId', 'CurrencyId', 'CountryId', ),
-        self::TYPE_STUDLYPHPNAME => array('id', 'label', 'langId', 'currencyId', 'countryId', ),
-        self::TYPE_COLNAME       => array(GoogleshoppingxmlFeedTableMap::ID, GoogleshoppingxmlFeedTableMap::LABEL, GoogleshoppingxmlFeedTableMap::LANG_ID, GoogleshoppingxmlFeedTableMap::CURRENCY_ID, GoogleshoppingxmlFeedTableMap::COUNTRY_ID, ),
-        self::TYPE_RAW_COLNAME   => array('ID', 'LABEL', 'LANG_ID', 'CURRENCY_ID', 'COUNTRY_ID', ),
-        self::TYPE_FIELDNAME     => array('id', 'label', 'lang_id', 'currency_id', 'country_id', ),
-        self::TYPE_NUM           => array(0, 1, 2, 3, 4, )
+        self::TYPE_PHPNAME       => array('Id', 'FeedId', 'Separation', 'Level', 'PseId', 'Message', 'Help', 'CreatedAt', 'UpdatedAt', ),
+        self::TYPE_STUDLYPHPNAME => array('id', 'feedId', 'separation', 'level', 'pseId', 'message', 'help', 'createdAt', 'updatedAt', ),
+        self::TYPE_COLNAME       => array(GoogleshoppingxmlLogTableMap::ID, GoogleshoppingxmlLogTableMap::FEED_ID, GoogleshoppingxmlLogTableMap::SEPARATION, GoogleshoppingxmlLogTableMap::LEVEL, GoogleshoppingxmlLogTableMap::PSE_ID, GoogleshoppingxmlLogTableMap::MESSAGE, GoogleshoppingxmlLogTableMap::HELP, GoogleshoppingxmlLogTableMap::CREATED_AT, GoogleshoppingxmlLogTableMap::UPDATED_AT, ),
+        self::TYPE_RAW_COLNAME   => array('ID', 'FEED_ID', 'SEPARATION', 'LEVEL', 'PSE_ID', 'MESSAGE', 'HELP', 'CREATED_AT', 'UPDATED_AT', ),
+        self::TYPE_FIELDNAME     => array('id', 'feed_id', 'separation', 'level', 'pse_id', 'message', 'help', 'created_at', 'updated_at', ),
+        self::TYPE_NUM           => array(0, 1, 2, 3, 4, 5, 6, 7, 8, )
     );
 
     /**
@@ -122,12 +142,12 @@ class GoogleshoppingxmlFeedTableMap extends TableMap
      * e.g. self::$fieldKeys[self::TYPE_PHPNAME]['Id'] = 0
      */
     protected static $fieldKeys = array (
-        self::TYPE_PHPNAME       => array('Id' => 0, 'Label' => 1, 'LangId' => 2, 'CurrencyId' => 3, 'CountryId' => 4, ),
-        self::TYPE_STUDLYPHPNAME => array('id' => 0, 'label' => 1, 'langId' => 2, 'currencyId' => 3, 'countryId' => 4, ),
-        self::TYPE_COLNAME       => array(GoogleshoppingxmlFeedTableMap::ID => 0, GoogleshoppingxmlFeedTableMap::LABEL => 1, GoogleshoppingxmlFeedTableMap::LANG_ID => 2, GoogleshoppingxmlFeedTableMap::CURRENCY_ID => 3, GoogleshoppingxmlFeedTableMap::COUNTRY_ID => 4, ),
-        self::TYPE_RAW_COLNAME   => array('ID' => 0, 'LABEL' => 1, 'LANG_ID' => 2, 'CURRENCY_ID' => 3, 'COUNTRY_ID' => 4, ),
-        self::TYPE_FIELDNAME     => array('id' => 0, 'label' => 1, 'lang_id' => 2, 'currency_id' => 3, 'country_id' => 4, ),
-        self::TYPE_NUM           => array(0, 1, 2, 3, 4, )
+        self::TYPE_PHPNAME       => array('Id' => 0, 'FeedId' => 1, 'Separation' => 2, 'Level' => 3, 'PseId' => 4, 'Message' => 5, 'Help' => 6, 'CreatedAt' => 7, 'UpdatedAt' => 8, ),
+        self::TYPE_STUDLYPHPNAME => array('id' => 0, 'feedId' => 1, 'separation' => 2, 'level' => 3, 'pseId' => 4, 'message' => 5, 'help' => 6, 'createdAt' => 7, 'updatedAt' => 8, ),
+        self::TYPE_COLNAME       => array(GoogleshoppingxmlLogTableMap::ID => 0, GoogleshoppingxmlLogTableMap::FEED_ID => 1, GoogleshoppingxmlLogTableMap::SEPARATION => 2, GoogleshoppingxmlLogTableMap::LEVEL => 3, GoogleshoppingxmlLogTableMap::PSE_ID => 4, GoogleshoppingxmlLogTableMap::MESSAGE => 5, GoogleshoppingxmlLogTableMap::HELP => 6, GoogleshoppingxmlLogTableMap::CREATED_AT => 7, GoogleshoppingxmlLogTableMap::UPDATED_AT => 8, ),
+        self::TYPE_RAW_COLNAME   => array('ID' => 0, 'FEED_ID' => 1, 'SEPARATION' => 2, 'LEVEL' => 3, 'PSE_ID' => 4, 'MESSAGE' => 5, 'HELP' => 6, 'CREATED_AT' => 7, 'UPDATED_AT' => 8, ),
+        self::TYPE_FIELDNAME     => array('id' => 0, 'feed_id' => 1, 'separation' => 2, 'level' => 3, 'pse_id' => 4, 'message' => 5, 'help' => 6, 'created_at' => 7, 'updated_at' => 8, ),
+        self::TYPE_NUM           => array(0, 1, 2, 3, 4, 5, 6, 7, 8, )
     );
 
     /**
@@ -140,17 +160,21 @@ class GoogleshoppingxmlFeedTableMap extends TableMap
     public function initialize()
     {
         // attributes
-        $this->setName('googleshoppingxml_feed');
-        $this->setPhpName('GoogleshoppingxmlFeed');
-        $this->setClassName('\\GoogleShoppingXml\\Model\\GoogleshoppingxmlFeed');
+        $this->setName('googleshoppingxml_log');
+        $this->setPhpName('GoogleshoppingxmlLog');
+        $this->setClassName('\\GoogleShoppingXml\\Model\\GoogleshoppingxmlLog');
         $this->setPackage('GoogleShoppingXml.Model');
         $this->setUseIdGenerator(true);
         // columns
         $this->addPrimaryKey('ID', 'Id', 'INTEGER', true, null, null);
-        $this->addColumn('LABEL', 'Label', 'VARCHAR', false, 255, null);
-        $this->addForeignKey('LANG_ID', 'LangId', 'INTEGER', 'lang', 'ID', true, null, null);
-        $this->addForeignKey('CURRENCY_ID', 'CurrencyId', 'INTEGER', 'currency', 'ID', true, null, null);
-        $this->addForeignKey('COUNTRY_ID', 'CountryId', 'INTEGER', 'country', 'ID', true, null, null);
+        $this->addForeignKey('FEED_ID', 'FeedId', 'INTEGER', 'googleshoppingxml_feed', 'ID', true, null, null);
+        $this->addColumn('SEPARATION', 'Separation', 'BOOLEAN', true, 1, null);
+        $this->addColumn('LEVEL', 'Level', 'INTEGER', true, null, null);
+        $this->addForeignKey('PSE_ID', 'PseId', 'INTEGER', 'product_sale_elements', 'ID', false, null, null);
+        $this->addColumn('MESSAGE', 'Message', 'LONGVARCHAR', true, null, null);
+        $this->addColumn('HELP', 'Help', 'LONGVARCHAR', false, null, null);
+        $this->addColumn('CREATED_AT', 'CreatedAt', 'TIMESTAMP', false, null, null);
+        $this->addColumn('UPDATED_AT', 'UpdatedAt', 'TIMESTAMP', false, null, null);
     } // initialize()
 
     /**
@@ -158,20 +182,22 @@ class GoogleshoppingxmlFeedTableMap extends TableMap
      */
     public function buildRelations()
     {
-        $this->addRelation('Lang', '\\Thelia\\Model\\Lang', RelationMap::MANY_TO_ONE, array('lang_id' => 'id', ), 'CASCADE', 'RESTRICT');
-        $this->addRelation('Currency', '\\Thelia\\Model\\Currency', RelationMap::MANY_TO_ONE, array('currency_id' => 'id', ), 'CASCADE', 'RESTRICT');
-        $this->addRelation('Country', '\\Thelia\\Model\\Country', RelationMap::MANY_TO_ONE, array('country_id' => 'id', ), 'CASCADE', 'RESTRICT');
-        $this->addRelation('GoogleshoppingxmlLog', '\\GoogleShoppingXml\\Model\\GoogleshoppingxmlLog', RelationMap::ONE_TO_MANY, array('id' => 'feed_id', ), 'CASCADE', 'RESTRICT', 'GoogleshoppingxmlLogs');
+        $this->addRelation('GoogleshoppingxmlFeed', '\\GoogleShoppingXml\\Model\\GoogleshoppingxmlFeed', RelationMap::MANY_TO_ONE, array('feed_id' => 'id', ), 'CASCADE', 'RESTRICT');
+        $this->addRelation('ProductSaleElements', '\\Thelia\\Model\\ProductSaleElements', RelationMap::MANY_TO_ONE, array('pse_id' => 'id', ), 'CASCADE', 'RESTRICT');
     } // buildRelations()
+
     /**
-     * Method to invalidate the instance pool of all tables related to googleshoppingxml_feed     * by a foreign key with ON DELETE CASCADE
+     *
+     * Gets the list of behaviors registered for this table
+     *
+     * @return array Associative array (name => parameters) of behaviors
      */
-    public static function clearRelatedInstancePool()
+    public function getBehaviors()
     {
-        // Invalidate objects in ".$this->getClassNameFromBuilder($joinedTableTableMapBuilder)." instance pool,
-        // since one or more of them may be deleted by ON DELETE CASCADE/SETNULL rule.
-                GoogleshoppingxmlLogTableMap::clearInstancePool();
-            }
+        return array(
+            'timestampable' => array('create_column' => 'created_at', 'update_column' => 'updated_at', ),
+        );
+    } // getBehaviors()
 
     /**
      * Retrieves a string version of the primary key from the DB resultset row that can be used to uniquely identify a row in this table.
@@ -229,7 +255,7 @@ class GoogleshoppingxmlFeedTableMap extends TableMap
      */
     public static function getOMClass($withPrefix = true)
     {
-        return $withPrefix ? GoogleshoppingxmlFeedTableMap::CLASS_DEFAULT : GoogleshoppingxmlFeedTableMap::OM_CLASS;
+        return $withPrefix ? GoogleshoppingxmlLogTableMap::CLASS_DEFAULT : GoogleshoppingxmlLogTableMap::OM_CLASS;
     }
 
     /**
@@ -243,21 +269,21 @@ class GoogleshoppingxmlFeedTableMap extends TableMap
      *
      * @throws PropelException Any exceptions caught during processing will be
      *         rethrown wrapped into a PropelException.
-     * @return array (GoogleshoppingxmlFeed object, last column rank)
+     * @return array (GoogleshoppingxmlLog object, last column rank)
      */
     public static function populateObject($row, $offset = 0, $indexType = TableMap::TYPE_NUM)
     {
-        $key = GoogleshoppingxmlFeedTableMap::getPrimaryKeyHashFromRow($row, $offset, $indexType);
-        if (null !== ($obj = GoogleshoppingxmlFeedTableMap::getInstanceFromPool($key))) {
+        $key = GoogleshoppingxmlLogTableMap::getPrimaryKeyHashFromRow($row, $offset, $indexType);
+        if (null !== ($obj = GoogleshoppingxmlLogTableMap::getInstanceFromPool($key))) {
             // We no longer rehydrate the object, since this can cause data loss.
             // See http://www.propelorm.org/ticket/509
             // $obj->hydrate($row, $offset, true); // rehydrate
-            $col = $offset + GoogleshoppingxmlFeedTableMap::NUM_HYDRATE_COLUMNS;
+            $col = $offset + GoogleshoppingxmlLogTableMap::NUM_HYDRATE_COLUMNS;
         } else {
-            $cls = GoogleshoppingxmlFeedTableMap::OM_CLASS;
+            $cls = GoogleshoppingxmlLogTableMap::OM_CLASS;
             $obj = new $cls();
             $col = $obj->hydrate($row, $offset, false, $indexType);
-            GoogleshoppingxmlFeedTableMap::addInstanceToPool($obj, $key);
+            GoogleshoppingxmlLogTableMap::addInstanceToPool($obj, $key);
         }
 
         return array($obj, $col);
@@ -280,8 +306,8 @@ class GoogleshoppingxmlFeedTableMap extends TableMap
         $cls = static::getOMClass(false);
         // populate the object(s)
         while ($row = $dataFetcher->fetch()) {
-            $key = GoogleshoppingxmlFeedTableMap::getPrimaryKeyHashFromRow($row, 0, $dataFetcher->getIndexType());
-            if (null !== ($obj = GoogleshoppingxmlFeedTableMap::getInstanceFromPool($key))) {
+            $key = GoogleshoppingxmlLogTableMap::getPrimaryKeyHashFromRow($row, 0, $dataFetcher->getIndexType());
+            if (null !== ($obj = GoogleshoppingxmlLogTableMap::getInstanceFromPool($key))) {
                 // We no longer rehydrate the object, since this can cause data loss.
                 // See http://www.propelorm.org/ticket/509
                 // $obj->hydrate($row, 0, true); // rehydrate
@@ -290,7 +316,7 @@ class GoogleshoppingxmlFeedTableMap extends TableMap
                 $obj = new $cls();
                 $obj->hydrate($row);
                 $results[] = $obj;
-                GoogleshoppingxmlFeedTableMap::addInstanceToPool($obj, $key);
+                GoogleshoppingxmlLogTableMap::addInstanceToPool($obj, $key);
             } // if key exists
         }
 
@@ -311,17 +337,25 @@ class GoogleshoppingxmlFeedTableMap extends TableMap
     public static function addSelectColumns(Criteria $criteria, $alias = null)
     {
         if (null === $alias) {
-            $criteria->addSelectColumn(GoogleshoppingxmlFeedTableMap::ID);
-            $criteria->addSelectColumn(GoogleshoppingxmlFeedTableMap::LABEL);
-            $criteria->addSelectColumn(GoogleshoppingxmlFeedTableMap::LANG_ID);
-            $criteria->addSelectColumn(GoogleshoppingxmlFeedTableMap::CURRENCY_ID);
-            $criteria->addSelectColumn(GoogleshoppingxmlFeedTableMap::COUNTRY_ID);
+            $criteria->addSelectColumn(GoogleshoppingxmlLogTableMap::ID);
+            $criteria->addSelectColumn(GoogleshoppingxmlLogTableMap::FEED_ID);
+            $criteria->addSelectColumn(GoogleshoppingxmlLogTableMap::SEPARATION);
+            $criteria->addSelectColumn(GoogleshoppingxmlLogTableMap::LEVEL);
+            $criteria->addSelectColumn(GoogleshoppingxmlLogTableMap::PSE_ID);
+            $criteria->addSelectColumn(GoogleshoppingxmlLogTableMap::MESSAGE);
+            $criteria->addSelectColumn(GoogleshoppingxmlLogTableMap::HELP);
+            $criteria->addSelectColumn(GoogleshoppingxmlLogTableMap::CREATED_AT);
+            $criteria->addSelectColumn(GoogleshoppingxmlLogTableMap::UPDATED_AT);
         } else {
             $criteria->addSelectColumn($alias . '.ID');
-            $criteria->addSelectColumn($alias . '.LABEL');
-            $criteria->addSelectColumn($alias . '.LANG_ID');
-            $criteria->addSelectColumn($alias . '.CURRENCY_ID');
-            $criteria->addSelectColumn($alias . '.COUNTRY_ID');
+            $criteria->addSelectColumn($alias . '.FEED_ID');
+            $criteria->addSelectColumn($alias . '.SEPARATION');
+            $criteria->addSelectColumn($alias . '.LEVEL');
+            $criteria->addSelectColumn($alias . '.PSE_ID');
+            $criteria->addSelectColumn($alias . '.MESSAGE');
+            $criteria->addSelectColumn($alias . '.HELP');
+            $criteria->addSelectColumn($alias . '.CREATED_AT');
+            $criteria->addSelectColumn($alias . '.UPDATED_AT');
         }
     }
 
@@ -334,7 +368,7 @@ class GoogleshoppingxmlFeedTableMap extends TableMap
      */
     public static function getTableMap()
     {
-        return Propel::getServiceContainer()->getDatabaseMap(GoogleshoppingxmlFeedTableMap::DATABASE_NAME)->getTable(GoogleshoppingxmlFeedTableMap::TABLE_NAME);
+        return Propel::getServiceContainer()->getDatabaseMap(GoogleshoppingxmlLogTableMap::DATABASE_NAME)->getTable(GoogleshoppingxmlLogTableMap::TABLE_NAME);
     }
 
     /**
@@ -342,16 +376,16 @@ class GoogleshoppingxmlFeedTableMap extends TableMap
      */
     public static function buildTableMap()
     {
-      $dbMap = Propel::getServiceContainer()->getDatabaseMap(GoogleshoppingxmlFeedTableMap::DATABASE_NAME);
-      if (!$dbMap->hasTable(GoogleshoppingxmlFeedTableMap::TABLE_NAME)) {
-        $dbMap->addTableObject(new GoogleshoppingxmlFeedTableMap());
+      $dbMap = Propel::getServiceContainer()->getDatabaseMap(GoogleshoppingxmlLogTableMap::DATABASE_NAME);
+      if (!$dbMap->hasTable(GoogleshoppingxmlLogTableMap::TABLE_NAME)) {
+        $dbMap->addTableObject(new GoogleshoppingxmlLogTableMap());
       }
     }
 
     /**
-     * Performs a DELETE on the database, given a GoogleshoppingxmlFeed or Criteria object OR a primary key value.
+     * Performs a DELETE on the database, given a GoogleshoppingxmlLog or Criteria object OR a primary key value.
      *
-     * @param mixed               $values Criteria or GoogleshoppingxmlFeed object or primary key or array of primary keys
+     * @param mixed               $values Criteria or GoogleshoppingxmlLog object or primary key or array of primary keys
      *              which is used to create the DELETE statement
      * @param ConnectionInterface $con the connection to use
      * @return int The number of affected rows (if supported by underlying database driver).  This includes CASCADE-related rows
@@ -362,25 +396,25 @@ class GoogleshoppingxmlFeedTableMap extends TableMap
      public static function doDelete($values, ConnectionInterface $con = null)
      {
         if (null === $con) {
-            $con = Propel::getServiceContainer()->getWriteConnection(GoogleshoppingxmlFeedTableMap::DATABASE_NAME);
+            $con = Propel::getServiceContainer()->getWriteConnection(GoogleshoppingxmlLogTableMap::DATABASE_NAME);
         }
 
         if ($values instanceof Criteria) {
             // rename for clarity
             $criteria = $values;
-        } elseif ($values instanceof \GoogleShoppingXml\Model\GoogleshoppingxmlFeed) { // it's a model object
+        } elseif ($values instanceof \GoogleShoppingXml\Model\GoogleshoppingxmlLog) { // it's a model object
             // create criteria based on pk values
             $criteria = $values->buildPkeyCriteria();
         } else { // it's a primary key, or an array of pks
-            $criteria = new Criteria(GoogleshoppingxmlFeedTableMap::DATABASE_NAME);
-            $criteria->add(GoogleshoppingxmlFeedTableMap::ID, (array) $values, Criteria::IN);
+            $criteria = new Criteria(GoogleshoppingxmlLogTableMap::DATABASE_NAME);
+            $criteria->add(GoogleshoppingxmlLogTableMap::ID, (array) $values, Criteria::IN);
         }
 
-        $query = GoogleshoppingxmlFeedQuery::create()->mergeWith($criteria);
+        $query = GoogleshoppingxmlLogQuery::create()->mergeWith($criteria);
 
-        if ($values instanceof Criteria) { GoogleshoppingxmlFeedTableMap::clearInstancePool();
+        if ($values instanceof Criteria) { GoogleshoppingxmlLogTableMap::clearInstancePool();
         } elseif (!is_object($values)) { // it's a primary key, or an array of pks
-            foreach ((array) $values as $singleval) { GoogleshoppingxmlFeedTableMap::removeInstanceFromPool($singleval);
+            foreach ((array) $values as $singleval) { GoogleshoppingxmlLogTableMap::removeInstanceFromPool($singleval);
             }
         }
 
@@ -388,20 +422,20 @@ class GoogleshoppingxmlFeedTableMap extends TableMap
     }
 
     /**
-     * Deletes all rows from the googleshoppingxml_feed table.
+     * Deletes all rows from the googleshoppingxml_log table.
      *
      * @param ConnectionInterface $con the connection to use
      * @return int The number of affected rows (if supported by underlying database driver).
      */
     public static function doDeleteAll(ConnectionInterface $con = null)
     {
-        return GoogleshoppingxmlFeedQuery::create()->doDeleteAll($con);
+        return GoogleshoppingxmlLogQuery::create()->doDeleteAll($con);
     }
 
     /**
-     * Performs an INSERT on the database, given a GoogleshoppingxmlFeed or Criteria object.
+     * Performs an INSERT on the database, given a GoogleshoppingxmlLog or Criteria object.
      *
-     * @param mixed               $criteria Criteria or GoogleshoppingxmlFeed object containing data that is used to create the INSERT statement.
+     * @param mixed               $criteria Criteria or GoogleshoppingxmlLog object containing data that is used to create the INSERT statement.
      * @param ConnectionInterface $con the ConnectionInterface connection to use
      * @return mixed           The new primary key.
      * @throws PropelException Any exceptions caught during processing will be
@@ -410,22 +444,22 @@ class GoogleshoppingxmlFeedTableMap extends TableMap
     public static function doInsert($criteria, ConnectionInterface $con = null)
     {
         if (null === $con) {
-            $con = Propel::getServiceContainer()->getWriteConnection(GoogleshoppingxmlFeedTableMap::DATABASE_NAME);
+            $con = Propel::getServiceContainer()->getWriteConnection(GoogleshoppingxmlLogTableMap::DATABASE_NAME);
         }
 
         if ($criteria instanceof Criteria) {
             $criteria = clone $criteria; // rename for clarity
         } else {
-            $criteria = $criteria->buildCriteria(); // build Criteria from GoogleshoppingxmlFeed object
+            $criteria = $criteria->buildCriteria(); // build Criteria from GoogleshoppingxmlLog object
         }
 
-        if ($criteria->containsKey(GoogleshoppingxmlFeedTableMap::ID) && $criteria->keyContainsValue(GoogleshoppingxmlFeedTableMap::ID) ) {
-            throw new PropelException('Cannot insert a value for auto-increment primary key ('.GoogleshoppingxmlFeedTableMap::ID.')');
+        if ($criteria->containsKey(GoogleshoppingxmlLogTableMap::ID) && $criteria->keyContainsValue(GoogleshoppingxmlLogTableMap::ID) ) {
+            throw new PropelException('Cannot insert a value for auto-increment primary key ('.GoogleshoppingxmlLogTableMap::ID.')');
         }
 
 
         // Set the correct dbName
-        $query = GoogleshoppingxmlFeedQuery::create()->mergeWith($criteria);
+        $query = GoogleshoppingxmlLogQuery::create()->mergeWith($criteria);
 
         try {
             // use transaction because $criteria could contain info
@@ -441,7 +475,7 @@ class GoogleshoppingxmlFeedTableMap extends TableMap
         return $pk;
     }
 
-} // GoogleshoppingxmlFeedTableMap
+} // GoogleshoppingxmlLogTableMap
 // This is the static code needed to register the TableMap for this table with the main Propel class.
 //
-GoogleshoppingxmlFeedTableMap::buildTableMap();
+GoogleshoppingxmlLogTableMap::buildTableMap();

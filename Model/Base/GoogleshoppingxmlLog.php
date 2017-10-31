@@ -2,37 +2,34 @@
 
 namespace GoogleShoppingXml\Model\Base;
 
+use \DateTime;
 use \Exception;
 use \PDO;
 use GoogleShoppingXml\Model\GoogleshoppingxmlFeed as ChildGoogleshoppingxmlFeed;
 use GoogleShoppingXml\Model\GoogleshoppingxmlFeedQuery as ChildGoogleshoppingxmlFeedQuery;
 use GoogleShoppingXml\Model\GoogleshoppingxmlLog as ChildGoogleshoppingxmlLog;
 use GoogleShoppingXml\Model\GoogleshoppingxmlLogQuery as ChildGoogleshoppingxmlLogQuery;
-use GoogleShoppingXml\Model\Map\GoogleshoppingxmlFeedTableMap;
+use GoogleShoppingXml\Model\Map\GoogleshoppingxmlLogTableMap;
 use Propel\Runtime\Propel;
 use Propel\Runtime\ActiveQuery\Criteria;
 use Propel\Runtime\ActiveQuery\ModelCriteria;
 use Propel\Runtime\ActiveRecord\ActiveRecordInterface;
 use Propel\Runtime\Collection\Collection;
-use Propel\Runtime\Collection\ObjectCollection;
 use Propel\Runtime\Connection\ConnectionInterface;
 use Propel\Runtime\Exception\BadMethodCallException;
 use Propel\Runtime\Exception\PropelException;
 use Propel\Runtime\Map\TableMap;
 use Propel\Runtime\Parser\AbstractParser;
-use Thelia\Model\Country as ChildCountry;
-use Thelia\Model\Currency as ChildCurrency;
-use Thelia\Model\Lang as ChildLang;
-use Thelia\Model\CountryQuery;
-use Thelia\Model\CurrencyQuery;
-use Thelia\Model\LangQuery;
+use Propel\Runtime\Util\PropelDateTime;
+use Thelia\Model\ProductSaleElements as ChildProductSaleElements;
+use Thelia\Model\ProductSaleElementsQuery;
 
-abstract class GoogleshoppingxmlFeed implements ActiveRecordInterface
+abstract class GoogleshoppingxmlLog implements ActiveRecordInterface
 {
     /**
      * TableMap class name
      */
-    const TABLE_MAP = '\\GoogleShoppingXml\\Model\\Map\\GoogleshoppingxmlFeedTableMap';
+    const TABLE_MAP = '\\GoogleShoppingXml\\Model\\Map\\GoogleshoppingxmlLogTableMap';
 
 
     /**
@@ -68,49 +65,62 @@ abstract class GoogleshoppingxmlFeed implements ActiveRecordInterface
     protected $id;
 
     /**
-     * The value for the label field.
+     * The value for the feed_id field.
+     * @var        int
+     */
+    protected $feed_id;
+
+    /**
+     * The value for the separation field.
+     * @var        boolean
+     */
+    protected $separation;
+
+    /**
+     * The value for the level field.
+     * @var        int
+     */
+    protected $level;
+
+    /**
+     * The value for the pse_id field.
+     * @var        int
+     */
+    protected $pse_id;
+
+    /**
+     * The value for the message field.
      * @var        string
      */
-    protected $label;
+    protected $message;
 
     /**
-     * The value for the lang_id field.
-     * @var        int
+     * The value for the help field.
+     * @var        string
      */
-    protected $lang_id;
+    protected $help;
 
     /**
-     * The value for the currency_id field.
-     * @var        int
+     * The value for the created_at field.
+     * @var        string
      */
-    protected $currency_id;
+    protected $created_at;
 
     /**
-     * The value for the country_id field.
-     * @var        int
+     * The value for the updated_at field.
+     * @var        string
      */
-    protected $country_id;
+    protected $updated_at;
 
     /**
-     * @var        Lang
+     * @var        GoogleshoppingxmlFeed
      */
-    protected $aLang;
+    protected $aGoogleshoppingxmlFeed;
 
     /**
-     * @var        Currency
+     * @var        ProductSaleElements
      */
-    protected $aCurrency;
-
-    /**
-     * @var        Country
-     */
-    protected $aCountry;
-
-    /**
-     * @var        ObjectCollection|ChildGoogleshoppingxmlLog[] Collection to store aggregation of ChildGoogleshoppingxmlLog objects.
-     */
-    protected $collGoogleshoppingxmlLogs;
-    protected $collGoogleshoppingxmlLogsPartial;
+    protected $aProductSaleElements;
 
     /**
      * Flag to prevent endless save loop, if this object is referenced
@@ -121,13 +131,7 @@ abstract class GoogleshoppingxmlFeed implements ActiveRecordInterface
     protected $alreadyInSave = false;
 
     /**
-     * An array of objects scheduled for deletion.
-     * @var ObjectCollection
-     */
-    protected $googleshoppingxmlLogsScheduledForDeletion = null;
-
-    /**
-     * Initializes internal state of GoogleShoppingXml\Model\Base\GoogleshoppingxmlFeed object.
+     * Initializes internal state of GoogleShoppingXml\Model\Base\GoogleshoppingxmlLog object.
      */
     public function __construct()
     {
@@ -222,9 +226,9 @@ abstract class GoogleshoppingxmlFeed implements ActiveRecordInterface
     }
 
     /**
-     * Compares this with another <code>GoogleshoppingxmlFeed</code> instance.  If
-     * <code>obj</code> is an instance of <code>GoogleshoppingxmlFeed</code>, delegates to
-     * <code>equals(GoogleshoppingxmlFeed)</code>.  Otherwise, returns <code>false</code>.
+     * Compares this with another <code>GoogleshoppingxmlLog</code> instance.  If
+     * <code>obj</code> is an instance of <code>GoogleshoppingxmlLog</code>, delegates to
+     * <code>equals(GoogleshoppingxmlLog)</code>.  Otherwise, returns <code>false</code>.
      *
      * @param  mixed   $obj The object to compare to.
      * @return boolean Whether equal to the object specified.
@@ -307,7 +311,7 @@ abstract class GoogleshoppingxmlFeed implements ActiveRecordInterface
      * @param string $name  The virtual column name
      * @param mixed  $value The value to give to the virtual column
      *
-     * @return GoogleshoppingxmlFeed The current object, for fluid interface
+     * @return GoogleshoppingxmlLog The current object, for fluid interface
      */
     public function setVirtualColumn($name, $value)
     {
@@ -339,7 +343,7 @@ abstract class GoogleshoppingxmlFeed implements ActiveRecordInterface
      *                       or a format name ('XML', 'YAML', 'JSON', 'CSV')
      * @param string $data The source data to import from
      *
-     * @return GoogleshoppingxmlFeed The current object, for fluid interface
+     * @return GoogleshoppingxmlLog The current object, for fluid interface
      */
     public function importFrom($parser, $data)
     {
@@ -396,54 +400,116 @@ abstract class GoogleshoppingxmlFeed implements ActiveRecordInterface
     }
 
     /**
-     * Get the [label] column value.
+     * Get the [feed_id] column value.
+     *
+     * @return   int
+     */
+    public function getFeedId()
+    {
+
+        return $this->feed_id;
+    }
+
+    /**
+     * Get the [separation] column value.
+     *
+     * @return   boolean
+     */
+    public function getSeparation()
+    {
+
+        return $this->separation;
+    }
+
+    /**
+     * Get the [level] column value.
+     *
+     * @return   int
+     */
+    public function getLevel()
+    {
+
+        return $this->level;
+    }
+
+    /**
+     * Get the [pse_id] column value.
+     *
+     * @return   int
+     */
+    public function getPseId()
+    {
+
+        return $this->pse_id;
+    }
+
+    /**
+     * Get the [message] column value.
      *
      * @return   string
      */
-    public function getLabel()
+    public function getMessage()
     {
 
-        return $this->label;
+        return $this->message;
     }
 
     /**
-     * Get the [lang_id] column value.
+     * Get the [help] column value.
      *
-     * @return   int
+     * @return   string
      */
-    public function getLangId()
+    public function getHelp()
     {
 
-        return $this->lang_id;
+        return $this->help;
     }
 
     /**
-     * Get the [currency_id] column value.
+     * Get the [optionally formatted] temporal [created_at] column value.
      *
-     * @return   int
+     *
+     * @param      string $format The date/time format string (either date()-style or strftime()-style).
+     *                            If format is NULL, then the raw \DateTime object will be returned.
+     *
+     * @return mixed Formatted date/time value as string or \DateTime object (if format is NULL), NULL if column is NULL, and 0 if column value is 0000-00-00 00:00:00
+     *
+     * @throws PropelException - if unable to parse/validate the date/time value.
      */
-    public function getCurrencyId()
+    public function getCreatedAt($format = NULL)
     {
-
-        return $this->currency_id;
+        if ($format === null) {
+            return $this->created_at;
+        } else {
+            return $this->created_at instanceof \DateTime ? $this->created_at->format($format) : null;
+        }
     }
 
     /**
-     * Get the [country_id] column value.
+     * Get the [optionally formatted] temporal [updated_at] column value.
      *
-     * @return   int
+     *
+     * @param      string $format The date/time format string (either date()-style or strftime()-style).
+     *                            If format is NULL, then the raw \DateTime object will be returned.
+     *
+     * @return mixed Formatted date/time value as string or \DateTime object (if format is NULL), NULL if column is NULL, and 0 if column value is 0000-00-00 00:00:00
+     *
+     * @throws PropelException - if unable to parse/validate the date/time value.
      */
-    public function getCountryId()
+    public function getUpdatedAt($format = NULL)
     {
-
-        return $this->country_id;
+        if ($format === null) {
+            return $this->updated_at;
+        } else {
+            return $this->updated_at instanceof \DateTime ? $this->updated_at->format($format) : null;
+        }
     }
 
     /**
      * Set the value of [id] column.
      *
      * @param      int $v new value
-     * @return   \GoogleShoppingXml\Model\GoogleshoppingxmlFeed The current object (for fluent API support)
+     * @return   \GoogleShoppingXml\Model\GoogleshoppingxmlLog The current object (for fluent API support)
      */
     public function setId($v)
     {
@@ -453,7 +519,7 @@ abstract class GoogleshoppingxmlFeed implements ActiveRecordInterface
 
         if ($this->id !== $v) {
             $this->id = $v;
-            $this->modifiedColumns[GoogleshoppingxmlFeedTableMap::ID] = true;
+            $this->modifiedColumns[GoogleshoppingxmlLogTableMap::ID] = true;
         }
 
 
@@ -461,100 +527,188 @@ abstract class GoogleshoppingxmlFeed implements ActiveRecordInterface
     } // setId()
 
     /**
-     * Set the value of [label] column.
+     * Set the value of [feed_id] column.
+     *
+     * @param      int $v new value
+     * @return   \GoogleShoppingXml\Model\GoogleshoppingxmlLog The current object (for fluent API support)
+     */
+    public function setFeedId($v)
+    {
+        if ($v !== null) {
+            $v = (int) $v;
+        }
+
+        if ($this->feed_id !== $v) {
+            $this->feed_id = $v;
+            $this->modifiedColumns[GoogleshoppingxmlLogTableMap::FEED_ID] = true;
+        }
+
+        if ($this->aGoogleshoppingxmlFeed !== null && $this->aGoogleshoppingxmlFeed->getId() !== $v) {
+            $this->aGoogleshoppingxmlFeed = null;
+        }
+
+
+        return $this;
+    } // setFeedId()
+
+    /**
+     * Sets the value of the [separation] column.
+     * Non-boolean arguments are converted using the following rules:
+     *   * 1, '1', 'true',  'on',  and 'yes' are converted to boolean true
+     *   * 0, '0', 'false', 'off', and 'no'  are converted to boolean false
+     * Check on string values is case insensitive (so 'FaLsE' is seen as 'false').
+     *
+     * @param      boolean|integer|string $v The new value
+     * @return   \GoogleShoppingXml\Model\GoogleshoppingxmlLog The current object (for fluent API support)
+     */
+    public function setSeparation($v)
+    {
+        if ($v !== null) {
+            if (is_string($v)) {
+                $v = in_array(strtolower($v), array('false', 'off', '-', 'no', 'n', '0', '')) ? false : true;
+            } else {
+                $v = (boolean) $v;
+            }
+        }
+
+        if ($this->separation !== $v) {
+            $this->separation = $v;
+            $this->modifiedColumns[GoogleshoppingxmlLogTableMap::SEPARATION] = true;
+        }
+
+
+        return $this;
+    } // setSeparation()
+
+    /**
+     * Set the value of [level] column.
+     *
+     * @param      int $v new value
+     * @return   \GoogleShoppingXml\Model\GoogleshoppingxmlLog The current object (for fluent API support)
+     */
+    public function setLevel($v)
+    {
+        if ($v !== null) {
+            $v = (int) $v;
+        }
+
+        if ($this->level !== $v) {
+            $this->level = $v;
+            $this->modifiedColumns[GoogleshoppingxmlLogTableMap::LEVEL] = true;
+        }
+
+
+        return $this;
+    } // setLevel()
+
+    /**
+     * Set the value of [pse_id] column.
+     *
+     * @param      int $v new value
+     * @return   \GoogleShoppingXml\Model\GoogleshoppingxmlLog The current object (for fluent API support)
+     */
+    public function setPseId($v)
+    {
+        if ($v !== null) {
+            $v = (int) $v;
+        }
+
+        if ($this->pse_id !== $v) {
+            $this->pse_id = $v;
+            $this->modifiedColumns[GoogleshoppingxmlLogTableMap::PSE_ID] = true;
+        }
+
+        if ($this->aProductSaleElements !== null && $this->aProductSaleElements->getId() !== $v) {
+            $this->aProductSaleElements = null;
+        }
+
+
+        return $this;
+    } // setPseId()
+
+    /**
+     * Set the value of [message] column.
      *
      * @param      string $v new value
-     * @return   \GoogleShoppingXml\Model\GoogleshoppingxmlFeed The current object (for fluent API support)
+     * @return   \GoogleShoppingXml\Model\GoogleshoppingxmlLog The current object (for fluent API support)
      */
-    public function setLabel($v)
+    public function setMessage($v)
     {
         if ($v !== null) {
             $v = (string) $v;
         }
 
-        if ($this->label !== $v) {
-            $this->label = $v;
-            $this->modifiedColumns[GoogleshoppingxmlFeedTableMap::LABEL] = true;
+        if ($this->message !== $v) {
+            $this->message = $v;
+            $this->modifiedColumns[GoogleshoppingxmlLogTableMap::MESSAGE] = true;
         }
 
 
         return $this;
-    } // setLabel()
+    } // setMessage()
 
     /**
-     * Set the value of [lang_id] column.
+     * Set the value of [help] column.
      *
-     * @param      int $v new value
-     * @return   \GoogleShoppingXml\Model\GoogleshoppingxmlFeed The current object (for fluent API support)
+     * @param      string $v new value
+     * @return   \GoogleShoppingXml\Model\GoogleshoppingxmlLog The current object (for fluent API support)
      */
-    public function setLangId($v)
+    public function setHelp($v)
     {
         if ($v !== null) {
-            $v = (int) $v;
+            $v = (string) $v;
         }
 
-        if ($this->lang_id !== $v) {
-            $this->lang_id = $v;
-            $this->modifiedColumns[GoogleshoppingxmlFeedTableMap::LANG_ID] = true;
-        }
-
-        if ($this->aLang !== null && $this->aLang->getId() !== $v) {
-            $this->aLang = null;
+        if ($this->help !== $v) {
+            $this->help = $v;
+            $this->modifiedColumns[GoogleshoppingxmlLogTableMap::HELP] = true;
         }
 
 
         return $this;
-    } // setLangId()
+    } // setHelp()
 
     /**
-     * Set the value of [currency_id] column.
+     * Sets the value of [created_at] column to a normalized version of the date/time value specified.
      *
-     * @param      int $v new value
-     * @return   \GoogleShoppingXml\Model\GoogleshoppingxmlFeed The current object (for fluent API support)
+     * @param      mixed $v string, integer (timestamp), or \DateTime value.
+     *               Empty strings are treated as NULL.
+     * @return   \GoogleShoppingXml\Model\GoogleshoppingxmlLog The current object (for fluent API support)
      */
-    public function setCurrencyId($v)
+    public function setCreatedAt($v)
     {
-        if ($v !== null) {
-            $v = (int) $v;
-        }
-
-        if ($this->currency_id !== $v) {
-            $this->currency_id = $v;
-            $this->modifiedColumns[GoogleshoppingxmlFeedTableMap::CURRENCY_ID] = true;
-        }
-
-        if ($this->aCurrency !== null && $this->aCurrency->getId() !== $v) {
-            $this->aCurrency = null;
-        }
+        $dt = PropelDateTime::newInstance($v, null, '\DateTime');
+        if ($this->created_at !== null || $dt !== null) {
+            if ($dt !== $this->created_at) {
+                $this->created_at = $dt;
+                $this->modifiedColumns[GoogleshoppingxmlLogTableMap::CREATED_AT] = true;
+            }
+        } // if either are not null
 
 
         return $this;
-    } // setCurrencyId()
+    } // setCreatedAt()
 
     /**
-     * Set the value of [country_id] column.
+     * Sets the value of [updated_at] column to a normalized version of the date/time value specified.
      *
-     * @param      int $v new value
-     * @return   \GoogleShoppingXml\Model\GoogleshoppingxmlFeed The current object (for fluent API support)
+     * @param      mixed $v string, integer (timestamp), or \DateTime value.
+     *               Empty strings are treated as NULL.
+     * @return   \GoogleShoppingXml\Model\GoogleshoppingxmlLog The current object (for fluent API support)
      */
-    public function setCountryId($v)
+    public function setUpdatedAt($v)
     {
-        if ($v !== null) {
-            $v = (int) $v;
-        }
-
-        if ($this->country_id !== $v) {
-            $this->country_id = $v;
-            $this->modifiedColumns[GoogleshoppingxmlFeedTableMap::COUNTRY_ID] = true;
-        }
-
-        if ($this->aCountry !== null && $this->aCountry->getId() !== $v) {
-            $this->aCountry = null;
-        }
+        $dt = PropelDateTime::newInstance($v, null, '\DateTime');
+        if ($this->updated_at !== null || $dt !== null) {
+            if ($dt !== $this->updated_at) {
+                $this->updated_at = $dt;
+                $this->modifiedColumns[GoogleshoppingxmlLogTableMap::UPDATED_AT] = true;
+            }
+        } // if either are not null
 
 
         return $this;
-    } // setCountryId()
+    } // setUpdatedAt()
 
     /**
      * Indicates whether the columns in this object are only set to default values.
@@ -593,20 +747,38 @@ abstract class GoogleshoppingxmlFeed implements ActiveRecordInterface
         try {
 
 
-            $col = $row[TableMap::TYPE_NUM == $indexType ? 0 + $startcol : GoogleshoppingxmlFeedTableMap::translateFieldName('Id', TableMap::TYPE_PHPNAME, $indexType)];
+            $col = $row[TableMap::TYPE_NUM == $indexType ? 0 + $startcol : GoogleshoppingxmlLogTableMap::translateFieldName('Id', TableMap::TYPE_PHPNAME, $indexType)];
             $this->id = (null !== $col) ? (int) $col : null;
 
-            $col = $row[TableMap::TYPE_NUM == $indexType ? 1 + $startcol : GoogleshoppingxmlFeedTableMap::translateFieldName('Label', TableMap::TYPE_PHPNAME, $indexType)];
-            $this->label = (null !== $col) ? (string) $col : null;
+            $col = $row[TableMap::TYPE_NUM == $indexType ? 1 + $startcol : GoogleshoppingxmlLogTableMap::translateFieldName('FeedId', TableMap::TYPE_PHPNAME, $indexType)];
+            $this->feed_id = (null !== $col) ? (int) $col : null;
 
-            $col = $row[TableMap::TYPE_NUM == $indexType ? 2 + $startcol : GoogleshoppingxmlFeedTableMap::translateFieldName('LangId', TableMap::TYPE_PHPNAME, $indexType)];
-            $this->lang_id = (null !== $col) ? (int) $col : null;
+            $col = $row[TableMap::TYPE_NUM == $indexType ? 2 + $startcol : GoogleshoppingxmlLogTableMap::translateFieldName('Separation', TableMap::TYPE_PHPNAME, $indexType)];
+            $this->separation = (null !== $col) ? (boolean) $col : null;
 
-            $col = $row[TableMap::TYPE_NUM == $indexType ? 3 + $startcol : GoogleshoppingxmlFeedTableMap::translateFieldName('CurrencyId', TableMap::TYPE_PHPNAME, $indexType)];
-            $this->currency_id = (null !== $col) ? (int) $col : null;
+            $col = $row[TableMap::TYPE_NUM == $indexType ? 3 + $startcol : GoogleshoppingxmlLogTableMap::translateFieldName('Level', TableMap::TYPE_PHPNAME, $indexType)];
+            $this->level = (null !== $col) ? (int) $col : null;
 
-            $col = $row[TableMap::TYPE_NUM == $indexType ? 4 + $startcol : GoogleshoppingxmlFeedTableMap::translateFieldName('CountryId', TableMap::TYPE_PHPNAME, $indexType)];
-            $this->country_id = (null !== $col) ? (int) $col : null;
+            $col = $row[TableMap::TYPE_NUM == $indexType ? 4 + $startcol : GoogleshoppingxmlLogTableMap::translateFieldName('PseId', TableMap::TYPE_PHPNAME, $indexType)];
+            $this->pse_id = (null !== $col) ? (int) $col : null;
+
+            $col = $row[TableMap::TYPE_NUM == $indexType ? 5 + $startcol : GoogleshoppingxmlLogTableMap::translateFieldName('Message', TableMap::TYPE_PHPNAME, $indexType)];
+            $this->message = (null !== $col) ? (string) $col : null;
+
+            $col = $row[TableMap::TYPE_NUM == $indexType ? 6 + $startcol : GoogleshoppingxmlLogTableMap::translateFieldName('Help', TableMap::TYPE_PHPNAME, $indexType)];
+            $this->help = (null !== $col) ? (string) $col : null;
+
+            $col = $row[TableMap::TYPE_NUM == $indexType ? 7 + $startcol : GoogleshoppingxmlLogTableMap::translateFieldName('CreatedAt', TableMap::TYPE_PHPNAME, $indexType)];
+            if ($col === '0000-00-00 00:00:00') {
+                $col = null;
+            }
+            $this->created_at = (null !== $col) ? PropelDateTime::newInstance($col, null, '\DateTime') : null;
+
+            $col = $row[TableMap::TYPE_NUM == $indexType ? 8 + $startcol : GoogleshoppingxmlLogTableMap::translateFieldName('UpdatedAt', TableMap::TYPE_PHPNAME, $indexType)];
+            if ($col === '0000-00-00 00:00:00') {
+                $col = null;
+            }
+            $this->updated_at = (null !== $col) ? PropelDateTime::newInstance($col, null, '\DateTime') : null;
             $this->resetModified();
 
             $this->setNew(false);
@@ -615,10 +787,10 @@ abstract class GoogleshoppingxmlFeed implements ActiveRecordInterface
                 $this->ensureConsistency();
             }
 
-            return $startcol + 5; // 5 = GoogleshoppingxmlFeedTableMap::NUM_HYDRATE_COLUMNS.
+            return $startcol + 9; // 9 = GoogleshoppingxmlLogTableMap::NUM_HYDRATE_COLUMNS.
 
         } catch (Exception $e) {
-            throw new PropelException("Error populating \GoogleShoppingXml\Model\GoogleshoppingxmlFeed object", 0, $e);
+            throw new PropelException("Error populating \GoogleShoppingXml\Model\GoogleshoppingxmlLog object", 0, $e);
         }
     }
 
@@ -637,14 +809,11 @@ abstract class GoogleshoppingxmlFeed implements ActiveRecordInterface
      */
     public function ensureConsistency()
     {
-        if ($this->aLang !== null && $this->lang_id !== $this->aLang->getId()) {
-            $this->aLang = null;
+        if ($this->aGoogleshoppingxmlFeed !== null && $this->feed_id !== $this->aGoogleshoppingxmlFeed->getId()) {
+            $this->aGoogleshoppingxmlFeed = null;
         }
-        if ($this->aCurrency !== null && $this->currency_id !== $this->aCurrency->getId()) {
-            $this->aCurrency = null;
-        }
-        if ($this->aCountry !== null && $this->country_id !== $this->aCountry->getId()) {
-            $this->aCountry = null;
+        if ($this->aProductSaleElements !== null && $this->pse_id !== $this->aProductSaleElements->getId()) {
+            $this->aProductSaleElements = null;
         }
     } // ensureConsistency
 
@@ -669,13 +838,13 @@ abstract class GoogleshoppingxmlFeed implements ActiveRecordInterface
         }
 
         if ($con === null) {
-            $con = Propel::getServiceContainer()->getReadConnection(GoogleshoppingxmlFeedTableMap::DATABASE_NAME);
+            $con = Propel::getServiceContainer()->getReadConnection(GoogleshoppingxmlLogTableMap::DATABASE_NAME);
         }
 
         // We don't need to alter the object instance pool; we're just modifying this instance
         // already in the pool.
 
-        $dataFetcher = ChildGoogleshoppingxmlFeedQuery::create(null, $this->buildPkeyCriteria())->setFormatter(ModelCriteria::FORMAT_STATEMENT)->find($con);
+        $dataFetcher = ChildGoogleshoppingxmlLogQuery::create(null, $this->buildPkeyCriteria())->setFormatter(ModelCriteria::FORMAT_STATEMENT)->find($con);
         $row = $dataFetcher->fetch();
         $dataFetcher->close();
         if (!$row) {
@@ -685,11 +854,8 @@ abstract class GoogleshoppingxmlFeed implements ActiveRecordInterface
 
         if ($deep) {  // also de-associate any related objects?
 
-            $this->aLang = null;
-            $this->aCurrency = null;
-            $this->aCountry = null;
-            $this->collGoogleshoppingxmlLogs = null;
-
+            $this->aGoogleshoppingxmlFeed = null;
+            $this->aProductSaleElements = null;
         } // if (deep)
     }
 
@@ -699,8 +865,8 @@ abstract class GoogleshoppingxmlFeed implements ActiveRecordInterface
      * @param      ConnectionInterface $con
      * @return void
      * @throws PropelException
-     * @see GoogleshoppingxmlFeed::setDeleted()
-     * @see GoogleshoppingxmlFeed::isDeleted()
+     * @see GoogleshoppingxmlLog::setDeleted()
+     * @see GoogleshoppingxmlLog::isDeleted()
      */
     public function delete(ConnectionInterface $con = null)
     {
@@ -709,12 +875,12 @@ abstract class GoogleshoppingxmlFeed implements ActiveRecordInterface
         }
 
         if ($con === null) {
-            $con = Propel::getServiceContainer()->getWriteConnection(GoogleshoppingxmlFeedTableMap::DATABASE_NAME);
+            $con = Propel::getServiceContainer()->getWriteConnection(GoogleshoppingxmlLogTableMap::DATABASE_NAME);
         }
 
         $con->beginTransaction();
         try {
-            $deleteQuery = ChildGoogleshoppingxmlFeedQuery::create()
+            $deleteQuery = ChildGoogleshoppingxmlLogQuery::create()
                 ->filterByPrimaryKey($this->getPrimaryKey());
             $ret = $this->preDelete($con);
             if ($ret) {
@@ -751,7 +917,7 @@ abstract class GoogleshoppingxmlFeed implements ActiveRecordInterface
         }
 
         if ($con === null) {
-            $con = Propel::getServiceContainer()->getWriteConnection(GoogleshoppingxmlFeedTableMap::DATABASE_NAME);
+            $con = Propel::getServiceContainer()->getWriteConnection(GoogleshoppingxmlLogTableMap::DATABASE_NAME);
         }
 
         $con->beginTransaction();
@@ -760,8 +926,19 @@ abstract class GoogleshoppingxmlFeed implements ActiveRecordInterface
             $ret = $this->preSave($con);
             if ($isInsert) {
                 $ret = $ret && $this->preInsert($con);
+                // timestampable behavior
+                if (!$this->isColumnModified(GoogleshoppingxmlLogTableMap::CREATED_AT)) {
+                    $this->setCreatedAt(time());
+                }
+                if (!$this->isColumnModified(GoogleshoppingxmlLogTableMap::UPDATED_AT)) {
+                    $this->setUpdatedAt(time());
+                }
             } else {
                 $ret = $ret && $this->preUpdate($con);
+                // timestampable behavior
+                if ($this->isModified() && !$this->isColumnModified(GoogleshoppingxmlLogTableMap::UPDATED_AT)) {
+                    $this->setUpdatedAt(time());
+                }
             }
             if ($ret) {
                 $affectedRows = $this->doSave($con);
@@ -771,7 +948,7 @@ abstract class GoogleshoppingxmlFeed implements ActiveRecordInterface
                     $this->postUpdate($con);
                 }
                 $this->postSave($con);
-                GoogleshoppingxmlFeedTableMap::addInstanceToPool($this);
+                GoogleshoppingxmlLogTableMap::addInstanceToPool($this);
             } else {
                 $affectedRows = 0;
             }
@@ -806,25 +983,18 @@ abstract class GoogleshoppingxmlFeed implements ActiveRecordInterface
             // method.  This object relates to these object(s) by a
             // foreign key reference.
 
-            if ($this->aLang !== null) {
-                if ($this->aLang->isModified() || $this->aLang->isNew()) {
-                    $affectedRows += $this->aLang->save($con);
+            if ($this->aGoogleshoppingxmlFeed !== null) {
+                if ($this->aGoogleshoppingxmlFeed->isModified() || $this->aGoogleshoppingxmlFeed->isNew()) {
+                    $affectedRows += $this->aGoogleshoppingxmlFeed->save($con);
                 }
-                $this->setLang($this->aLang);
+                $this->setGoogleshoppingxmlFeed($this->aGoogleshoppingxmlFeed);
             }
 
-            if ($this->aCurrency !== null) {
-                if ($this->aCurrency->isModified() || $this->aCurrency->isNew()) {
-                    $affectedRows += $this->aCurrency->save($con);
+            if ($this->aProductSaleElements !== null) {
+                if ($this->aProductSaleElements->isModified() || $this->aProductSaleElements->isNew()) {
+                    $affectedRows += $this->aProductSaleElements->save($con);
                 }
-                $this->setCurrency($this->aCurrency);
-            }
-
-            if ($this->aCountry !== null) {
-                if ($this->aCountry->isModified() || $this->aCountry->isNew()) {
-                    $affectedRows += $this->aCountry->save($con);
-                }
-                $this->setCountry($this->aCountry);
+                $this->setProductSaleElements($this->aProductSaleElements);
             }
 
             if ($this->isNew() || $this->isModified()) {
@@ -836,23 +1006,6 @@ abstract class GoogleshoppingxmlFeed implements ActiveRecordInterface
                 }
                 $affectedRows += 1;
                 $this->resetModified();
-            }
-
-            if ($this->googleshoppingxmlLogsScheduledForDeletion !== null) {
-                if (!$this->googleshoppingxmlLogsScheduledForDeletion->isEmpty()) {
-                    \GoogleShoppingXml\Model\GoogleshoppingxmlLogQuery::create()
-                        ->filterByPrimaryKeys($this->googleshoppingxmlLogsScheduledForDeletion->getPrimaryKeys(false))
-                        ->delete($con);
-                    $this->googleshoppingxmlLogsScheduledForDeletion = null;
-                }
-            }
-
-                if ($this->collGoogleshoppingxmlLogs !== null) {
-            foreach ($this->collGoogleshoppingxmlLogs as $referrerFK) {
-                    if (!$referrerFK->isDeleted() && ($referrerFK->isNew() || $referrerFK->isModified())) {
-                        $affectedRows += $referrerFK->save($con);
-                    }
-                }
             }
 
             $this->alreadyInSave = false;
@@ -875,30 +1028,42 @@ abstract class GoogleshoppingxmlFeed implements ActiveRecordInterface
         $modifiedColumns = array();
         $index = 0;
 
-        $this->modifiedColumns[GoogleshoppingxmlFeedTableMap::ID] = true;
+        $this->modifiedColumns[GoogleshoppingxmlLogTableMap::ID] = true;
         if (null !== $this->id) {
-            throw new PropelException('Cannot insert a value for auto-increment primary key (' . GoogleshoppingxmlFeedTableMap::ID . ')');
+            throw new PropelException('Cannot insert a value for auto-increment primary key (' . GoogleshoppingxmlLogTableMap::ID . ')');
         }
 
          // check the columns in natural order for more readable SQL queries
-        if ($this->isColumnModified(GoogleshoppingxmlFeedTableMap::ID)) {
+        if ($this->isColumnModified(GoogleshoppingxmlLogTableMap::ID)) {
             $modifiedColumns[':p' . $index++]  = 'ID';
         }
-        if ($this->isColumnModified(GoogleshoppingxmlFeedTableMap::LABEL)) {
-            $modifiedColumns[':p' . $index++]  = 'LABEL';
+        if ($this->isColumnModified(GoogleshoppingxmlLogTableMap::FEED_ID)) {
+            $modifiedColumns[':p' . $index++]  = 'FEED_ID';
         }
-        if ($this->isColumnModified(GoogleshoppingxmlFeedTableMap::LANG_ID)) {
-            $modifiedColumns[':p' . $index++]  = 'LANG_ID';
+        if ($this->isColumnModified(GoogleshoppingxmlLogTableMap::SEPARATION)) {
+            $modifiedColumns[':p' . $index++]  = 'SEPARATION';
         }
-        if ($this->isColumnModified(GoogleshoppingxmlFeedTableMap::CURRENCY_ID)) {
-            $modifiedColumns[':p' . $index++]  = 'CURRENCY_ID';
+        if ($this->isColumnModified(GoogleshoppingxmlLogTableMap::LEVEL)) {
+            $modifiedColumns[':p' . $index++]  = 'LEVEL';
         }
-        if ($this->isColumnModified(GoogleshoppingxmlFeedTableMap::COUNTRY_ID)) {
-            $modifiedColumns[':p' . $index++]  = 'COUNTRY_ID';
+        if ($this->isColumnModified(GoogleshoppingxmlLogTableMap::PSE_ID)) {
+            $modifiedColumns[':p' . $index++]  = 'PSE_ID';
+        }
+        if ($this->isColumnModified(GoogleshoppingxmlLogTableMap::MESSAGE)) {
+            $modifiedColumns[':p' . $index++]  = 'MESSAGE';
+        }
+        if ($this->isColumnModified(GoogleshoppingxmlLogTableMap::HELP)) {
+            $modifiedColumns[':p' . $index++]  = 'HELP';
+        }
+        if ($this->isColumnModified(GoogleshoppingxmlLogTableMap::CREATED_AT)) {
+            $modifiedColumns[':p' . $index++]  = 'CREATED_AT';
+        }
+        if ($this->isColumnModified(GoogleshoppingxmlLogTableMap::UPDATED_AT)) {
+            $modifiedColumns[':p' . $index++]  = 'UPDATED_AT';
         }
 
         $sql = sprintf(
-            'INSERT INTO googleshoppingxml_feed (%s) VALUES (%s)',
+            'INSERT INTO googleshoppingxml_log (%s) VALUES (%s)',
             implode(', ', $modifiedColumns),
             implode(', ', array_keys($modifiedColumns))
         );
@@ -910,17 +1075,29 @@ abstract class GoogleshoppingxmlFeed implements ActiveRecordInterface
                     case 'ID':
                         $stmt->bindValue($identifier, $this->id, PDO::PARAM_INT);
                         break;
-                    case 'LABEL':
-                        $stmt->bindValue($identifier, $this->label, PDO::PARAM_STR);
+                    case 'FEED_ID':
+                        $stmt->bindValue($identifier, $this->feed_id, PDO::PARAM_INT);
                         break;
-                    case 'LANG_ID':
-                        $stmt->bindValue($identifier, $this->lang_id, PDO::PARAM_INT);
+                    case 'SEPARATION':
+                        $stmt->bindValue($identifier, (int) $this->separation, PDO::PARAM_INT);
                         break;
-                    case 'CURRENCY_ID':
-                        $stmt->bindValue($identifier, $this->currency_id, PDO::PARAM_INT);
+                    case 'LEVEL':
+                        $stmt->bindValue($identifier, $this->level, PDO::PARAM_INT);
                         break;
-                    case 'COUNTRY_ID':
-                        $stmt->bindValue($identifier, $this->country_id, PDO::PARAM_INT);
+                    case 'PSE_ID':
+                        $stmt->bindValue($identifier, $this->pse_id, PDO::PARAM_INT);
+                        break;
+                    case 'MESSAGE':
+                        $stmt->bindValue($identifier, $this->message, PDO::PARAM_STR);
+                        break;
+                    case 'HELP':
+                        $stmt->bindValue($identifier, $this->help, PDO::PARAM_STR);
+                        break;
+                    case 'CREATED_AT':
+                        $stmt->bindValue($identifier, $this->created_at ? $this->created_at->format("Y-m-d H:i:s") : null, PDO::PARAM_STR);
+                        break;
+                    case 'UPDATED_AT':
+                        $stmt->bindValue($identifier, $this->updated_at ? $this->updated_at->format("Y-m-d H:i:s") : null, PDO::PARAM_STR);
                         break;
                 }
             }
@@ -968,7 +1145,7 @@ abstract class GoogleshoppingxmlFeed implements ActiveRecordInterface
      */
     public function getByName($name, $type = TableMap::TYPE_PHPNAME)
     {
-        $pos = GoogleshoppingxmlFeedTableMap::translateFieldName($name, $type, TableMap::TYPE_NUM);
+        $pos = GoogleshoppingxmlLogTableMap::translateFieldName($name, $type, TableMap::TYPE_NUM);
         $field = $this->getByPosition($pos);
 
         return $field;
@@ -988,16 +1165,28 @@ abstract class GoogleshoppingxmlFeed implements ActiveRecordInterface
                 return $this->getId();
                 break;
             case 1:
-                return $this->getLabel();
+                return $this->getFeedId();
                 break;
             case 2:
-                return $this->getLangId();
+                return $this->getSeparation();
                 break;
             case 3:
-                return $this->getCurrencyId();
+                return $this->getLevel();
                 break;
             case 4:
-                return $this->getCountryId();
+                return $this->getPseId();
+                break;
+            case 5:
+                return $this->getMessage();
+                break;
+            case 6:
+                return $this->getHelp();
+                break;
+            case 7:
+                return $this->getCreatedAt();
+                break;
+            case 8:
+                return $this->getUpdatedAt();
                 break;
             default:
                 return null;
@@ -1022,17 +1211,21 @@ abstract class GoogleshoppingxmlFeed implements ActiveRecordInterface
      */
     public function toArray($keyType = TableMap::TYPE_PHPNAME, $includeLazyLoadColumns = true, $alreadyDumpedObjects = array(), $includeForeignObjects = false)
     {
-        if (isset($alreadyDumpedObjects['GoogleshoppingxmlFeed'][$this->getPrimaryKey()])) {
+        if (isset($alreadyDumpedObjects['GoogleshoppingxmlLog'][$this->getPrimaryKey()])) {
             return '*RECURSION*';
         }
-        $alreadyDumpedObjects['GoogleshoppingxmlFeed'][$this->getPrimaryKey()] = true;
-        $keys = GoogleshoppingxmlFeedTableMap::getFieldNames($keyType);
+        $alreadyDumpedObjects['GoogleshoppingxmlLog'][$this->getPrimaryKey()] = true;
+        $keys = GoogleshoppingxmlLogTableMap::getFieldNames($keyType);
         $result = array(
             $keys[0] => $this->getId(),
-            $keys[1] => $this->getLabel(),
-            $keys[2] => $this->getLangId(),
-            $keys[3] => $this->getCurrencyId(),
-            $keys[4] => $this->getCountryId(),
+            $keys[1] => $this->getFeedId(),
+            $keys[2] => $this->getSeparation(),
+            $keys[3] => $this->getLevel(),
+            $keys[4] => $this->getPseId(),
+            $keys[5] => $this->getMessage(),
+            $keys[6] => $this->getHelp(),
+            $keys[7] => $this->getCreatedAt(),
+            $keys[8] => $this->getUpdatedAt(),
         );
         $virtualColumns = $this->virtualColumns;
         foreach ($virtualColumns as $key => $virtualColumn) {
@@ -1040,17 +1233,11 @@ abstract class GoogleshoppingxmlFeed implements ActiveRecordInterface
         }
 
         if ($includeForeignObjects) {
-            if (null !== $this->aLang) {
-                $result['Lang'] = $this->aLang->toArray($keyType, $includeLazyLoadColumns,  $alreadyDumpedObjects, true);
+            if (null !== $this->aGoogleshoppingxmlFeed) {
+                $result['GoogleshoppingxmlFeed'] = $this->aGoogleshoppingxmlFeed->toArray($keyType, $includeLazyLoadColumns,  $alreadyDumpedObjects, true);
             }
-            if (null !== $this->aCurrency) {
-                $result['Currency'] = $this->aCurrency->toArray($keyType, $includeLazyLoadColumns,  $alreadyDumpedObjects, true);
-            }
-            if (null !== $this->aCountry) {
-                $result['Country'] = $this->aCountry->toArray($keyType, $includeLazyLoadColumns,  $alreadyDumpedObjects, true);
-            }
-            if (null !== $this->collGoogleshoppingxmlLogs) {
-                $result['GoogleshoppingxmlLogs'] = $this->collGoogleshoppingxmlLogs->toArray(null, true, $keyType, $includeLazyLoadColumns, $alreadyDumpedObjects);
+            if (null !== $this->aProductSaleElements) {
+                $result['ProductSaleElements'] = $this->aProductSaleElements->toArray($keyType, $includeLazyLoadColumns,  $alreadyDumpedObjects, true);
             }
         }
 
@@ -1070,7 +1257,7 @@ abstract class GoogleshoppingxmlFeed implements ActiveRecordInterface
      */
     public function setByName($name, $value, $type = TableMap::TYPE_PHPNAME)
     {
-        $pos = GoogleshoppingxmlFeedTableMap::translateFieldName($name, $type, TableMap::TYPE_NUM);
+        $pos = GoogleshoppingxmlLogTableMap::translateFieldName($name, $type, TableMap::TYPE_NUM);
 
         return $this->setByPosition($pos, $value);
     }
@@ -1090,16 +1277,28 @@ abstract class GoogleshoppingxmlFeed implements ActiveRecordInterface
                 $this->setId($value);
                 break;
             case 1:
-                $this->setLabel($value);
+                $this->setFeedId($value);
                 break;
             case 2:
-                $this->setLangId($value);
+                $this->setSeparation($value);
                 break;
             case 3:
-                $this->setCurrencyId($value);
+                $this->setLevel($value);
                 break;
             case 4:
-                $this->setCountryId($value);
+                $this->setPseId($value);
+                break;
+            case 5:
+                $this->setMessage($value);
+                break;
+            case 6:
+                $this->setHelp($value);
+                break;
+            case 7:
+                $this->setCreatedAt($value);
+                break;
+            case 8:
+                $this->setUpdatedAt($value);
                 break;
         } // switch()
     }
@@ -1123,13 +1322,17 @@ abstract class GoogleshoppingxmlFeed implements ActiveRecordInterface
      */
     public function fromArray($arr, $keyType = TableMap::TYPE_PHPNAME)
     {
-        $keys = GoogleshoppingxmlFeedTableMap::getFieldNames($keyType);
+        $keys = GoogleshoppingxmlLogTableMap::getFieldNames($keyType);
 
         if (array_key_exists($keys[0], $arr)) $this->setId($arr[$keys[0]]);
-        if (array_key_exists($keys[1], $arr)) $this->setLabel($arr[$keys[1]]);
-        if (array_key_exists($keys[2], $arr)) $this->setLangId($arr[$keys[2]]);
-        if (array_key_exists($keys[3], $arr)) $this->setCurrencyId($arr[$keys[3]]);
-        if (array_key_exists($keys[4], $arr)) $this->setCountryId($arr[$keys[4]]);
+        if (array_key_exists($keys[1], $arr)) $this->setFeedId($arr[$keys[1]]);
+        if (array_key_exists($keys[2], $arr)) $this->setSeparation($arr[$keys[2]]);
+        if (array_key_exists($keys[3], $arr)) $this->setLevel($arr[$keys[3]]);
+        if (array_key_exists($keys[4], $arr)) $this->setPseId($arr[$keys[4]]);
+        if (array_key_exists($keys[5], $arr)) $this->setMessage($arr[$keys[5]]);
+        if (array_key_exists($keys[6], $arr)) $this->setHelp($arr[$keys[6]]);
+        if (array_key_exists($keys[7], $arr)) $this->setCreatedAt($arr[$keys[7]]);
+        if (array_key_exists($keys[8], $arr)) $this->setUpdatedAt($arr[$keys[8]]);
     }
 
     /**
@@ -1139,13 +1342,17 @@ abstract class GoogleshoppingxmlFeed implements ActiveRecordInterface
      */
     public function buildCriteria()
     {
-        $criteria = new Criteria(GoogleshoppingxmlFeedTableMap::DATABASE_NAME);
+        $criteria = new Criteria(GoogleshoppingxmlLogTableMap::DATABASE_NAME);
 
-        if ($this->isColumnModified(GoogleshoppingxmlFeedTableMap::ID)) $criteria->add(GoogleshoppingxmlFeedTableMap::ID, $this->id);
-        if ($this->isColumnModified(GoogleshoppingxmlFeedTableMap::LABEL)) $criteria->add(GoogleshoppingxmlFeedTableMap::LABEL, $this->label);
-        if ($this->isColumnModified(GoogleshoppingxmlFeedTableMap::LANG_ID)) $criteria->add(GoogleshoppingxmlFeedTableMap::LANG_ID, $this->lang_id);
-        if ($this->isColumnModified(GoogleshoppingxmlFeedTableMap::CURRENCY_ID)) $criteria->add(GoogleshoppingxmlFeedTableMap::CURRENCY_ID, $this->currency_id);
-        if ($this->isColumnModified(GoogleshoppingxmlFeedTableMap::COUNTRY_ID)) $criteria->add(GoogleshoppingxmlFeedTableMap::COUNTRY_ID, $this->country_id);
+        if ($this->isColumnModified(GoogleshoppingxmlLogTableMap::ID)) $criteria->add(GoogleshoppingxmlLogTableMap::ID, $this->id);
+        if ($this->isColumnModified(GoogleshoppingxmlLogTableMap::FEED_ID)) $criteria->add(GoogleshoppingxmlLogTableMap::FEED_ID, $this->feed_id);
+        if ($this->isColumnModified(GoogleshoppingxmlLogTableMap::SEPARATION)) $criteria->add(GoogleshoppingxmlLogTableMap::SEPARATION, $this->separation);
+        if ($this->isColumnModified(GoogleshoppingxmlLogTableMap::LEVEL)) $criteria->add(GoogleshoppingxmlLogTableMap::LEVEL, $this->level);
+        if ($this->isColumnModified(GoogleshoppingxmlLogTableMap::PSE_ID)) $criteria->add(GoogleshoppingxmlLogTableMap::PSE_ID, $this->pse_id);
+        if ($this->isColumnModified(GoogleshoppingxmlLogTableMap::MESSAGE)) $criteria->add(GoogleshoppingxmlLogTableMap::MESSAGE, $this->message);
+        if ($this->isColumnModified(GoogleshoppingxmlLogTableMap::HELP)) $criteria->add(GoogleshoppingxmlLogTableMap::HELP, $this->help);
+        if ($this->isColumnModified(GoogleshoppingxmlLogTableMap::CREATED_AT)) $criteria->add(GoogleshoppingxmlLogTableMap::CREATED_AT, $this->created_at);
+        if ($this->isColumnModified(GoogleshoppingxmlLogTableMap::UPDATED_AT)) $criteria->add(GoogleshoppingxmlLogTableMap::UPDATED_AT, $this->updated_at);
 
         return $criteria;
     }
@@ -1160,8 +1367,8 @@ abstract class GoogleshoppingxmlFeed implements ActiveRecordInterface
      */
     public function buildPkeyCriteria()
     {
-        $criteria = new Criteria(GoogleshoppingxmlFeedTableMap::DATABASE_NAME);
-        $criteria->add(GoogleshoppingxmlFeedTableMap::ID, $this->id);
+        $criteria = new Criteria(GoogleshoppingxmlLogTableMap::DATABASE_NAME);
+        $criteria->add(GoogleshoppingxmlLogTableMap::ID, $this->id);
 
         return $criteria;
     }
@@ -1202,31 +1409,21 @@ abstract class GoogleshoppingxmlFeed implements ActiveRecordInterface
      * If desired, this method can also make copies of all associated (fkey referrers)
      * objects.
      *
-     * @param      object $copyObj An object of \GoogleShoppingXml\Model\GoogleshoppingxmlFeed (or compatible) type.
+     * @param      object $copyObj An object of \GoogleShoppingXml\Model\GoogleshoppingxmlLog (or compatible) type.
      * @param      boolean $deepCopy Whether to also copy all rows that refer (by fkey) to the current row.
      * @param      boolean $makeNew Whether to reset autoincrement PKs and make the object new.
      * @throws PropelException
      */
     public function copyInto($copyObj, $deepCopy = false, $makeNew = true)
     {
-        $copyObj->setLabel($this->getLabel());
-        $copyObj->setLangId($this->getLangId());
-        $copyObj->setCurrencyId($this->getCurrencyId());
-        $copyObj->setCountryId($this->getCountryId());
-
-        if ($deepCopy) {
-            // important: temporarily setNew(false) because this affects the behavior of
-            // the getter/setter methods for fkey referrer objects.
-            $copyObj->setNew(false);
-
-            foreach ($this->getGoogleshoppingxmlLogs() as $relObj) {
-                if ($relObj !== $this) {  // ensure that we don't try to copy a reference to ourselves
-                    $copyObj->addGoogleshoppingxmlLog($relObj->copy($deepCopy));
-                }
-            }
-
-        } // if ($deepCopy)
-
+        $copyObj->setFeedId($this->getFeedId());
+        $copyObj->setSeparation($this->getSeparation());
+        $copyObj->setLevel($this->getLevel());
+        $copyObj->setPseId($this->getPseId());
+        $copyObj->setMessage($this->getMessage());
+        $copyObj->setHelp($this->getHelp());
+        $copyObj->setCreatedAt($this->getCreatedAt());
+        $copyObj->setUpdatedAt($this->getUpdatedAt());
         if ($makeNew) {
             $copyObj->setNew(true);
             $copyObj->setId(NULL); // this is a auto-increment column, so set to default value
@@ -1242,7 +1439,7 @@ abstract class GoogleshoppingxmlFeed implements ActiveRecordInterface
      * objects.
      *
      * @param      boolean $deepCopy Whether to also copy all rows that refer (by fkey) to the current row.
-     * @return                 \GoogleShoppingXml\Model\GoogleshoppingxmlFeed Clone of current object.
+     * @return                 \GoogleShoppingXml\Model\GoogleshoppingxmlLog Clone of current object.
      * @throws PropelException
      */
     public function copy($deepCopy = false)
@@ -1256,26 +1453,26 @@ abstract class GoogleshoppingxmlFeed implements ActiveRecordInterface
     }
 
     /**
-     * Declares an association between this object and a ChildLang object.
+     * Declares an association between this object and a ChildGoogleshoppingxmlFeed object.
      *
-     * @param                  ChildLang $v
-     * @return                 \GoogleShoppingXml\Model\GoogleshoppingxmlFeed The current object (for fluent API support)
+     * @param                  ChildGoogleshoppingxmlFeed $v
+     * @return                 \GoogleShoppingXml\Model\GoogleshoppingxmlLog The current object (for fluent API support)
      * @throws PropelException
      */
-    public function setLang(ChildLang $v = null)
+    public function setGoogleshoppingxmlFeed(ChildGoogleshoppingxmlFeed $v = null)
     {
         if ($v === null) {
-            $this->setLangId(NULL);
+            $this->setFeedId(NULL);
         } else {
-            $this->setLangId($v->getId());
+            $this->setFeedId($v->getId());
         }
 
-        $this->aLang = $v;
+        $this->aGoogleshoppingxmlFeed = $v;
 
         // Add binding for other direction of this n:n relationship.
-        // If this object has already been added to the ChildLang object, it will not be re-added.
+        // If this object has already been added to the ChildGoogleshoppingxmlFeed object, it will not be re-added.
         if ($v !== null) {
-            $v->addGoogleshoppingxmlFeed($this);
+            $v->addGoogleshoppingxmlLog($this);
         }
 
 
@@ -1284,49 +1481,49 @@ abstract class GoogleshoppingxmlFeed implements ActiveRecordInterface
 
 
     /**
-     * Get the associated ChildLang object
+     * Get the associated ChildGoogleshoppingxmlFeed object
      *
      * @param      ConnectionInterface $con Optional Connection object.
-     * @return                 ChildLang The associated ChildLang object.
+     * @return                 ChildGoogleshoppingxmlFeed The associated ChildGoogleshoppingxmlFeed object.
      * @throws PropelException
      */
-    public function getLang(ConnectionInterface $con = null)
+    public function getGoogleshoppingxmlFeed(ConnectionInterface $con = null)
     {
-        if ($this->aLang === null && ($this->lang_id !== null)) {
-            $this->aLang = LangQuery::create()->findPk($this->lang_id, $con);
+        if ($this->aGoogleshoppingxmlFeed === null && ($this->feed_id !== null)) {
+            $this->aGoogleshoppingxmlFeed = ChildGoogleshoppingxmlFeedQuery::create()->findPk($this->feed_id, $con);
             /* The following can be used additionally to
                 guarantee the related object contains a reference
                 to this object.  This level of coupling may, however, be
                 undesirable since it could result in an only partially populated collection
                 in the referenced object.
-                $this->aLang->addGoogleshoppingxmlFeeds($this);
+                $this->aGoogleshoppingxmlFeed->addGoogleshoppingxmlLogs($this);
              */
         }
 
-        return $this->aLang;
+        return $this->aGoogleshoppingxmlFeed;
     }
 
     /**
-     * Declares an association between this object and a ChildCurrency object.
+     * Declares an association between this object and a ChildProductSaleElements object.
      *
-     * @param                  ChildCurrency $v
-     * @return                 \GoogleShoppingXml\Model\GoogleshoppingxmlFeed The current object (for fluent API support)
+     * @param                  ChildProductSaleElements $v
+     * @return                 \GoogleShoppingXml\Model\GoogleshoppingxmlLog The current object (for fluent API support)
      * @throws PropelException
      */
-    public function setCurrency(ChildCurrency $v = null)
+    public function setProductSaleElements(ChildProductSaleElements $v = null)
     {
         if ($v === null) {
-            $this->setCurrencyId(NULL);
+            $this->setPseId(NULL);
         } else {
-            $this->setCurrencyId($v->getId());
+            $this->setPseId($v->getId());
         }
 
-        $this->aCurrency = $v;
+        $this->aProductSaleElements = $v;
 
         // Add binding for other direction of this n:n relationship.
-        // If this object has already been added to the ChildCurrency object, it will not be re-added.
+        // If this object has already been added to the ChildProductSaleElements object, it will not be re-added.
         if ($v !== null) {
-            $v->addGoogleshoppingxmlFeed($this);
+            $v->addGoogleshoppingxmlLog($this);
         }
 
 
@@ -1335,336 +1532,26 @@ abstract class GoogleshoppingxmlFeed implements ActiveRecordInterface
 
 
     /**
-     * Get the associated ChildCurrency object
+     * Get the associated ChildProductSaleElements object
      *
      * @param      ConnectionInterface $con Optional Connection object.
-     * @return                 ChildCurrency The associated ChildCurrency object.
+     * @return                 ChildProductSaleElements The associated ChildProductSaleElements object.
      * @throws PropelException
      */
-    public function getCurrency(ConnectionInterface $con = null)
+    public function getProductSaleElements(ConnectionInterface $con = null)
     {
-        if ($this->aCurrency === null && ($this->currency_id !== null)) {
-            $this->aCurrency = CurrencyQuery::create()->findPk($this->currency_id, $con);
+        if ($this->aProductSaleElements === null && ($this->pse_id !== null)) {
+            $this->aProductSaleElements = ProductSaleElementsQuery::create()->findPk($this->pse_id, $con);
             /* The following can be used additionally to
                 guarantee the related object contains a reference
                 to this object.  This level of coupling may, however, be
                 undesirable since it could result in an only partially populated collection
                 in the referenced object.
-                $this->aCurrency->addGoogleshoppingxmlFeeds($this);
+                $this->aProductSaleElements->addGoogleshoppingxmlLogs($this);
              */
         }
 
-        return $this->aCurrency;
-    }
-
-    /**
-     * Declares an association between this object and a ChildCountry object.
-     *
-     * @param                  ChildCountry $v
-     * @return                 \GoogleShoppingXml\Model\GoogleshoppingxmlFeed The current object (for fluent API support)
-     * @throws PropelException
-     */
-    public function setCountry(ChildCountry $v = null)
-    {
-        if ($v === null) {
-            $this->setCountryId(NULL);
-        } else {
-            $this->setCountryId($v->getId());
-        }
-
-        $this->aCountry = $v;
-
-        // Add binding for other direction of this n:n relationship.
-        // If this object has already been added to the ChildCountry object, it will not be re-added.
-        if ($v !== null) {
-            $v->addGoogleshoppingxmlFeed($this);
-        }
-
-
-        return $this;
-    }
-
-
-    /**
-     * Get the associated ChildCountry object
-     *
-     * @param      ConnectionInterface $con Optional Connection object.
-     * @return                 ChildCountry The associated ChildCountry object.
-     * @throws PropelException
-     */
-    public function getCountry(ConnectionInterface $con = null)
-    {
-        if ($this->aCountry === null && ($this->country_id !== null)) {
-            $this->aCountry = CountryQuery::create()->findPk($this->country_id, $con);
-            /* The following can be used additionally to
-                guarantee the related object contains a reference
-                to this object.  This level of coupling may, however, be
-                undesirable since it could result in an only partially populated collection
-                in the referenced object.
-                $this->aCountry->addGoogleshoppingxmlFeeds($this);
-             */
-        }
-
-        return $this->aCountry;
-    }
-
-
-    /**
-     * Initializes a collection based on the name of a relation.
-     * Avoids crafting an 'init[$relationName]s' method name
-     * that wouldn't work when StandardEnglishPluralizer is used.
-     *
-     * @param      string $relationName The name of the relation to initialize
-     * @return void
-     */
-    public function initRelation($relationName)
-    {
-        if ('GoogleshoppingxmlLog' == $relationName) {
-            return $this->initGoogleshoppingxmlLogs();
-        }
-    }
-
-    /**
-     * Clears out the collGoogleshoppingxmlLogs collection
-     *
-     * This does not modify the database; however, it will remove any associated objects, causing
-     * them to be refetched by subsequent calls to accessor method.
-     *
-     * @return void
-     * @see        addGoogleshoppingxmlLogs()
-     */
-    public function clearGoogleshoppingxmlLogs()
-    {
-        $this->collGoogleshoppingxmlLogs = null; // important to set this to NULL since that means it is uninitialized
-    }
-
-    /**
-     * Reset is the collGoogleshoppingxmlLogs collection loaded partially.
-     */
-    public function resetPartialGoogleshoppingxmlLogs($v = true)
-    {
-        $this->collGoogleshoppingxmlLogsPartial = $v;
-    }
-
-    /**
-     * Initializes the collGoogleshoppingxmlLogs collection.
-     *
-     * By default this just sets the collGoogleshoppingxmlLogs collection to an empty array (like clearcollGoogleshoppingxmlLogs());
-     * however, you may wish to override this method in your stub class to provide setting appropriate
-     * to your application -- for example, setting the initial array to the values stored in database.
-     *
-     * @param      boolean $overrideExisting If set to true, the method call initializes
-     *                                        the collection even if it is not empty
-     *
-     * @return void
-     */
-    public function initGoogleshoppingxmlLogs($overrideExisting = true)
-    {
-        if (null !== $this->collGoogleshoppingxmlLogs && !$overrideExisting) {
-            return;
-        }
-        $this->collGoogleshoppingxmlLogs = new ObjectCollection();
-        $this->collGoogleshoppingxmlLogs->setModel('\GoogleShoppingXml\Model\GoogleshoppingxmlLog');
-    }
-
-    /**
-     * Gets an array of ChildGoogleshoppingxmlLog objects which contain a foreign key that references this object.
-     *
-     * If the $criteria is not null, it is used to always fetch the results from the database.
-     * Otherwise the results are fetched from the database the first time, then cached.
-     * Next time the same method is called without $criteria, the cached collection is returned.
-     * If this ChildGoogleshoppingxmlFeed is new, it will return
-     * an empty collection or the current collection; the criteria is ignored on a new object.
-     *
-     * @param      Criteria $criteria optional Criteria object to narrow the query
-     * @param      ConnectionInterface $con optional connection object
-     * @return Collection|ChildGoogleshoppingxmlLog[] List of ChildGoogleshoppingxmlLog objects
-     * @throws PropelException
-     */
-    public function getGoogleshoppingxmlLogs($criteria = null, ConnectionInterface $con = null)
-    {
-        $partial = $this->collGoogleshoppingxmlLogsPartial && !$this->isNew();
-        if (null === $this->collGoogleshoppingxmlLogs || null !== $criteria  || $partial) {
-            if ($this->isNew() && null === $this->collGoogleshoppingxmlLogs) {
-                // return empty collection
-                $this->initGoogleshoppingxmlLogs();
-            } else {
-                $collGoogleshoppingxmlLogs = ChildGoogleshoppingxmlLogQuery::create(null, $criteria)
-                    ->filterByGoogleshoppingxmlFeed($this)
-                    ->find($con);
-
-                if (null !== $criteria) {
-                    if (false !== $this->collGoogleshoppingxmlLogsPartial && count($collGoogleshoppingxmlLogs)) {
-                        $this->initGoogleshoppingxmlLogs(false);
-
-                        foreach ($collGoogleshoppingxmlLogs as $obj) {
-                            if (false == $this->collGoogleshoppingxmlLogs->contains($obj)) {
-                                $this->collGoogleshoppingxmlLogs->append($obj);
-                            }
-                        }
-
-                        $this->collGoogleshoppingxmlLogsPartial = true;
-                    }
-
-                    reset($collGoogleshoppingxmlLogs);
-
-                    return $collGoogleshoppingxmlLogs;
-                }
-
-                if ($partial && $this->collGoogleshoppingxmlLogs) {
-                    foreach ($this->collGoogleshoppingxmlLogs as $obj) {
-                        if ($obj->isNew()) {
-                            $collGoogleshoppingxmlLogs[] = $obj;
-                        }
-                    }
-                }
-
-                $this->collGoogleshoppingxmlLogs = $collGoogleshoppingxmlLogs;
-                $this->collGoogleshoppingxmlLogsPartial = false;
-            }
-        }
-
-        return $this->collGoogleshoppingxmlLogs;
-    }
-
-    /**
-     * Sets a collection of GoogleshoppingxmlLog objects related by a one-to-many relationship
-     * to the current object.
-     * It will also schedule objects for deletion based on a diff between old objects (aka persisted)
-     * and new objects from the given Propel collection.
-     *
-     * @param      Collection $googleshoppingxmlLogs A Propel collection.
-     * @param      ConnectionInterface $con Optional connection object
-     * @return   ChildGoogleshoppingxmlFeed The current object (for fluent API support)
-     */
-    public function setGoogleshoppingxmlLogs(Collection $googleshoppingxmlLogs, ConnectionInterface $con = null)
-    {
-        $googleshoppingxmlLogsToDelete = $this->getGoogleshoppingxmlLogs(new Criteria(), $con)->diff($googleshoppingxmlLogs);
-
-
-        $this->googleshoppingxmlLogsScheduledForDeletion = $googleshoppingxmlLogsToDelete;
-
-        foreach ($googleshoppingxmlLogsToDelete as $googleshoppingxmlLogRemoved) {
-            $googleshoppingxmlLogRemoved->setGoogleshoppingxmlFeed(null);
-        }
-
-        $this->collGoogleshoppingxmlLogs = null;
-        foreach ($googleshoppingxmlLogs as $googleshoppingxmlLog) {
-            $this->addGoogleshoppingxmlLog($googleshoppingxmlLog);
-        }
-
-        $this->collGoogleshoppingxmlLogs = $googleshoppingxmlLogs;
-        $this->collGoogleshoppingxmlLogsPartial = false;
-
-        return $this;
-    }
-
-    /**
-     * Returns the number of related GoogleshoppingxmlLog objects.
-     *
-     * @param      Criteria $criteria
-     * @param      boolean $distinct
-     * @param      ConnectionInterface $con
-     * @return int             Count of related GoogleshoppingxmlLog objects.
-     * @throws PropelException
-     */
-    public function countGoogleshoppingxmlLogs(Criteria $criteria = null, $distinct = false, ConnectionInterface $con = null)
-    {
-        $partial = $this->collGoogleshoppingxmlLogsPartial && !$this->isNew();
-        if (null === $this->collGoogleshoppingxmlLogs || null !== $criteria || $partial) {
-            if ($this->isNew() && null === $this->collGoogleshoppingxmlLogs) {
-                return 0;
-            }
-
-            if ($partial && !$criteria) {
-                return count($this->getGoogleshoppingxmlLogs());
-            }
-
-            $query = ChildGoogleshoppingxmlLogQuery::create(null, $criteria);
-            if ($distinct) {
-                $query->distinct();
-            }
-
-            return $query
-                ->filterByGoogleshoppingxmlFeed($this)
-                ->count($con);
-        }
-
-        return count($this->collGoogleshoppingxmlLogs);
-    }
-
-    /**
-     * Method called to associate a ChildGoogleshoppingxmlLog object to this object
-     * through the ChildGoogleshoppingxmlLog foreign key attribute.
-     *
-     * @param    ChildGoogleshoppingxmlLog $l ChildGoogleshoppingxmlLog
-     * @return   \GoogleShoppingXml\Model\GoogleshoppingxmlFeed The current object (for fluent API support)
-     */
-    public function addGoogleshoppingxmlLog(ChildGoogleshoppingxmlLog $l)
-    {
-        if ($this->collGoogleshoppingxmlLogs === null) {
-            $this->initGoogleshoppingxmlLogs();
-            $this->collGoogleshoppingxmlLogsPartial = true;
-        }
-
-        if (!in_array($l, $this->collGoogleshoppingxmlLogs->getArrayCopy(), true)) { // only add it if the **same** object is not already associated
-            $this->doAddGoogleshoppingxmlLog($l);
-        }
-
-        return $this;
-    }
-
-    /**
-     * @param GoogleshoppingxmlLog $googleshoppingxmlLog The googleshoppingxmlLog object to add.
-     */
-    protected function doAddGoogleshoppingxmlLog($googleshoppingxmlLog)
-    {
-        $this->collGoogleshoppingxmlLogs[]= $googleshoppingxmlLog;
-        $googleshoppingxmlLog->setGoogleshoppingxmlFeed($this);
-    }
-
-    /**
-     * @param  GoogleshoppingxmlLog $googleshoppingxmlLog The googleshoppingxmlLog object to remove.
-     * @return ChildGoogleshoppingxmlFeed The current object (for fluent API support)
-     */
-    public function removeGoogleshoppingxmlLog($googleshoppingxmlLog)
-    {
-        if ($this->getGoogleshoppingxmlLogs()->contains($googleshoppingxmlLog)) {
-            $this->collGoogleshoppingxmlLogs->remove($this->collGoogleshoppingxmlLogs->search($googleshoppingxmlLog));
-            if (null === $this->googleshoppingxmlLogsScheduledForDeletion) {
-                $this->googleshoppingxmlLogsScheduledForDeletion = clone $this->collGoogleshoppingxmlLogs;
-                $this->googleshoppingxmlLogsScheduledForDeletion->clear();
-            }
-            $this->googleshoppingxmlLogsScheduledForDeletion[]= clone $googleshoppingxmlLog;
-            $googleshoppingxmlLog->setGoogleshoppingxmlFeed(null);
-        }
-
-        return $this;
-    }
-
-
-    /**
-     * If this collection has already been initialized with
-     * an identical criteria, it returns the collection.
-     * Otherwise if this GoogleshoppingxmlFeed is new, it will return
-     * an empty collection; or if this GoogleshoppingxmlFeed has previously
-     * been saved, it will retrieve related GoogleshoppingxmlLogs from storage.
-     *
-     * This method is protected by default in order to keep the public
-     * api reasonable.  You can provide public methods for those you
-     * actually need in GoogleshoppingxmlFeed.
-     *
-     * @param      Criteria $criteria optional Criteria object to narrow the query
-     * @param      ConnectionInterface $con optional connection object
-     * @param      string $joinBehavior optional join type to use (defaults to Criteria::LEFT_JOIN)
-     * @return Collection|ChildGoogleshoppingxmlLog[] List of ChildGoogleshoppingxmlLog objects
-     */
-    public function getGoogleshoppingxmlLogsJoinProductSaleElements($criteria = null, $con = null, $joinBehavior = Criteria::LEFT_JOIN)
-    {
-        $query = ChildGoogleshoppingxmlLogQuery::create(null, $criteria);
-        $query->joinWith('ProductSaleElements', $joinBehavior);
-
-        return $this->getGoogleshoppingxmlLogs($query, $con);
+        return $this->aProductSaleElements;
     }
 
     /**
@@ -1673,10 +1560,14 @@ abstract class GoogleshoppingxmlFeed implements ActiveRecordInterface
     public function clear()
     {
         $this->id = null;
-        $this->label = null;
-        $this->lang_id = null;
-        $this->currency_id = null;
-        $this->country_id = null;
+        $this->feed_id = null;
+        $this->separation = null;
+        $this->level = null;
+        $this->pse_id = null;
+        $this->message = null;
+        $this->help = null;
+        $this->created_at = null;
+        $this->updated_at = null;
         $this->alreadyInSave = false;
         $this->clearAllReferences();
         $this->resetModified();
@@ -1696,17 +1587,10 @@ abstract class GoogleshoppingxmlFeed implements ActiveRecordInterface
     public function clearAllReferences($deep = false)
     {
         if ($deep) {
-            if ($this->collGoogleshoppingxmlLogs) {
-                foreach ($this->collGoogleshoppingxmlLogs as $o) {
-                    $o->clearAllReferences($deep);
-                }
-            }
         } // if ($deep)
 
-        $this->collGoogleshoppingxmlLogs = null;
-        $this->aLang = null;
-        $this->aCurrency = null;
-        $this->aCountry = null;
+        $this->aGoogleshoppingxmlFeed = null;
+        $this->aProductSaleElements = null;
     }
 
     /**
@@ -1716,7 +1600,21 @@ abstract class GoogleshoppingxmlFeed implements ActiveRecordInterface
      */
     public function __toString()
     {
-        return (string) $this->exportTo(GoogleshoppingxmlFeedTableMap::DEFAULT_STRING_FORMAT);
+        return (string) $this->exportTo(GoogleshoppingxmlLogTableMap::DEFAULT_STRING_FORMAT);
+    }
+
+    // timestampable behavior
+
+    /**
+     * Mark the current object so that the update date doesn't get updated during next save
+     *
+     * @return     ChildGoogleshoppingxmlLog The current object (for fluent API support)
+     */
+    public function keepUpdateDateUnchanged()
+    {
+        $this->modifiedColumns[GoogleshoppingxmlLogTableMap::UPDATED_AT] = true;
+
+        return $this;
     }
 
     /**
