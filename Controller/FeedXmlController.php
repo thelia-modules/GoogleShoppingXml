@@ -2,10 +2,13 @@
 
 namespace GoogleShoppingXml\Controller;
 
+use GoogleShoppingXml\GoogleShoppingXml;
 use GoogleShoppingXml\Model\GoogleshoppingxmlFeed;
 use GoogleShoppingXml\Model\GoogleshoppingxmlFeedQuery;
 use GoogleShoppingXml\Model\GoogleshoppingxmlGoogleFieldAssociation;
 use GoogleShoppingXml\Model\GoogleshoppingxmlGoogleFieldAssociationQuery;
+use GoogleShoppingXml\Model\GoogleshoppingxmlLogQuery;
+use GoogleShoppingXml\Tools\GtinChecker;
 use Propel\Runtime\ActiveQuery\Criteria;
 use Propel\Runtime\Propel;
 use Thelia\Action\Image;
@@ -13,10 +16,11 @@ use Thelia\Controller\Front\BaseFrontController;
 use Thelia\Core\Event\Image\ImageEvent;
 use Thelia\Core\Event\TheliaEvents;
 use Thelia\Core\HttpFoundation\Response;
+use Thelia\Core\Translation\Translator;
 use Thelia\Model\AreaDeliveryModuleQuery;
 use Thelia\Model\ConfigQuery;
-use Thelia\Model\Country;
 use Thelia\Model\Currency;
+use Thelia\Model\CurrencyQuery;
 use Thelia\Model\Module;
 use Thelia\Model\ModuleQuery;
 use Thelia\Model\OrderPostage;
@@ -29,8 +33,25 @@ use Thelia\Tools\URL;
 
 class FeedXmlController extends BaseFrontController
 {
+    /**
+     * @var GoogleshoppingxmlLogQuery $logger
+     */
+    private $logger;
+
+    private $ean_rule;
+
+    const EAN_RULE_ALL = "all";
+    const EAN_RULE_CHECK_FLEXIBLE = "check_flexible";
+    const EAN_RULE_CHECK_STRICT = "check_strict";
+    const EAN_RULE_NONE = "none";
+
+    const DEFAULT_EAN_RULE = self::EAN_RULE_CHECK_STRICT;
+
     public function getFeedXmlAction($feedId)
     {
+        $this->logger = GoogleshoppingxmlLogQuery::create();
+        $this->ean_rule = GoogleShoppingXml::getConfigValue("ean_rule", self::DEFAULT_EAN_RULE);
+
         $feed = GoogleshoppingxmlFeedQuery::create()->findOneById($feedId);
 
         $request = $this->getRequest();
@@ -42,35 +63,97 @@ class FeedXmlController extends BaseFrontController
             $this->pageNotFound();
         }
 
-        $shippingArray = $this->buildShippingArray($feed);
+        try {
+            $shippingArray = $this->buildShippingArray($feed);
 
-        $pseArray = $this->getProductItems($feed, $limit, $offset);
-        $this->injectGoogleCategories($pseArray, $feed);
-        $this->injectUrls($pseArray, $feed);
-        $this->injectTaxedPrices($pseArray, $feed);
-        $this->injectCustomAssociationFields($pseArray, $feed);
-        $this->injectAttributesInTitle($pseArray, $feed);
-        $this->injectImages($pseArray);
+            $pseArray = $this->getProductItems($feed, $limit, $offset);
+            $this->injectGoogleCategories($pseArray, $feed);
+            $this->injectUrls($pseArray, $feed);
+            $this->injectTaxedPrices($pseArray, $feed);
+            $this->injectCustomAssociationFields($pseArray, $feed);
+            $this->injectAttributesInTitle($pseArray, $feed);
+            $this->injectImages($pseArray);
 
-        $content = $this->renderXmlAll($feed, $pseArray, $shippingArray);
+            $nb_pse = 0;
+            $nb_pse_invisible = 0;
+            $content = $this->renderXmlAll($feed, $pseArray, $shippingArray, $nb_pse, $nb_pse_invisible);
 
-        $response = new Response();
-        $response->setContent($content);
-        $response->headers->set('Content-Type', 'application/xml');
+            if ($nb_pse_invisible > 0) {
+                $this->logger->logInfo(
+                    $feed,
+                    null,
+                    Translator::getInstance()->trans('%nb product item(s) have been skipped because they were set as not visible.', ['%nb' => $nb_pse_invisible], GoogleShoppingXml::DOMAIN_NAME),
+                    Translator::getInstance()->trans('You can set your product s visibility in the product edit tool by checking the box [This product is online].', [], GoogleShoppingXml::DOMAIN_NAME)
+                );
+            }
 
-        return $response;
+            if ($nb_pse <= 0) {
+                $this->logger->logFatal(
+                    $feed,
+                    null,
+                    Translator::getInstance()->trans('No product in the feed', [], GoogleShoppingXml::DOMAIN_NAME),
+                    Translator::getInstance()->trans('Your products may not have been included in the feed due to errors. Check the others messages in this log.', [], GoogleShoppingXml::DOMAIN_NAME)
+                );
+            } else {
+                $nb_line_xml = substr_count($content, PHP_EOL);
+                if ($nb_line_xml <= 8) {
+                    $this->logger->logFatal(
+                        $feed,
+                        null,
+                        Translator::getInstance()->trans('Empty generated XML file', [], GoogleShoppingXml::DOMAIN_NAME),
+                        Translator::getInstance()->trans('Your products may not have been included in the feed due to errors. Check the others messages in this log.', [], GoogleShoppingXml::DOMAIN_NAME)
+                    );
+                } else {
+                    $this->logger->logSuccess($feed, null, Translator::getInstance()->trans('The XML file has been successfully generated with %nb product items.', ['%nb' => $nb_pse], GoogleShoppingXml::DOMAIN_NAME));
+                }
+            }
+
+            $response = new Response();
+            $response->setContent($content);
+            $response->headers->set('Content-Type', 'application/xml');
+
+            return $response;
+
+        } catch (\Exception $ex) {
+            $this->logger->logFatal($feed, null, $ex->getMessage(), $ex->getFile()." at line ".$ex->getLine());
+            throw $ex;
+        }
     }
 
-    protected function renderXmlAll($feed, &$pseArray, $shippingArray)
+    protected function renderXmlAll($feed, &$pseArray, $shippingArray, &$nb_pse, &$nb_pse_invisible)
     {
         $checkAvailability = ConfigQuery::checkAvailableStock();
 
         $str = '<?xml version="1.0"?>'.PHP_EOL;
         $str .= '<rss xmlns:g="http://base.google.com/ns/1.0" version="2.0">'.PHP_EOL;
         $str .= '<channel>'.PHP_EOL;
-        $str .= '<title>'.ConfigQuery::getStoreName().'</title>'.PHP_EOL;
+
+        $store_name = ConfigQuery::getStoreName();
+        $store_description = ConfigQuery::getStoreDescription();
+
+        if (empty($store_name)) {
+            $this->logger->logError(
+                $feed,
+                null,
+                Translator::getInstance()->trans('Missing store name', [], GoogleShoppingXml::DOMAIN_NAME),
+                Translator::getInstance()->trans('You must set the store name in Configuration > Store', [], GoogleShoppingXml::DOMAIN_NAME)
+            );
+            throw new \Exception('Fatal error during GoogleShopping XML generation : the store name is missing.');
+        }
+
+        if (empty($store_description)) {
+            $this->logger->logError(
+                $feed,
+                null,
+                Translator::getInstance()->trans('Missing store description', [], GoogleShoppingXml::DOMAIN_NAME),
+                Translator::getInstance()->trans('You must set the store description in Configuration > Store', [], GoogleShoppingXml::DOMAIN_NAME)
+            );
+            throw new \Exception('Fatal error during GoogleShopping XML generation : the store description is missing.');
+        }
+
+        $str .= '<title>'.$this->xmlSafeEncode($store_name).'</title>'.PHP_EOL;
         $str .= '<link>'.$this->xmlSafeEncode(URL::getInstance()->getIndexPage()).'</link>'.PHP_EOL;
-        $str .= '<description>'.$this->xmlSafeEncode(ConfigQuery::getStoreDescription()).'</description>'.PHP_EOL;
+        $str .= '<description>'.$this->xmlSafeEncode($store_description).'</description>'.PHP_EOL;
 
         $shippingStr = '';
         foreach ($shippingArray as $shipping) {
@@ -82,8 +165,19 @@ class FeedXmlController extends BaseFrontController
             $shippingStr .= '</g:shipping>'.PHP_EOL;
         }
 
+        $nb_pse = 0;
+        $nb_pse_invisible = 0;
+
         foreach ($pseArray as &$pse) {
-            $str .= $this->renderXmlOnePse($feed, $pse, $shippingStr, $checkAvailability);
+            if ($pse['PRODUCT_VISIBLE'] == 1) {
+                $xmlPse = $this->renderXmlOnePse($feed, $pse, $shippingStr, $checkAvailability);
+                if(!empty($xmlPse)){
+                    $nb_pse++;
+                }
+                $str .= $xmlPse;
+            } else {
+                $nb_pse_invisible++;
+            }
         }
 
         $str .= '</channel>'.PHP_EOL;
@@ -102,15 +196,70 @@ class FeedXmlController extends BaseFrontController
     {
         $str = '<item>'.PHP_EOL;
         $str .= '<g:id>'.$pse['ID'].'</g:id>'.PHP_EOL;
+
+
+        // **************** Title ****************
+
+        if (empty($pse['TITLE'])) {
+            $this->logger->logError(
+                $feed,
+                $pse['ID'],
+                Translator::getInstance()->trans('Missing product title for the language "%lang"', ['%lang' => $feed->getLang()->getTitle()], GoogleShoppingXml::DOMAIN_NAME),
+                Translator::getInstance()->trans('Check that this product has a valid title in this langage.', [], GoogleShoppingXml::DOMAIN_NAME)
+            );
+            return '';
+        }
+
         $str .= '<g:title>'.$this->xmlSafeEncode($pse['TITLE']).'</g:title>'.PHP_EOL;
-        $str .= '<g:description>'.$this->xmlSafeEncode(html_entity_decode(trim(strip_tags($pse['DESCRIPTION'])))).'</g:description>'.PHP_EOL;
+
+
+        // **************** Description ****************
+
+        $description = html_entity_decode(trim(strip_tags($pse['DESCRIPTION'])));
+
+        if (empty($description)) {
+            $this->logger->logError(
+                $feed,
+                $pse['ID'],
+                Translator::getInstance()->trans('Missing product description for the language "%lang"', ['%lang' => $feed->getLang()->getTitle()], GoogleShoppingXml::DOMAIN_NAME),
+                Translator::getInstance()->trans('Check that this product has a valid description in this langage.', [], GoogleShoppingXml::DOMAIN_NAME)
+            );
+            return '';
+        }
+
+        $str .= '<g:description>'.$this->xmlSafeEncode($description).'</g:description>'.PHP_EOL;
+
+
+        // **************** URL ****************
+
+        if (empty($pse['URL'])) {
+            $this->logger->logError(
+                $feed,
+                $pse['ID'],
+                Translator::getInstance()->trans('Missing product URL', [], GoogleShoppingXml::DOMAIN_NAME)
+            );
+            return '';
+        }
+
         $str .= '<g:link>'.$this->xmlSafeEncode($pse['URL']).'</g:link>'.PHP_EOL;
 
-        if (empty($pse['IMAGE_PATH'])) { // Mandatory field
+
+        // **************** Image path ****************
+
+        if (empty($pse['IMAGE_PATH'])) {
+            $this->logger->logError(
+                $feed,
+                $pse['ID'],
+                Translator::getInstance()->trans('Missing product image', [], GoogleShoppingXml::DOMAIN_NAME),
+                Translator::getInstance()->trans('Please add an image for this product.', [], GoogleShoppingXml::DOMAIN_NAME)
+            );
             return '';
         }
 
         $str .= '<g:image_link>'.$this->xmlSafeEncode($pse['IMAGE_PATH']).'</g:image_link>'.PHP_EOL;
+
+
+        // **************** Availability ****************
 
         if ($checkAvailability && $pse['QUANTITY'] <= 0) {
             $str .= '<g:availability>out of stock</g:availability>'.PHP_EOL;
@@ -118,20 +267,73 @@ class FeedXmlController extends BaseFrontController
             $str .= '<g:availability>in stock</g:availability>'.PHP_EOL;
         }
 
+
+        // **************** Price ****************
+
+        if (empty($pse['TAXED_PRICE'])) {
+            $this->logger->logError(
+                $feed,
+                $pse['ID'],
+                Translator::getInstance()->trans('Missing product price for the currency "%code"', ['%code' => $feed->getCurrency()->getCode()], GoogleShoppingXml::DOMAIN_NAME),
+                Translator::getInstance()->trans('Unable to compute a price for this product and this currency. Specify one manually or check [Apply exchange rates] in the Edit Product page for this currency.' , [], GoogleShoppingXml::DOMAIN_NAME)
+            );
+            return '';
+        }
+
         $formattedTaxedPrice = MoneyFormat::getInstance($this->getRequest())->formatByCurrency($pse['TAXED_PRICE'], null, null, null, $feed->getCurrencyId());
 
         $str .= '<g:price>'.$formattedTaxedPrice.'</g:price>'.PHP_EOL;
 
-        if ($pse['TAXED_PROMO_PRICE'] != 0 && $pse['TAXED_PROMO_PRICE'] < $pse['TAXED_PRICE']) {
+        if (!empty($pse['TAXED_PROMO_PRICE']) && $pse['TAXED_PROMO_PRICE'] < $pse['TAXED_PRICE']) {
             $formattedTaxedPromoPrice = MoneyFormat::getInstance($this->getRequest())->formatByCurrency($pse['TAXED_PROMO_PRICE'], null, null, null, $feed->getCurrencyId());
             $str .= '<g:sale_price>'.$formattedTaxedPromoPrice.'</g:sale_price>'.PHP_EOL;
         }
 
+
+        // **************** Brand ****************
+
         if (!$this->hasCustomField($pse, "brand")) {
+            if (empty($pse['BRAND_TITLE'])) {
+                $this->logger->logError(
+                    $feed,
+                    $pse['ID'],
+                    Translator::getInstance()->trans('Missing product brand for the language "%lang"', ['%lang' => $feed->getLang()->getTitle()], GoogleShoppingXml::DOMAIN_NAME),
+                    Translator::getInstance()->trans('The product has no brand or the brand doesn t have a title in this language. If none of your product has a brand, please add a [brand] field with a fixed value in the [Advanded Configuration] tab as this field is required by Google.' , [], GoogleShoppingXml::DOMAIN_NAME)
+                );
+                return '';
+            }
+
             $str .= '<g:brand>' . $this->xmlSafeEncode($pse['BRAND_TITLE']) . '</g:brand>' . PHP_EOL;
         }
 
-        if (!empty($pse['EAN_CODE'])) {
+
+        // **************** EAN / GTIN code ****************
+
+        $include_ean = false;
+
+        if (empty($pse['EAN_CODE']) || $this->ean_rule == self::EAN_RULE_NONE) {
+            $include_ean = false;
+        } elseif ($this->ean_rule == self::EAN_RULE_ALL) {
+            $include_ean = true;
+        } else {
+            if ((new GtinChecker())->isValidGtin($pse['EAN_CODE'])) {
+                $include_ean = true;
+            } else {
+                if ($this->ean_rule == self::EAN_RULE_CHECK_FLEXIBLE) {
+                    $include_ean = false;
+                } elseif ($this->ean_rule == self::EAN_RULE_CHECK_STRICT) {
+                    $this->logger->logError(
+                        $feed,
+                        $pse['ID'],
+                        Translator::getInstance()->trans('Invalid GTIN/EAN code : "%code"', ["%code" => $pse['EAN_CODE']], GoogleShoppingXml::DOMAIN_NAME),
+                        Translator::getInstance()->trans('The product s identification code seems invalid. You can set a valid EAN code in the Edit product page or disable the verification in the [Advanced configuration] tab.', [], GoogleShoppingXml::DOMAIN_NAME)
+                    );
+                    return '';
+                }
+            }
+        }
+
+        if ($include_ean) {
             $str .= '<g:gtin>'.$pse['EAN_CODE'].'</g:gtin>'.PHP_EOL;
             $str .= '<g:identifier_exists>yes</g:identifier_exists>'.PHP_EOL;
         } else {
@@ -142,8 +344,18 @@ class FeedXmlController extends BaseFrontController
 
         $str .= $shippingStr;
 
+
+        // **************** Categories ****************
+
         if (!empty($pse['GOOGLE_CATEGORY'])) {
             $str .= '<g:google_product_category>'.$this->xmlSafeEncode($pse['GOOGLE_CATEGORY']).'</g:google_product_category>'.PHP_EOL;
+        } else {
+            $this->logger->logWarning(
+                $feed,
+                $pse['ID'],
+                Translator::getInstance()->trans('No Google category related to the Thelia category "%cat".', ['%cat' => $pse['CATEGORY_PATH']], GoogleShoppingXml::DOMAIN_NAME),
+                Translator::getInstance()->trans('This product s category is not related to any Google category. It is required by Google for most products. Please add one in the [Google Taxonomy] tab.', [], GoogleShoppingXml::DOMAIN_NAME)
+            );
         }
 
         if (!empty($pse['CATEGORY_PATH'])) {
@@ -186,6 +398,7 @@ class FeedXmlController extends BaseFrontController
                 pse.ID AS ID,
                 product.ID AS ID_PRODUCT,
                 product.REF AS REF_PRODUCT,
+                product.VISIBLE AS PRODUCT_VISIBLE,
                 product_i18n.TITLE AS TITLE,
                 product_i18n.DESCRIPTION AS DESCRIPTION,
                 brand_i18n.TITLE AS BRAND_TITLE,
@@ -193,25 +406,24 @@ class FeedXmlController extends BaseFrontController
                 pse.EAN_CODE AS EAN_CODE,
                 product_category.CATEGORY_ID AS CATEGORY_ID,
                 product.TAX_RULE_ID AS TAX_RULE_ID,
-                ROUND(CASE WHEN ISNULL(product_price.PRICE) OR product_price.FROM_DEFAULT_CURRENCY = 1 THEN product_price.PRICE * :currate ELSE product_price.PRICE END, 6) AS PRICE,
-                ROUND(CASE WHEN ISNULL(product_price.PRICE) OR product_price.FROM_DEFAULT_CURRENCY = 1 THEN product_price.PROMO_PRICE  * :currate ELSE product_price.PROMO_PRICE END, 6) AS PROMO_PRICE,
-                rewriting_url.url AS REWRITTEN_URL,
-                product_image.file AS IMAGE_NAME
+                COALESCE(price_on_currency.PRICE, CASE WHEN NOT ISNULL(price_default.PRICE) THEN ROUND(price_default.PRICE * :currate, 2) END) AS PRICE,
+                COALESCE(price_on_currency.PROMO_PRICE, CASE WHEN NOT ISNULL(price_default.PROMO_PRICE) THEN ROUND(price_default.PROMO_PRICE * :currate, 2) END) AS PROMO_PRICE,
+                rewriting_url.URL AS REWRITTEN_URL,
+                COALESCE(product_image_on_pse.FILE, product_image_default.FILE) AS IMAGE_NAME
                 
                 FROM product_sale_elements AS pse
                 
                 INNER JOIN product ON (pse.PRODUCT_ID = product.ID)
-                INNER JOIN product_i18n ON (pse.PRODUCT_ID = product_i18n.ID)
-                INNER JOIN product_category ON (pse.PRODUCT_ID = product_category.PRODUCT_ID)
-                INNER JOIN product_price ON (pse.ID = product_price.PRODUCT_SALE_ELEMENTS_ID)
+                LEFT OUTER JOIN product_price price_on_currency ON (pse.ID = price_on_currency.PRODUCT_SALE_ELEMENTS_ID AND price_on_currency.CURRENCY_ID = :currid)
+                LEFT OUTER JOIN product_price price_default ON (pse.ID = price_default.PRODUCT_SALE_ELEMENTS_ID AND price_default.FROM_DEFAULT_CURRENCY = 1)
+                LEFT OUTER JOIN product_category ON (pse.PRODUCT_ID = product_category.PRODUCT_ID AND product_category.DEFAULT_CATEGORY = 1)
+                LEFT OUTER JOIN product_i18n ON (pse.PRODUCT_ID = product_i18n.ID AND product_i18n.LOCALE = :locale)
                 LEFT OUTER JOIN brand_i18n ON (product.BRAND_ID = brand_i18n.ID AND brand_i18n.LOCALE = :locale)
                 LEFT OUTER JOIN rewriting_url ON (pse.PRODUCT_ID = rewriting_url.VIEW_ID AND rewriting_url.view = \'product\' AND rewriting_url.view_locale = :locale AND rewriting_url.redirected IS NULL)
-                LEFT OUTER JOIN product_image ON (pse.PRODUCT_ID = product_image.PRODUCT_ID AND product_image.POSITION = 1)
-                
-                WHERE product_i18n.LOCALE = :locale
-                AND product_category.DEFAULT_CATEGORY = 1
-                AND product_price.CURRENCY_ID = :currid
-                
+                LEFT OUTER JOIN product_sale_elements_product_image pse_image ON (pse.ID = pse_image.PRODUCT_SALE_ELEMENTS_ID)
+                LEFT OUTER JOIN product_image product_image_default ON (pse.PRODUCT_ID = product_image_default.PRODUCT_ID AND product_image_default.POSITION = 1)
+                LEFT OUTER JOIN product_image product_image_on_pse ON (product_image_on_pse.ID = pse_image.PRODUCT_IMAGE_ID)
+
                 GROUP BY pse.ID';
 
         $limit = $this->checkPositiveInteger($limit);
@@ -295,11 +507,22 @@ class FeedXmlController extends BaseFrontController
         foreach ($pseArray as &$pse) {
             $hasReachRoot = false;
             $categoryId = $pse['CATEGORY_ID'];
+            if (empty($categoryId)) {
+                $this->logger->logError(
+                    $feed,
+                    $pse['ID'],
+                    Translator::getInstance()->trans('No Thelia default category found for this product.', [], GoogleShoppingXml::DOMAIN_NAME),
+                    Translator::getInstance()->trans('This product does not have any default category.', [], GoogleShoppingXml::DOMAIN_NAME)
+                );
+                continue;
+            }
 
             $categoryRow = $theliaCategories[$categoryId];
 
             if ($categoryRow['PATH'] != null) {
                 $pse['CATEGORY_PATH'] = $categoryRow['PATH'];
+            } else {
+                $pse['CATEGORY_PATH'] = null;
             }
 
             while (!array_key_exists($categoryId, $googleCategories)) {
@@ -384,8 +607,8 @@ class FeedXmlController extends BaseFrontController
                 $calculator = $taxCalculatorsArray[$taxRuleId];
             }
 
-            $pse['TAXED_PRICE'] = $calculator->getTaxedPrice($pse['PRICE']);
-            $pse['TAXED_PROMO_PRICE'] = $calculator->getTaxedPrice($pse['PROMO_PRICE']);
+            $pse['TAXED_PRICE'] = !empty($pse['PRICE']) ? $calculator->getTaxedPrice($pse['PRICE']) : null;
+            $pse['TAXED_PROMO_PRICE'] = !empty($pse['PROMO_PRICE']) ? $calculator->getTaxedPrice($pse['PROMO_PRICE']) : null;
         }
     }
 
@@ -399,6 +622,25 @@ class FeedXmlController extends BaseFrontController
         $featuresArray = [];
 
         $fieldAssociationCollection = GoogleshoppingxmlGoogleFieldAssociationQuery::create()->find();
+
+        foreach ($fieldAssociationCollection as $fieldAssociation) {
+            $fieldName = $fieldAssociation->getGoogleField();
+            if (in_array($fieldName, GoogleFieldAssociationController::FIELDS_NATIVELY_DEFINED)) {
+                $this->logger->logWarning(
+                    $feed,
+                    null,
+                    Translator::getInstance()->trans('XML field "%field" already defined', ['%field' => $fieldName], GoogleShoppingXml::DOMAIN_NAME),
+                    Translator::getInstance()->trans('You manually specified a field that is already defined by the module and that does not support overriding. It may cause issues as the field is defined twice.', [], GoogleShoppingXml::DOMAIN_NAME)
+                );
+            } else if (!in_array($fieldName, GoogleFieldAssociationController::GOOGLE_FIELD_LIST)) {
+                $this->logger->logWarning(
+                    $feed,
+                    null,
+                    Translator::getInstance()->trans('Unknown XML field "%field".', ['%field' => $fieldName], GoogleShoppingXml::DOMAIN_NAME),
+                    Translator::getInstance()->trans('You manually specified a field that does not seem to be a valid Google XML field. You may have a typo that will cause issues.', [], GoogleShoppingXml::DOMAIN_NAME)
+                );
+            }
+        }
 
         foreach ($pseArray as &$pse) {
             $customFieldArray = [];
@@ -571,6 +813,15 @@ class FeedXmlController extends BaseFrontController
             $shippingItem['price'] = $postagePrice;
             $shippingItem['currency_id'] = $feed->getCurrencyId();
             $resultArray[] = $shippingItem;
+        }
+
+        if (empty($resultArray)) {
+            $this->logger->logError(
+                $feed,
+                null,
+                Translator::getInstance()->trans('No shipping informations.', [], GoogleShoppingXml::DOMAIN_NAME),
+                Translator::getInstance()->trans('The feed doesn t have any shippings informations. Check that at least one delivery module covers the country aimed by your feed.', [], GoogleShoppingXml::DOMAIN_NAME)
+            );
         }
 
         return $resultArray;

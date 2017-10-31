@@ -1,0 +1,68 @@
+tr.tr_log_fatal > td{
+    color : white;
+    background-color: red;
+}
+
+tr.tr_log_fatal a{
+    color: #FFDAA1;
+}
+
+tr.tr_log_error > td{
+    background-color: #F7BDA4;
+}
+tr.tr_log_error a{
+    color: #E87A0D;
+}
+
+tr.tr_log_success > td{
+    background-color: #00BF00;
+    color : white;
+}
+
+tr.tr_log_success a{
+    color: #FFDAA1;
+}
+
+tr.tr_log_warning > td{
+    background-color: #FFFCC1;
+}
+
+.gsxml_checkbox_container{
+    margin:0 15px;
+}
+
+.gsxml_checkbox_container label.checkbox-inline{
+    font-weight: bold;
+}
+
+.gsxml_panel_table_log_container{
+    padding: 10px 0;
+}
+
+.gsxml_checkbox_success{
+    color : green;
+}
+
+.gsxml_checkbox_warning{
+    color : orange;
+}
+
+.gsxml_checkbox_error{
+    color : orangered;
+}
+
+.gsxml_checkbox_fatal{
+    color : red;
+}
+
+.gsxml_btn_more_log{
+    width : 30%;
+}
+
+.btn-control-feed{
+    margin-right: 5px;
+}
+
+.custom-form-inline{
+    display: inline-block;
+}

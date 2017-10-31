@@ -2,6 +2,7 @@
 
 namespace GoogleShoppingXml\Controller;
 
+use GoogleShoppingXml\GoogleShoppingXml;
 use GoogleShoppingXml\Model\GoogleshoppingxmlGoogleFieldAssociationQuery;
 use Propel\Runtime\Propel;
 use Thelia\Controller\Admin\BaseAdminController;
@@ -18,11 +19,14 @@ class ModuleConfigController extends BaseAdminController
 
         $fieldAssociationArray = GoogleshoppingxmlGoogleFieldAssociationQuery::create()->find()->toArray();
 
+        $ean_rule = GoogleShoppingXml::getConfigValue("ean_rule", FeedXmlController::DEFAULT_EAN_RULE);
+
         return $this->render(
             "module-configuration",
             [
                 'field_association_array' => $fieldAssociationArray,
-                'pse_count' => $this->getNumberOfPse()
+                'pse_count' => $this->getNumberOfPse(),
+                'ean_rule' => $ean_rule
             ]
         );
     }
