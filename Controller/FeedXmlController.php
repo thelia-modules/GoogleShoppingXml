@@ -40,6 +40,10 @@ class FeedXmlController extends BaseFrontController
 
     private $ean_rule;
 
+    private $nb_pse;
+    private $nb_pse_invisible;
+    private $nb_pse_error;
+
     const EAN_RULE_ALL = "all";
     const EAN_RULE_CHECK_FLEXIBLE = "check_flexible";
     const EAN_RULE_CHECK_STRICT = "check_strict";
@@ -74,20 +78,30 @@ class FeedXmlController extends BaseFrontController
             $this->injectAttributesInTitle($pseArray, $feed);
             $this->injectImages($pseArray);
 
-            $nb_pse = 0;
-            $nb_pse_invisible = 0;
-            $content = $this->renderXmlAll($feed, $pseArray, $shippingArray, $nb_pse, $nb_pse_invisible);
+            $this->nb_pse = 0;
+            $this->nb_pse_invisible = 0;
+            $this->nb_pse_error = 0;
+            $content = $this->renderXmlAll($feed, $pseArray, $shippingArray);
 
-            if ($nb_pse_invisible > 0) {
+            if ($this->nb_pse_invisible > 0) {
                 $this->logger->logInfo(
                     $feed,
                     null,
-                    Translator::getInstance()->trans('%nb product item(s) have been skipped because they were set as not visible.', ['%nb' => $nb_pse_invisible], GoogleShoppingXml::DOMAIN_NAME),
+                    Translator::getInstance()->trans('%nb product item(s) have been skipped because they were set as not visible.', ['%nb' => $this->nb_pse_invisible], GoogleShoppingXml::DOMAIN_NAME),
                     Translator::getInstance()->trans('You can set your product s visibility in the product edit tool by checking the box [This product is online].', [], GoogleShoppingXml::DOMAIN_NAME)
                 );
             }
 
-            if ($nb_pse <= 0) {
+            if ($this->nb_pse_error > 0) {
+                $this->logger->logInfo(
+                    $feed,
+                    null,
+                    Translator::getInstance()->trans('%nb product item(s) have been skipped because of errors.', ['%nb' => $this->nb_pse_error], GoogleShoppingXml::DOMAIN_NAME),
+                    Translator::getInstance()->trans('Check the ERROR messages below to get further details about the error.', [], GoogleShoppingXml::DOMAIN_NAME)
+                );
+            }
+
+            if ($this->nb_pse <= 0) {
                 $this->logger->logFatal(
                     $feed,
                     null,
@@ -104,7 +118,7 @@ class FeedXmlController extends BaseFrontController
                         Translator::getInstance()->trans('Your products may not have been included in the feed due to errors. Check the others messages in this log.', [], GoogleShoppingXml::DOMAIN_NAME)
                     );
                 } else {
-                    $this->logger->logSuccess($feed, null, Translator::getInstance()->trans('The XML file has been successfully generated with %nb product items.', ['%nb' => $nb_pse], GoogleShoppingXml::DOMAIN_NAME));
+                    $this->logger->logSuccess($feed, null, Translator::getInstance()->trans('The XML file has been successfully generated with %nb product items.', ['%nb' => $this->nb_pse], GoogleShoppingXml::DOMAIN_NAME));
                 }
             }
 
@@ -120,7 +134,7 @@ class FeedXmlController extends BaseFrontController
         }
     }
 
-    protected function renderXmlAll($feed, &$pseArray, $shippingArray, &$nb_pse, &$nb_pse_invisible)
+    protected function renderXmlAll($feed, &$pseArray, $shippingArray)
     {
         $checkAvailability = ConfigQuery::checkAvailableStock();
 
@@ -165,18 +179,17 @@ class FeedXmlController extends BaseFrontController
             $shippingStr .= '</g:shipping>'.PHP_EOL;
         }
 
-        $nb_pse = 0;
-        $nb_pse_invisible = 0;
-
         foreach ($pseArray as &$pse) {
             if ($pse['PRODUCT_VISIBLE'] == 1) {
                 $xmlPse = $this->renderXmlOnePse($feed, $pse, $shippingStr, $checkAvailability);
-                if(!empty($xmlPse)){
-                    $nb_pse++;
+                if (!empty($xmlPse)) {
+                    $this->nb_pse++;
+                }else{
+                    $this->nb_pse_error++;
                 }
                 $str .= $xmlPse;
             } else {
-                $nb_pse_invisible++;
+                $this->nb_pse_invisible++;
             }
         }
 
