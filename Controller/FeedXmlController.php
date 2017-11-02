@@ -40,6 +40,10 @@ class FeedXmlController extends BaseFrontController
 
     private $ean_rule;
 
+    private $nb_pse;
+    private $nb_pse_invisible;
+    private $nb_pse_error;
+
     const EAN_RULE_ALL = "all";
     const EAN_RULE_CHECK_FLEXIBLE = "check_flexible";
     const EAN_RULE_CHECK_STRICT = "check_strict";
@@ -74,20 +78,30 @@ class FeedXmlController extends BaseFrontController
             $this->injectAttributesInTitle($pseArray, $feed);
             $this->injectImages($pseArray);
 
-            $nb_pse = 0;
-            $nb_pse_invisible = 0;
-            $content = $this->renderXmlAll($feed, $pseArray, $shippingArray, $nb_pse, $nb_pse_invisible);
+            $this->nb_pse = 0;
+            $this->nb_pse_invisible = 0;
+            $this->nb_pse_error = 0;
+            $content = $this->renderXmlAll($feed, $pseArray, $shippingArray);
 
-            if ($nb_pse_invisible > 0) {
+            if ($this->nb_pse_invisible > 0) {
                 $this->logger->logInfo(
                     $feed,
                     null,
-                    Translator::getInstance()->trans('%nb product item(s) have been skipped because they were set as not visible.', ['%nb' => $nb_pse_invisible], GoogleShoppingXml::DOMAIN_NAME),
+                    Translator::getInstance()->trans('%nb product item(s) have been skipped because they were set as not visible.', ['%nb' => $this->nb_pse_invisible], GoogleShoppingXml::DOMAIN_NAME),
                     Translator::getInstance()->trans('You can set your product s visibility in the product edit tool by checking the box [This product is online].', [], GoogleShoppingXml::DOMAIN_NAME)
                 );
             }
 
-            if ($nb_pse <= 0) {
+            if ($this->nb_pse_error > 0) {
+                $this->logger->logInfo(
+                    $feed,
+                    null,
+                    Translator::getInstance()->trans('%nb product item(s) have been skipped because of errors.', ['%nb' => $this->nb_pse_error], GoogleShoppingXml::DOMAIN_NAME),
+                    Translator::getInstance()->trans('Check the ERROR messages below to get further details about the error.', [], GoogleShoppingXml::DOMAIN_NAME)
+                );
+            }
+
+            if ($this->nb_pse <= 0) {
                 $this->logger->logFatal(
                     $feed,
                     null,
@@ -104,7 +118,7 @@ class FeedXmlController extends BaseFrontController
                         Translator::getInstance()->trans('Your products may not have been included in the feed due to errors. Check the others messages in this log.', [], GoogleShoppingXml::DOMAIN_NAME)
                     );
                 } else {
-                    $this->logger->logSuccess($feed, null, Translator::getInstance()->trans('The XML file has been successfully generated with %nb product items.', ['%nb' => $nb_pse], GoogleShoppingXml::DOMAIN_NAME));
+                    $this->logger->logSuccess($feed, null, Translator::getInstance()->trans('The XML file has been successfully generated with %nb product items.', ['%nb' => $this->nb_pse], GoogleShoppingXml::DOMAIN_NAME));
                 }
             }
 
@@ -120,7 +134,7 @@ class FeedXmlController extends BaseFrontController
         }
     }
 
-    protected function renderXmlAll($feed, &$pseArray, $shippingArray, &$nb_pse, &$nb_pse_invisible)
+    protected function renderXmlAll($feed, &$pseArray, $shippingArray)
     {
         $checkAvailability = ConfigQuery::checkAvailableStock();
 
@@ -165,18 +179,17 @@ class FeedXmlController extends BaseFrontController
             $shippingStr .= '</g:shipping>'.PHP_EOL;
         }
 
-        $nb_pse = 0;
-        $nb_pse_invisible = 0;
-
         foreach ($pseArray as &$pse) {
             if ($pse['PRODUCT_VISIBLE'] == 1) {
                 $xmlPse = $this->renderXmlOnePse($feed, $pse, $shippingStr, $checkAvailability);
-                if(!empty($xmlPse)){
-                    $nb_pse++;
+                if (!empty($xmlPse)) {
+                    $this->nb_pse++;
+                }else{
+                    $this->nb_pse_error++;
                 }
                 $str .= $xmlPse;
             } else {
-                $nb_pse_invisible++;
+                $this->nb_pse_invisible++;
             }
         }
 
@@ -401,7 +414,7 @@ class FeedXmlController extends BaseFrontController
                 product.VISIBLE AS PRODUCT_VISIBLE,
                 product_i18n.TITLE AS TITLE,
                 product_i18n.DESCRIPTION AS DESCRIPTION,
-                brand_i18n.TITLE AS BRAND_TITLE,
+                COALESCE (brand_i18n_with_locale.TITLE, brand_i18n_without_locale.TITLE) AS BRAND_TITLE,
                 pse.QUANTITY AS QUANTITY,
                 pse.EAN_CODE AS EAN_CODE,
                 product_category.CATEGORY_ID AS CATEGORY_ID,
@@ -418,7 +431,8 @@ class FeedXmlController extends BaseFrontController
                 LEFT OUTER JOIN product_price price_default ON (pse.ID = price_default.PRODUCT_SALE_ELEMENTS_ID AND price_default.FROM_DEFAULT_CURRENCY = 1)
                 LEFT OUTER JOIN product_category ON (pse.PRODUCT_ID = product_category.PRODUCT_ID AND product_category.DEFAULT_CATEGORY = 1)
                 LEFT OUTER JOIN product_i18n ON (pse.PRODUCT_ID = product_i18n.ID AND product_i18n.LOCALE = :locale)
-                LEFT OUTER JOIN brand_i18n ON (product.BRAND_ID = brand_i18n.ID AND brand_i18n.LOCALE = :locale)
+                LEFT OUTER JOIN brand_i18n brand_i18n_with_locale ON (product.BRAND_ID = brand_i18n_with_locale.ID AND brand_i18n_with_locale.LOCALE = :locale)
+                LEFT OUTER JOIN brand_i18n brand_i18n_without_locale ON (product.BRAND_ID = brand_i18n_without_locale.ID)
                 LEFT OUTER JOIN rewriting_url ON (pse.PRODUCT_ID = rewriting_url.VIEW_ID AND rewriting_url.view = \'product\' AND rewriting_url.view_locale = :locale AND rewriting_url.redirected IS NULL)
                 LEFT OUTER JOIN product_sale_elements_product_image pse_image ON (pse.ID = pse_image.PRODUCT_SALE_ELEMENTS_ID)
                 LEFT OUTER JOIN product_image product_image_default ON (pse.PRODUCT_ID = product_image_default.PRODUCT_ID AND product_image_default.POSITION = 1)
@@ -483,8 +497,9 @@ class FeedXmlController extends BaseFrontController
 
         // Get Thelia category hierarchy
 
-        $sql = 'SELECT category.id AS ID, category.parent AS PARENT, category_i18n.title AS TITLE FROM category
-                LEFT OUTER JOIN category_i18n ON (category.id = category_i18n.id AND category_i18n.locale = :locale)';
+        $sql = 'SELECT category.ID AS ID, category.PARENT AS PARENT, COALESCE(cati18n_with_locale.TITLE, cati18n_without_locale.TITLE) AS TITLE FROM category
+                LEFT OUTER JOIN category_i18n cati18n_with_locale ON (category.id = cati18n_with_locale.id AND cati18n_with_locale.locale = :locale)
+                LEFT OUTER JOIN category_i18n cati18n_without_locale ON (category.id = cati18n_without_locale.id)';
 
         $stmt = $con->prepare($sql);
         $stmt->bindValue(':locale', $feed->getLang()->getLocale(), \PDO::PARAM_STR);
@@ -553,8 +568,9 @@ class FeedXmlController extends BaseFrontController
 
         $parentRow = $theliaCategories[$categoryRow['PARENT']];
 
-        if ($parentRow['PATH'] != null) {
+        if ($parentRow['PATH'] == null) {
             $this->recursiveSetCategoryPath($theliaCategories, $parentRow);
+            $parentRow = $theliaCategories[$categoryRow['PARENT']];
         }
 
         if ($parentRow['PATH'] != null) {

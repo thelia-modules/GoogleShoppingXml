@@ -1,9 +1,11 @@
 <?php
 
 return array(
+    '%nb product item(s) have been skipped because of errors.' => '%nb produit(s) ou déclinaison(s) ont été ignoré(s) car ils contiennent des erreurs.',
     '%nb product item(s) have been skipped because they were set as not visible.' => '%nb produit(s) ou déclinaison(s) ont été ignoré(s) car ils n étaient pas en ligne.',
     'Check that this product has a valid description in this langage.' => 'Vérifiez que ce produit a une description valide dans cette langue.',
     'Check that this product has a valid title in this langage.' => 'Vérifiez que ce produit a un titre valide dans cette langue.',
+    'Check the ERROR messages below to get further details about the error.' => 'Vérifiez les messages ERREUR ci-dessous pour obtenir plus d informations sur les erreurs.',
     'Country' => 'Pays',
     'Currency' => 'Devise',
     'Empty generated XML file' => 'Fichier XML vide',
