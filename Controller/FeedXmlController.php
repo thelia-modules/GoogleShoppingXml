@@ -414,7 +414,7 @@ class FeedXmlController extends BaseFrontController
                 product.VISIBLE AS PRODUCT_VISIBLE,
                 product_i18n.TITLE AS TITLE,
                 product_i18n.DESCRIPTION AS DESCRIPTION,
-                brand_i18n.TITLE AS BRAND_TITLE,
+                COALESCE (brand_i18n_with_locale.TITLE, brand_i18n_without_locale.TITLE) AS BRAND_TITLE,
                 pse.QUANTITY AS QUANTITY,
                 pse.EAN_CODE AS EAN_CODE,
                 product_category.CATEGORY_ID AS CATEGORY_ID,
@@ -431,7 +431,8 @@ class FeedXmlController extends BaseFrontController
                 LEFT OUTER JOIN product_price price_default ON (pse.ID = price_default.PRODUCT_SALE_ELEMENTS_ID AND price_default.FROM_DEFAULT_CURRENCY = 1)
                 LEFT OUTER JOIN product_category ON (pse.PRODUCT_ID = product_category.PRODUCT_ID AND product_category.DEFAULT_CATEGORY = 1)
                 LEFT OUTER JOIN product_i18n ON (pse.PRODUCT_ID = product_i18n.ID AND product_i18n.LOCALE = :locale)
-                LEFT OUTER JOIN brand_i18n ON (product.BRAND_ID = brand_i18n.ID AND brand_i18n.LOCALE = :locale)
+                LEFT OUTER JOIN brand_i18n brand_i18n_with_locale ON (product.BRAND_ID = brand_i18n_with_locale.ID AND brand_i18n_with_locale.LOCALE = :locale)
+                LEFT OUTER JOIN brand_i18n brand_i18n_without_locale ON (product.BRAND_ID = brand_i18n_without_locale.ID)
                 LEFT OUTER JOIN rewriting_url ON (pse.PRODUCT_ID = rewriting_url.VIEW_ID AND rewriting_url.view = \'product\' AND rewriting_url.view_locale = :locale AND rewriting_url.redirected IS NULL)
                 LEFT OUTER JOIN product_sale_elements_product_image pse_image ON (pse.ID = pse_image.PRODUCT_SALE_ELEMENTS_ID)
                 LEFT OUTER JOIN product_image product_image_default ON (pse.PRODUCT_ID = product_image_default.PRODUCT_ID AND product_image_default.POSITION = 1)
@@ -496,8 +497,9 @@ class FeedXmlController extends BaseFrontController
 
         // Get Thelia category hierarchy
 
-        $sql = 'SELECT category.id AS ID, category.parent AS PARENT, category_i18n.title AS TITLE FROM category
-                LEFT OUTER JOIN category_i18n ON (category.id = category_i18n.id AND category_i18n.locale = :locale)';
+        $sql = 'SELECT category.ID AS ID, category.PARENT AS PARENT, COALESCE(cati18n_with_locale.TITLE, cati18n_without_locale.TITLE) AS TITLE FROM category
+                LEFT OUTER JOIN category_i18n cati18n_with_locale ON (category.id = cati18n_with_locale.id AND cati18n_with_locale.locale = :locale)
+                LEFT OUTER JOIN category_i18n cati18n_without_locale ON (category.id = cati18n_without_locale.id)';
 
         $stmt = $con->prepare($sql);
         $stmt->bindValue(':locale', $feed->getLang()->getLocale(), \PDO::PARAM_STR);
@@ -566,8 +568,9 @@ class FeedXmlController extends BaseFrontController
 
         $parentRow = $theliaCategories[$categoryRow['PARENT']];
 
-        if ($parentRow['PATH'] != null) {
+        if ($parentRow['PATH'] == null) {
             $this->recursiveSetCategoryPath($theliaCategories, $parentRow);
+            $parentRow = $theliaCategories[$categoryRow['PARENT']];
         }
 
         if ($parentRow['PATH'] != null) {
