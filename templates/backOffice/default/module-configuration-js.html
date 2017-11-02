@@ -192,6 +192,36 @@
         var errorLogResult = null;
         var logCurrentPage = 1;
 
+
+        var errorLevelInfo = {
+            1 : {
+                className : '',
+                label : '{intl l="INFO"}',
+                name: 'info'
+            },
+            2 : {
+                className : 'tr_log_success',
+                label : '{intl l="SUCCESS"}',
+                name : 'success'
+            },
+            3 : {
+                className : 'tr_log_warning',
+                label : '{intl l="WARNING"}',
+                name : 'warning'
+            },
+            4 : {
+                className : 'tr_log_error',
+                label : '{intl l="ERROR"}',
+                name : 'error'
+            },
+            5 : {
+                className : 'tr_log_fatal',
+                label : '{intl l="FATAL"}',
+                name : 'fatal'
+            }
+        };
+
+
         function getXmlLogAjax() {
             $loader.show();
             var limit = $("select#js_select_log_limit option:checked").val();
@@ -201,17 +231,22 @@
                 offset = (logCurrentPage - 1) * limit;
             }
 
+            var dataToSend = {
+                limit : limit,
+                offset : offset
+            };
+
+            $('.js_checkbox_level_log:checked').each(function (checkbox) {
+                dataToSend[errorLevelInfo[this.dataset.level].name] = 1;
+            });
+
             $.ajax({
                 url      : '{url path="/admin/module/googleshoppingxml/log/get"}',
-                data     : {
-                    limit : limit,
-                    offset : offset
-                },
+                data     : dataToSend,
                 type     : 'get',
                 dataType : 'json',
                 success  : function(data){
                     errorLogResult = data;
-                    console.log(errorLogResult);
                     updateLogTable();
                     $loader.hide();
                 },
@@ -240,7 +275,8 @@
         });
 
         $('.js_checkbox_level_log').on('change', function(e){
-            updateLogTable();
+            logCurrentPage = 1;
+            getXmlLogAjax();
         });
 
         $('.js_log_first_page').on('click',function (e) {
@@ -261,29 +297,6 @@
                 getXmlLogAjax();
             }
         });
-
-        var errorLevelInfo = {
-            1 : {
-                className : '',
-                label : '{intl l="INFO"}'
-            },
-            2 : {
-                className : 'tr_log_success',
-                label : '{intl l="SUCCESS"}'
-            },
-            3 : {
-                className : 'tr_log_warning',
-                label : '{intl l="WARNING"}'
-            },
-            4 : {
-                className : 'tr_log_error',
-                label : '{intl l="ERROR"}'
-            },
-            5 : {
-                className : 'tr_log_fatal',
-                label : '{intl l="FATAL"}'
-            }
-        };
 
 
         function updateLogTable(){
@@ -309,26 +322,23 @@
 
             if (errorLogResult.length > 0) {
                 errorLogResult.forEach(function(log){
-                    var checkbox = document.querySelector(".js_checkbox_level_log[data-level='"+log.level+"']");
-                    if (checkbox != null && checkbox.checked) {
-                        var levelArray = errorLevelInfo[log.level];
-                        var helpTooltip = '';
-                        if (log.help) {
-                            helpTooltip += ' <a href="#" data-toggle="tooltip" title="' + log.help + '"><span class="glyphicon glyphicon-question-sign"></span></a>';
-                        }
-
-                        innerHtml += '<tr class="' + levelArray.className + '">';
-                        innerHtml += '<td>' + log.date + '</td>';
-                        innerHtml += '<td>' + log.feed_label + '</td>';
-                        innerHtml += '<td>' + levelArray.label + '</td>';
-                        innerHtml += '<td>' + log.message + helpTooltip + '</td>';
-                        if (log.product_id) {
-                            innerHtml += '<td><a href="' + '{url path = '/admin/products/update'}' + '?product_id=' + log.product_id + '">' + log.product_ref + '</a></td>';
-                        }else{
-                            innerHtml += '<td>-</td>';
-                        }
-                        innerHtml += '</tr>';
+                    var levelArray = errorLevelInfo[log.level];
+                    var helpTooltip = '';
+                    if (log.help) {
+                        helpTooltip += ' <a href="#" data-toggle="tooltip" title="' + log.help + '"><span class="glyphicon glyphicon-question-sign"></span></a>';
                     }
+
+                    innerHtml += '<tr class="' + levelArray.className + '">';
+                    innerHtml += '<td>' + log.date + '</td>';
+                    innerHtml += '<td>' + log.feed_label + '</td>';
+                    innerHtml += '<td>' + levelArray.label + '</td>';
+                    innerHtml += '<td>' + log.message + helpTooltip + '</td>';
+                    if (log.product_id) {
+                        innerHtml += '<td><a href="' + '{url path = '/admin/products/update'}' + '?product_id=' + log.product_id + '">' + log.product_ref + '</a></td>';
+                    }else{
+                        innerHtml += '<td>-</td>';
+                    }
+                    innerHtml += '</tr>';
                 });
             } else {
                 innerHtml += "<tr><td colspan=\"5\">{intl l='Nothing to show.'}</td></tr>";
