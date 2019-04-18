@@ -2,6 +2,7 @@
 
 namespace GoogleShoppingXml\Controller;
 
+use GoogleShoppingXml\Events\AdditionalFieldEvent;
 use GoogleShoppingXml\GoogleShoppingXml;
 use GoogleShoppingXml\Model\GoogleshoppingxmlFeed;
 use GoogleShoppingXml\Model\GoogleshoppingxmlFeedQuery;
