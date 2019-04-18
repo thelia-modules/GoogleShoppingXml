@@ -382,6 +382,13 @@ class FeedXmlController extends BaseFrontController
         foreach ($pse['CUSTOM_FIELD_ARRAY'] as $field) {
             $str .= '<g:'.$field['FIELD_NAME'].'>'.$this->xmlSafeEncode($field['FIELD_VALUE']).'</g:'.$field['FIELD_NAME'].'>'.PHP_EOL;
         }
+        
+        $additionalFieldEvent = new AdditionalFieldEvent($pse['ID']);
+        $this->getDispatcher()->dispatch(AdditionalFieldEvent::ADD_FIELD_EVENT, $additionalFieldEvent);
+
+        foreach ($additionalFieldEvent->getFields() as $fieldName => $fieldValue) {
+            $str .= "<g:{$fieldName}>{$this->xmlSafeEncode($fieldValue)}</g:{$fieldName}>".PHP_EOL;
+        }
 
         return $str.'</item>'.PHP_EOL;
     }
