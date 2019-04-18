@@ -14,7 +14,7 @@ This module allows you to export your catalog to Google Shopping through XML fee
 Add it in your main thelia composer.json file
 
 ```
-composer require thelia/google-shopping-xml-module:~1.2.0
+composer require thelia/google-shopping-xml-module ~1.2.0
 ```
 
 ## Usage
