@@ -3,6 +3,7 @@
 namespace GoogleShoppingXml;
 
 use Propel\Runtime\Connection\ConnectionInterface;
+use Symfony\Component\DependencyInjection\Loader\Configurator\ServicesConfigurator;
 use Symfony\Component\Finder\Finder;
 use Thelia\Install\Database;
 use Thelia\Module\BaseModule;
@@ -16,7 +17,7 @@ class GoogleShoppingXml extends BaseModule
     /* @var string */
     const UPDATE_PATH = __DIR__ . DS . 'Config' . DS . 'update';
 
-    public function preActivation(ConnectionInterface $con = null)
+    public function postActivation(ConnectionInterface $con = null): void
     {
         if (!$this->getConfigValue('is_initialized', false)) {
             $database = new Database($con);
@@ -25,11 +26,9 @@ class GoogleShoppingXml extends BaseModule
 
             $this->setConfigValue('is_initialized', true);
         }
-
-        return true;
     }
 
-    public function update($currentVersion, $newVersion, ConnectionInterface $con = null)
+    public function update($currentVersion, $newVersion, ConnectionInterface $con = null): void
     {
         $finder = (new Finder())->files()->name('#.*?\.sql#')->sortByName()->in(self::UPDATE_PATH);
 
@@ -45,5 +44,13 @@ class GoogleShoppingXml extends BaseModule
                 $database->insertSql(null, [$updateSQLFile->getPathname()]);
             }
         }
+    }
+
+    public static function configureServices(ServicesConfigurator $servicesConfigurator): void
+    {
+        $servicesConfigurator->load(self::getModuleCode().'\\', __DIR__)
+            ->exclude([THELIA_MODULE_DIR . ucfirst(self::getModuleCode()). "/I18n/*"])
+            ->autowire(true)
+            ->autoconfigure(true);
     }
 }

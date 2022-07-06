@@ -13,7 +13,7 @@
             {intl l='More information about Google fields specifications at %link.' link='<a href="https://support.google.com/merchants/answer/7052112">https://support.google.com/merchants/answer/7052112</a>'}
         </div>
 
-        {if isset($smarty.get.error_message_advanced_tab)}
+        {if isset($smarty.get.error_message_advanced_tab|default:null)}
         <div class="alert alert-danger">
             <strong>{$smarty.get.error_message_advanced_tab}</strong>
         </div>

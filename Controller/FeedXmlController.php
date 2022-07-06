@@ -12,6 +12,9 @@ use GoogleShoppingXml\Model\GoogleshoppingxmlLogQuery;
 use GoogleShoppingXml\Tools\GtinChecker;
 use Propel\Runtime\ActiveQuery\Criteria;
 use Propel\Runtime\Propel;
+use Symfony\Component\EventDispatcher\EventDispatcherInterface;
+use Symfony\Component\Filesystem\Filesystem;
+use Symfony\Component\HttpFoundation\Request;
 use Thelia\Action\Image;
 use Thelia\Controller\Front\BaseFrontController;
 use Thelia\Core\Event\Image\ImageEvent;
@@ -52,14 +55,12 @@ class FeedXmlController extends BaseFrontController
 
     const DEFAULT_EAN_RULE = self::EAN_RULE_CHECK_STRICT;
 
-    public function getFeedXmlAction($feedId)
+    public function getFeedXmlAction($feedId, Request $request, EventDispatcherInterface $eventDispatcher)
     {
         $this->logger = GoogleshoppingxmlLogQuery::create();
         $this->ean_rule = GoogleShoppingXml::getConfigValue("ean_rule", self::DEFAULT_EAN_RULE);
 
         $feed = GoogleshoppingxmlFeedQuery::create()->findOneById($feedId);
-
-        $request = $this->getRequest();
 
         $limit = $request->get('limit', null);
         $offset = $request->get('offset', null);
@@ -77,12 +78,12 @@ class FeedXmlController extends BaseFrontController
             $this->injectTaxedPrices($pseArray, $feed);
             $this->injectCustomAssociationFields($pseArray, $feed);
             $this->injectAttributesInTitle($pseArray, $feed);
-            $this->injectImages($pseArray);
+            $this->injectImages($pseArray, $eventDispatcher);
 
             $this->nb_pse = 0;
             $this->nb_pse_invisible = 0;
             $this->nb_pse_error = 0;
-            $content = $this->renderXmlAll($feed, $pseArray, $shippingArray);
+            $content = $this->renderXmlAll($feed, $pseArray, $shippingArray, $eventDispatcher);
 
             if ($this->nb_pse_invisible > 0) {
                 $this->logger->logInfo(
@@ -135,7 +136,7 @@ class FeedXmlController extends BaseFrontController
         }
     }
 
-    protected function renderXmlAll($feed, &$pseArray, $shippingArray)
+    protected function renderXmlAll($feed, &$pseArray, $shippingArray, EventDispatcherInterface $eventDispatcher)
     {
         $checkAvailability = ConfigQuery::checkAvailableStock();
 
@@ -182,7 +183,7 @@ class FeedXmlController extends BaseFrontController
 
         foreach ($pseArray as &$pse) {
             if ($pse['PRODUCT_VISIBLE'] == 1) {
-                $xmlPse = $this->renderXmlOnePse($feed, $pse, $shippingStr, $checkAvailability);
+                $xmlPse = $this->renderXmlOnePse($feed, $pse, $shippingStr, $checkAvailability, $eventDispatcher);
                 if (!empty($xmlPse)) {
                     $this->nb_pse++;
                 }else{
@@ -206,7 +207,7 @@ class FeedXmlController extends BaseFrontController
      * @param bool $checkAvailability
      * @return string
      */
-    protected function renderXmlOnePse($feed, &$pse, $shippingStr, $checkAvailability)
+    protected function renderXmlOnePse($feed, &$pse, $shippingStr, $checkAvailability, EventDispatcherInterface $eventDispatcher)
     {
         $str = '<item>'.PHP_EOL;
         $str .= '<g:id>'.$pse['ID'].'</g:id>'.PHP_EOL;
@@ -385,7 +386,7 @@ class FeedXmlController extends BaseFrontController
         }
         
         $additionalFieldEvent = new AdditionalFieldEvent($pse['ID']);
-        $this->getDispatcher()->dispatch(AdditionalFieldEvent::ADD_FIELD_EVENT, $additionalFieldEvent);
+        $eventDispatcher->dispatch($additionalFieldEvent, AdditionalFieldEvent::ADD_FIELD_EVENT);
 
         foreach ($additionalFieldEvent->getFields() as $fieldName => $fieldValue) {
             $str .= "<g:{$fieldName}>{$this->xmlSafeEncode($fieldValue)}</g:{$fieldName}>".PHP_EOL;
@@ -722,12 +723,14 @@ class FeedXmlController extends BaseFrontController
     /**
      * @param array $pseArray
      */
-    protected function injectImages(&$pseArray)
+    protected function injectImages(&$pseArray, EventDispatcherInterface $eventDispatcher)
     {
+        $imageDir = THELIA_LOCAL_DIR.'media'.DS.'images'.DS.'product'.DS;
+        $fs = new Filesystem();
         foreach ($pseArray as &$pse) {
-            if ($pse['IMAGE_NAME'] != null) {
+            if ($pse['IMAGE_NAME'] != null && $fs->exists($imageDir.$pse['IMAGE_NAME'])) {
                 $imageEvent = $this->createImageEvent($pse['IMAGE_NAME'], 'product');
-                $this->dispatch(TheliaEvents::IMAGE_PROCESS, $imageEvent);
+                $eventDispatcher->dispatch($imageEvent, TheliaEvents::IMAGE_PROCESS);
                 $pse['IMAGE_PATH'] = $imageEvent->getFileUrl();
             } else {
                 $pse['IMAGE_PATH'] = null;
