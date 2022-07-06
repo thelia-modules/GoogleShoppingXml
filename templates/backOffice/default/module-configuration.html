@@ -7,7 +7,7 @@
 {block name="page-title"}{intl l='GoogleShoppingXml'}{/block}
 
 {block name="check-auth"}
-{check_auth role="ADMIN" module=$module_code access="view" login_tpl="/admin/login"}
+{check_auth role="ADMIN" module=$module_code|default:null access="view" login_tpl="/admin/login"}
 {/block}
 
 {block name="main-content"}
@@ -32,40 +32,40 @@
             </ul>
         </div>
 
-        {hook name="module.configuration" location="module_configuration" modulecode="$module_code"}
+        {hook name="module.configuration" location="module_configuration" modulecode="{$module_code|default:null}"}
 
         <div class="general-block-decorator">
             <div class="row">
                 <div class="col-md-12">
                     <ul id="tabbed-menu" class="nav nav-tabs">
-                        <li class="{if $tab eq 'feeds'}active{/if}">
+                        <li class="{if $tab|default:null eq 'feeds'}active{/if}">
                             <a data-toggle="tab" href="#feeds">{intl l="Feeds"}</a>
                         </li>
-                        <li class="{if $tab eq 'taxonomy'}active{/if}">
+                        <li class="{if $tab|default:null eq 'taxonomy'}active{/if}">
                             <a data-toggle="tab" href="#taxonomy">{intl l="Google taxonomy"}</a>
                         </li>
-                        <li class="{if $tab eq 'advanced'}active{/if}">
+                        <li class="{if $tab|default:null eq 'advanced'}active{/if}">
                             <a data-toggle="tab" href="#advanced">{intl l="Advanced configuration"}</a>
                         </li>
-                        <li class="{if $tab eq 'log'}active{/if}">
+                        <li class="{if $tab|default:null eq 'log'}active{/if}">
                             <a class="js_tab_gsxml_log" data-toggle="tab" href="#log">{intl l="Error log"}</a>
                         </li>
                     </ul>
 
                     <div class="tab-content">
-                        <div id="feeds" class="tab-pane {if $tab eq 'feeds'}active{/if} form-container">
+                        <div id="feeds" class="tab-pane {if $tab|default:null eq 'feeds'}active{/if} form-container">
                         {include file="include/config_tab_feeds.html"}
                         </div>
 
-                        <div id="taxonomy" class="tab-pane {if $tab eq 'taxonomy'}active{/if} form-container">
+                        <div id="taxonomy" class="tab-pane {if $tab|default:null eq 'taxonomy'}active{/if} form-container">
                         {include file="include/config_tab_taxonomy.html"}
                         </div>
 
-                        <div id="advanced" class="tab-pane {if $tab eq 'advanced'}active{/if} form-container">
+                        <div id="advanced" class="tab-pane {if $tab|default:null eq 'advanced'}active{/if} form-container">
                         {include file="include/config_tab_advanced.html"}
                         </div>
 
-                        <div id="log" class="tab-pane {if $tab eq 'log'}active{/if} form-container">
+                        <div id="log" class="tab-pane {if $tab|default:null eq 'log'}active{/if} form-container">
                         {include file="include/config_tab_log.html"}
                         </div>
                     </div>
