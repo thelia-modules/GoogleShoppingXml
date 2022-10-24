@@ -203,6 +203,8 @@ class GoogleFieldAssociationController extends BaseAdminController
         return $fieldAssociation;
     }
 
+
+
     public function setEanRuleAction()
     {
         if (null !== $response = $this->checkAuth(array(AdminResources::MODULE), array('GoogleShoppingXml'), AccessManager::UPDATE)) {
