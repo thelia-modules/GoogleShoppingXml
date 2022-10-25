@@ -135,7 +135,7 @@ DROP TABLE IF EXISTS `googleshoppingxml_ignore_category`;
 CREATE TABLE `googleshoppingxml_ignore_category`
 (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
-    `is_exportable` INTEGER DEFAULT 1 NOT NULL,
+    `is_exportable` INTEGER DEFAULT 0 NOT NULL,
     `category_id` INTEGER NOT NULL,
     PRIMARY KEY (`id`),
     INDEX `fi_googleshoppingxml_category_is_exportable_id` (`category_id`),

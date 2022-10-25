@@ -10,6 +10,8 @@ use Propel\Runtime\Propel;
 use Thelia\Controller\Admin\BaseAdminController;
 use Thelia\Core\Security\AccessManager;
 use Thelia\Core\Security\Resource\AdminResources;
+use Thelia\Model\Base\CategoryI18n;
+use Thelia\Model\CategoryI18nQuery;
 use Thelia\Model\CategoryQuery;
 
 class ModuleConfigController extends BaseAdminController
@@ -39,13 +41,18 @@ class ModuleConfigController extends BaseAdminController
         $ignoreCategoryList = GoogleshoppingxmlIgnoreCategoryQuery::create()->find()->toArray();
 
 
+
+
+
+
         return $this->render(
             "module-configuration",
             [
                 'field_association_array' => $fieldAssociationArray,
                 'pse_count' => $this->getNumberOfPse(),
                 'ean_rule' => $ean_rule,
-                'ignore_category_array' => $ignoreCategoryList
+                'ignore_category_array' => $ignoreCategoryList,
+                'category_i18n' => CategoryI18nQuery::create()->filterByLocale($this->getCurrentEditionLang()->getLocale())->find()->toArray() ?? null,
             ]
         );
     }

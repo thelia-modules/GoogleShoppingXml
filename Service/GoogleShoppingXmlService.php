@@ -68,7 +68,7 @@ class GoogleShoppingXmlService
     const EAN_RULE_CHECK_STRICT = "check_strict";
     const EAN_RULE_NONE = "none";
 
-    const XML_FILES_DIR = THELIA_LOCAL_DIR.'GoogleShoppingXML'.DS;
+    const XML_FILES_DIR = THELIA_LOCAL_DIR . 'GoogleShoppingXML' . DS;
 
     const DEFAULT_EAN_RULE = self::EAN_RULE_CHECK_STRICT;
 
@@ -101,24 +101,51 @@ class GoogleShoppingXmlService
             $taxCalculatorsArray = [];
             $fieldAssociationCollection = $this->getFieldAssociationCollection($feed);
 
+
+
             $i = 0;
             while ($pse = $stmt->fetch(\PDO::FETCH_ASSOC)) {
+                $timestamp_debut = microtime(true);
                 $this->injectGoogleCategories($pse, $feed);
                 $this->injectUrls($pse, $feed, $urlManager);
                 $this->injectTaxedPrices($pse, $taxCalculatorsArray, $feed, $this->getTaxedRules());
+                // 0,05
+
+
+
                 $this->injectCustomAssociationFields($pse, $feed, $fieldAssociationCollection);
-                $this->injectAttributesInTitle($pse, $feed);
+                // 0,067
+
                 $this->injectImages($pse);
+                // 0,0857
+
+
                 $this->injectBrand($pse, $feed);
+                // 0,15
+
+
+
+
+
+
+                $this->injectAttributesInTitle($pse, $feed);
+
+                // 0,48
+
 
                 $pseArray[] = $pse;
+                //0,57
+                $timestamp_fin = microtime(true);
+                $difference_ms = $timestamp_fin - $timestamp_debut;
+
+
                 $i++;
             }
 
             $this->nb_pse = 0;
             $this->nb_pse_invisible = 0;
             $this->nb_pse_error = 0;
-            if (null === $this->request->getSession()){
+            if (null === $this->request->getSession()) {
                 $session = new Session(new MockArraySessionStorage());
                 $session
                     ->setLang($feed->getLang())
@@ -166,13 +193,13 @@ class GoogleShoppingXmlService
                     $this->logger->logSuccess($feed, null, Translator::getInstance()->trans('The XML file has been successfully generated with %nb product items.', ['%nb' => $this->nb_pse], GoogleShoppingXml::DOMAIN_NAME));
                 }
             }
-            Tlog::getInstance()->info('GoogleShoppingXML stop generating XML ,'.count($pseArray).' products');
+            Tlog::getInstance()->info('GoogleShoppingXML stop generating XML ,' . count($pseArray) . ' products');
 
             return $content;
 
         } catch (\Exception $ex) {
-            $this->logger->logFatal($feed, null, $ex->getMessage(), $ex->getFile()." at line ".$ex->getLine());
-            Tlog::getInstance()->error('GoogleShoppingXML : '.$ex->getMessage());
+            $this->logger->logFatal($feed, null, $ex->getMessage(), $ex->getFile() . " at line " . $ex->getLine());
+            Tlog::getInstance()->error('GoogleShoppingXML : ' . $ex->getMessage());
             throw $ex;
         }
     }
@@ -181,9 +208,9 @@ class GoogleShoppingXmlService
     {
         $checkAvailability = ConfigQuery::checkAvailableStock();
 
-        $str = '<?xml version="1.0"?>'.PHP_EOL;
-        $str .= '<rss xmlns:g="http://base.google.com/ns/1.0" version="2.0">'.PHP_EOL;
-        $str .= '<channel>'.PHP_EOL;
+        $str = '<?xml version="1.0"?>' . PHP_EOL;
+        $str .= '<rss xmlns:g="http://base.google.com/ns/1.0" version="2.0">' . PHP_EOL;
+        $str .= '<channel>' . PHP_EOL;
 
         $store_name = ConfigQuery::getStoreName();
         $store_description = ConfigQuery::getStoreDescription();
@@ -208,40 +235,36 @@ class GoogleShoppingXmlService
             throw new \Exception('Fatal error during GoogleShopping XML generation : the store description is missing.');
         }
 
-        $str .= '<title>'.$this->xmlSafeEncode($store_name).'</title>'.PHP_EOL;
-        $str .= '<link>'.$this->xmlSafeEncode(URL::getInstance()->getIndexPage()).'</link>'.PHP_EOL;
-        $str .= '<description>'.$this->xmlSafeEncode($store_description).'</description>'.PHP_EOL;
+        $str .= '<title>' . $this->xmlSafeEncode($store_name) . '</title>' . PHP_EOL;
+        $str .= '<link>' . $this->xmlSafeEncode(URL::getInstance()->getIndexPage()) . '</link>' . PHP_EOL;
+        $str .= '<description>' . $this->xmlSafeEncode($store_description) . '</description>' . PHP_EOL;
 
         $shippingStr = '';
         foreach ($shippingArray as $shipping) {
-            $shippingStr .= '<g:shipping>'.PHP_EOL;
-            $shippingStr .= '<g:country>'.$shipping['country_code'].'</g:country>'.PHP_EOL;
-            $shippingStr .= '<g:service>'.$shipping['service'].'</g:service>'.PHP_EOL;
+            $shippingStr .= '<g:shipping>' . PHP_EOL;
+            $shippingStr .= '<g:country>' . $shipping['country_code'] . '</g:country>' . PHP_EOL;
+            $shippingStr .= '<g:service>' . $shipping['service'] . '</g:service>' . PHP_EOL;
             $formattedPrice = MoneyFormat::getInstance($this->request)->formatByCurrency($shipping['price'], null, null, null, $shipping['currency_id']);
-            $shippingStr .= '<g:price>'. $formattedPrice . '</g:price>'.PHP_EOL;
-            $shippingStr .= '</g:shipping>'.PHP_EOL;
+            $shippingStr .= '<g:price>' . $formattedPrice . '</g:price>' . PHP_EOL;
+            $shippingStr .= '</g:shipping>' . PHP_EOL;
         }
+
 
         foreach ($pseArray as &$pse) {
             if ($pse['PRODUCT_VISIBLE'] == 1) {
-                $categoryId = $pse["CATEGORY_ID"];
-                $ignoreCategory = GoogleshoppingxmlIgnoreCategoryQuery::create()->findOneByCategoryId($categoryId);
-                if ($ignoreCategory->getIsExportable() === 1) {
-                    $xmlPse = $this->renderXmlOnePse($feed, $pse, $shippingStr, $checkAvailability);
-
-                    if (!empty($xmlPse)) {
-                        $this->nb_pse++;
-                    } else {
-                        $this->nb_pse_error++;
-                    }
-                    $str .= $xmlPse;
+                $xmlPse = $this->renderXmlOnePse($feed, $pse, $shippingStr, $checkAvailability);
+                if (!empty($xmlPse)) {
+                    $this->nb_pse++;
+                }else{
+                    $this->nb_pse_error++;
                 }
+                $str .= $xmlPse;
             } else {
                 $this->nb_pse_invisible++;
             }
         }
 
-        $str .= '</channel>'.PHP_EOL;
+        $str .= '</channel>' . PHP_EOL;
         $str .= '</rss>';
         return $str;
     }
@@ -255,8 +278,8 @@ class GoogleShoppingXmlService
      */
     protected function renderXmlOnePse($feed, &$pse, $shippingStr, $checkAvailability)
     {
-        $str = '<item>'.PHP_EOL;
-        $str .= '<g:id>'.$pse['ID'].'</g:id>'.PHP_EOL;
+        $str = '<item>' . PHP_EOL;
+        $str .= '<g:id>' . $pse['ID'] . '</g:id>' . PHP_EOL;
 
 
         // **************** Title ****************
@@ -271,7 +294,7 @@ class GoogleShoppingXmlService
             return '';
         }
 
-        $str .= '<g:title>'.$this->xmlSafeEncode($pse['TITLE']).'</g:title>'.PHP_EOL;
+        $str .= '<g:title>' . $this->xmlSafeEncode($pse['TITLE']) . '</g:title>' . PHP_EOL;
 
 
         // **************** Description ****************
@@ -288,7 +311,7 @@ class GoogleShoppingXmlService
             return '';
         }
 
-        $str .= '<g:description>'.$this->xmlSafeEncode($description).'</g:description>'.PHP_EOL;
+        $str .= '<g:description>' . $this->xmlSafeEncode($description) . '</g:description>' . PHP_EOL;
 
 
         // **************** URL ****************
@@ -302,7 +325,7 @@ class GoogleShoppingXmlService
             return '';
         }
 
-        $str .= '<g:link>'.$this->xmlSafeEncode($pse['URL']).'</g:link>'.PHP_EOL;
+        $str .= '<g:link>' . $this->xmlSafeEncode($pse['URL']) . '</g:link>' . PHP_EOL;
 
 
         // **************** Image path ****************
@@ -317,15 +340,15 @@ class GoogleShoppingXmlService
             return '';
         }
 
-        $str .= '<g:image_link>'.$this->xmlSafeEncode($pse['IMAGE_PATH']).'</g:image_link>'.PHP_EOL;
+        $str .= '<g:image_link>' . $this->xmlSafeEncode($pse['IMAGE_PATH']) . '</g:image_link>' . PHP_EOL;
 
 
         // **************** Availability ****************
 
         if ($checkAvailability && $pse['QUANTITY'] <= 0) {
-            $str .= '<g:availability>out of stock</g:availability>'.PHP_EOL;
+            $str .= '<g:availability>out of stock</g:availability>' . PHP_EOL;
         } else {
-            $str .= '<g:availability>in stock</g:availability>'.PHP_EOL;
+            $str .= '<g:availability>in stock</g:availability>' . PHP_EOL;
         }
 
 
@@ -336,18 +359,18 @@ class GoogleShoppingXmlService
                 $feed,
                 $pse['ID'],
                 Translator::getInstance()->trans('Missing product price for the currency "%code"', ['%code' => $feed->getCurrency()->getCode()], GoogleShoppingXml::DOMAIN_NAME),
-                Translator::getInstance()->trans('Unable to compute a price for this product and this currency. Specify one manually or check [Apply exchange rates] in the Edit Product page for this currency.' , [], GoogleShoppingXml::DOMAIN_NAME)
+                Translator::getInstance()->trans('Unable to compute a price for this product and this currency. Specify one manually or check [Apply exchange rates] in the Edit Product page for this currency.', [], GoogleShoppingXml::DOMAIN_NAME)
             );
             return '';
         }
 
         $formattedTaxedPrice = MoneyFormat::getInstance($this->request)->formatByCurrency($pse['TAXED_PRICE'], null, null, null, $feed->getCurrencyId());
 
-        $str .= '<g:price>'.$formattedTaxedPrice.'</g:price>'.PHP_EOL;
+        $str .= '<g:price>' . $formattedTaxedPrice . '</g:price>' . PHP_EOL;
 
         if (!empty($pse['TAXED_PROMO_PRICE']) && $pse['TAXED_PROMO_PRICE'] < $pse['TAXED_PRICE']) {
             $formattedTaxedPromoPrice = MoneyFormat::getInstance($this->request)->formatByCurrency($pse['TAXED_PROMO_PRICE'], null, null, null, $feed->getCurrencyId());
-            $str .= '<g:sale_price>'.$formattedTaxedPromoPrice.'</g:sale_price>'.PHP_EOL;
+            $str .= '<g:sale_price>' . $formattedTaxedPromoPrice . '</g:sale_price>' . PHP_EOL;
         }
 
 
@@ -359,7 +382,7 @@ class GoogleShoppingXmlService
                     $feed,
                     $pse['ID'],
                     Translator::getInstance()->trans('Missing product brand for the language "%lang"', ['%lang' => $feed->getLang()->getTitle()], GoogleShoppingXml::DOMAIN_NAME),
-                    Translator::getInstance()->trans('The product has no brand or the brand doesn t have a title in this language. If none of your product has a brand, please add a [brand] field with a fixed value in the [Advanded Configuration] tab as this field is required by Google.' , [], GoogleShoppingXml::DOMAIN_NAME)
+                    Translator::getInstance()->trans('The product has no brand or the brand doesn t have a title in this language. If none of your product has a brand, please add a [brand] field with a fixed value in the [Advanded Configuration] tab as this field is required by Google.', [], GoogleShoppingXml::DOMAIN_NAME)
                 );
                 return '';
             }
@@ -395,13 +418,13 @@ class GoogleShoppingXmlService
         }
 
         if ($include_ean) {
-            $str .= '<g:gtin>'.$pse['EAN_CODE'].'</g:gtin>'.PHP_EOL;
-            $str .= '<g:identifier_exists>yes</g:identifier_exists>'.PHP_EOL;
+            $str .= '<g:gtin>' . $pse['EAN_CODE'] . '</g:gtin>' . PHP_EOL;
+            $str .= '<g:identifier_exists>yes</g:identifier_exists>' . PHP_EOL;
         } else {
-            $str .= '<g:identifier_exists>no</g:identifier_exists>'.PHP_EOL;
+            $str .= '<g:identifier_exists>no</g:identifier_exists>' . PHP_EOL;
         }
 
-        $str .= '<g:item_group_id>'.$pse['REF_PRODUCT'].'</g:item_group_id>'.PHP_EOL;
+        $str .= '<g:item_group_id>' . $pse['REF_PRODUCT'] . '</g:item_group_id>' . PHP_EOL;
 
         $str .= $shippingStr;
 
@@ -409,7 +432,7 @@ class GoogleShoppingXmlService
         // **************** Categories ****************
 
         if (!empty($pse['GOOGLE_CATEGORY'])) {
-            $str .= '<g:google_product_category>'.$this->xmlSafeEncode($pse['GOOGLE_CATEGORY']).'</g:google_product_category>'.PHP_EOL;
+            $str .= '<g:google_product_category>' . $this->xmlSafeEncode($pse['GOOGLE_CATEGORY']) . '</g:google_product_category>' . PHP_EOL;
         } else {
             $this->logger->logWarning(
                 $feed,
@@ -420,25 +443,25 @@ class GoogleShoppingXmlService
         }
 
         if (!empty($pse['CATEGORY_PATH'])) {
-            $str .= '<g:product_type>'.$this->xmlSafeEncode($pse['CATEGORY_PATH']).'</g:product_type>'.PHP_EOL;
+            $str .= '<g:product_type>' . $this->xmlSafeEncode($pse['CATEGORY_PATH']) . '</g:product_type>' . PHP_EOL;
         }
 
         if (!$this->hasCustomField($pse, "condition")) {
-            $str .= '<g:condition>new</g:condition>'.PHP_EOL;
+            $str .= '<g:condition>new</g:condition>' . PHP_EOL;
         }
 
         foreach ($pse['CUSTOM_FIELD_ARRAY'] as $field) {
-            $str .= '<g:'.$field['FIELD_NAME'].'>'.$this->xmlSafeEncode($field['FIELD_VALUE']).'</g:'.$field['FIELD_NAME'].'>'.PHP_EOL;
+            $str .= '<g:' . $field['FIELD_NAME'] . '>' . $this->xmlSafeEncode($field['FIELD_VALUE']) . '</g:' . $field['FIELD_NAME'] . '>' . PHP_EOL;
         }
 
         $additionalFieldEvent = new AdditionalFieldEvent($pse['ID']);
         $this->eventDispatcher->dispatch(AdditionalFieldEvent::ADD_FIELD_EVENT, $additionalFieldEvent);
 
         foreach ($additionalFieldEvent->getFields() as $fieldName => $fieldValue) {
-            $str .= "<g:{$fieldName}>{$this->xmlSafeEncode($fieldValue)}</g:{$fieldName}>".PHP_EOL;
+            $str .= "<g:{$fieldName}>{$this->xmlSafeEncode($fieldValue)}</g:{$fieldName}>" . PHP_EOL;
         }
 
-        return $str.'</item>'.PHP_EOL;
+        return $str . '</item>' . PHP_EOL;
     }
 
     protected function xmlSafeEncode($str)
@@ -476,7 +499,10 @@ class GoogleShoppingXmlService
                 FROM product_sale_elements AS pse
                 INNER JOIN product ON (pse.PRODUCT_ID = product.ID)
                 LEFT OUTER JOIN product_i18n ON (pse.PRODUCT_ID = product_i18n.ID AND product_i18n.LOCALE = :locale)
+                INNER JOIN product_category ON (pse.PRODUCT_ID = product_category.product_id)
+                INNER JOIN googleshoppingxml_ignore_category ON (googleshoppingxml_ignore_category.category_id = product_category.category_id)
                 WHERE  product.VISIBLE = 1
+                AND googleshoppingxml_ignore_category.is_exportable = 1
                 GROUP BY pse.ID';
 
         $limit = $this->checkPositiveInteger($limit);
@@ -519,7 +545,7 @@ class GoogleShoppingXmlService
             ->filterByDefaultCategory(1)
             ->findOne();
 
-        $pse['CATEGORY_ID'] = $productCategory? $productCategory->getCategoryId() : null;
+        $pse['CATEGORY_ID'] = $productCategory ? $productCategory->getCategoryId() : null;
 
         $hasReachRoot = false;
         $categoryId = $pse['CATEGORY_ID'];
@@ -628,9 +654,9 @@ class GoogleShoppingXmlService
             ->findOne();
 
         $pse['PRICE'] = $pseDefaultPrice ? $pseDefaultPrice->getPrice() * $feed->getCurrency()->getRate() : null;
-        $pse['PROMO_PRICE'] = $pseDefaultPrice ? $pseDefaultPrice->getPromoPrice() * $feed->getCurrency()->getRate()  : null;
+        $pse['PROMO_PRICE'] = $pseDefaultPrice ? $pseDefaultPrice->getPromoPrice() * $feed->getCurrency()->getRate() : null;
 
-        if (null !== $pseCurrencyPrice){
+        if (null !== $pseCurrencyPrice) {
             $pse['PRICE'] = $pseCurrencyPrice->getPrice();
             $pse['PROMO_PRICE'] = $pseCurrencyPrice->getPromoPrice();
         }
@@ -691,11 +717,14 @@ class GoogleShoppingXmlService
      */
     protected function injectAttributesInTitle(&$pse, $feed)
     {
+
         $attributesConcatArray = $this->getArrayAttributesConcatValues($feed->getLang()->getLocale(), null, ' - ');
 
         if (array_key_exists($pse['ID'], $attributesConcatArray)) {
             $pse['TITLE'] .= ' - ' . $attributesConcatArray[$pse['ID']];
         }
+
+
     }
 
 
@@ -716,7 +745,7 @@ class GoogleShoppingXmlService
 
         $pse['IMAGE_NAME'] = $productImageDefault ? $productImageDefault->getFile() : null;
 
-        if (null !== $productImagePse){
+        if (null !== $productImagePse) {
             $pse['IMAGE_NAME'] = $productImagePse ? $productImagePse->getFile() : null;
         }
 
@@ -725,7 +754,7 @@ class GoogleShoppingXmlService
             try {
                 $this->eventDispatcher->dispatch(TheliaEvents::IMAGE_PROCESS, $imageEvent);
                 $pse['IMAGE_PATH'] = $imageEvent->getFileUrl();
-            }catch (\Exception $e){
+            } catch (\Exception $e) {
                 $pse['IMAGE_PATH'] = null;
             }
         } else {
@@ -748,7 +777,6 @@ class GoogleShoppingXmlService
         if ($brandWithLocal !== null) {
             $pse['BRAND_TITLE'] = $brandWithLocal ? $brandWithLocal->getLocale() : null;
         }
-
     }
 
 
@@ -780,12 +808,14 @@ class GoogleShoppingXmlService
     }
 
 
-
     protected function getArrayAttributesConcatValues($locale, $attribute_id = null, $separator = '/')
     {
+        $timestamp_debut = microtime(true);
+
+
         $con = Propel::getConnection();
 
-        $sql = 'SELECT attribute_combination.product_sale_elements_id AS PSE_ID, GROUP_CONCAT(attribute_av_i18n.title SEPARATOR \''.$separator.'\') AS CONCAT FROM attribute_combination
+        $sql = 'SELECT attribute_combination.product_sale_elements_id AS PSE_ID, GROUP_CONCAT(attribute_av_i18n.title SEPARATOR \'' . $separator . '\') AS CONCAT FROM attribute_combination
                 INNER JOIN attribute_av_i18n ON (attribute_combination.attribute_av_id = attribute_av_i18n.id)
                 WHERE attribute_av_i18n.locale = :locale';
 
@@ -802,12 +832,19 @@ class GoogleShoppingXmlService
         }
 
         $stmt->execute();
+
         $rows = $stmt->fetchAll(\PDO::FETCH_ASSOC);
+
+
 
         $attrib_by_pse = array();
         foreach ($rows as $row) {
             $attrib_by_pse[$row['PSE_ID']] = $row['CONCAT'];
         }
+        $timestamp_fin = microtime(true);
+
+        $difference_ms = $timestamp_fin - $timestamp_debut;
+
         return $attrib_by_pse;
     }
 
@@ -950,7 +987,7 @@ class GoogleShoppingXmlService
     {
         $taxRulesCollection = TaxRuleQuery::create()->find();
         $taxRulesArray = [];
-        /** @var TaxRule $taxRule **/
+        /** @var TaxRule $taxRule * */
         foreach ($taxRulesCollection as $taxRule) {
             $taxRulesArray[$taxRule->getId()] = $taxRule;
         }

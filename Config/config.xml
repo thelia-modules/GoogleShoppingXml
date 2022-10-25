@@ -27,9 +27,7 @@
             <tag name="hook.event_listener" event="home.js" type="back" templates="render:home-js.html" />
         </hook>
 
-        <!--  <hook id="ignore.categories.hook.id" class="GoogleShoppingXml\Hook\HookIgnoreCategories" scope="request">
-              <tag name="hook.event_listener" event="ignore.categories" type="back" method="onHookIgnoreCategories"/>
-          </hook>-->
+
       </hooks>
 
 

@@ -206,8 +206,12 @@
 
                 <select id="selected-category" class="form-control">
                         <option value="">{intl l='Select a category...'}</option>
+
                         {loop name="categories" type="category-tree" category="0" exclude=$exclude_from_tree visible="*" backend_context="1" lang="$edit_language_id" return_url=false}
-                            <option value="{$ID}">{$TITLE}</option>
+                            {$ID_CATEGORY=$ignore_category_array[$LOOP_COUNT-1]["CategoryId"]}
+                            {$TITLE=$category_i18n[$LOOP_COUNT-1]["Title"]}
+
+                    <option value="{$ID_CATEGORY}">{$TITLE}</option>
                         {/loop}
                 </select>
                 <input type="hidden" name="selectedId" id="selected-index" value="">
@@ -244,21 +248,26 @@
                 </thead>
 
                 <tbody>
-                {loop name="additional_categories" type="category" visible="*" product=$product_id exclude=$DEFAULT_CATEGORY backend_context="1" lang="$edit_language_id" return_url=false}
+
+                {loop name="additional_categories" type="category-tree" category="0" visible="*" product=$product_id exclude=$DEFAULT_CATEGORY backend_context="1" lang="$edit_language_id" return_url=false}
                 <tr>
                     {$IS_IGNORABLE = $ignore_category_array[$LOOP_COUNT-1]["IsExportable"]}
+                    {$ID_CATEGORY=$ignore_category_array[$LOOP_COUNT-1]["CategoryId"]}
+
+                    {$TITLE=$category_i18n[$LOOP_COUNT-1]["Title"]}
+
                     {if $IS_IGNORABLE == 1}
-                    <td>{$ID}</td>
+                    <td>{$ID_CATEGORY}</td>
                     <td>{$TITLE}</td>
                     <input type="hidden" name="product_id" value="{$ID}" />
                     <input type="hidden" name="current_tab" value="related" />
-                    <input type="hidden" name="additional_category_id" value="" />
+                    <input type="hidden" name="additional_category_id" value="{$ID_CATEGORY}" />
 
                     {hook name="product.categories-table-row" location="product_categories_table_row" }
 
                     <td class="actions">
                         {loop type="auth" name="can_delete" role="ADMIN" resources="admin.product" access="UPDATE"}
-                        <a onclick="addId(this)" class="btn btn-default btn-xs delete-category" id="remove_button_id" title="{intl l='Remove the product from this category'}" href="#delete_category_dialog" data-value="{$ID}" data-toggle="modal">
+                        <a class="btn btn-default btn-xs delete-category" onclick="addId(this)" id="remove_button_id" title="{intl l='Remove the product from this category'}" href="#delete_category_dialog" data-value="{$ID_CATEGORY}" data-toggle="modal">
                             <span class="glyphicon glyphicon-trash"></span>
                         </a>
 
@@ -299,6 +308,7 @@ form_content    = {$smarty.capture.delete_category_dialog nofilter}
 }
 
 <script>
+
     function addId(element) {
         document.getElementById('additional_category_delete_id').setAttribute('value',element.getAttribute('data-value'))
     }
