@@ -105,7 +105,6 @@ class GoogleShoppingXmlService
 
             $i = 0;
             while ($pse = $stmt->fetch(\PDO::FETCH_ASSOC)) {
-                $timestamp_debut = microtime(true);
                 $this->injectGoogleCategories($pse, $feed);
                 $this->injectUrls($pse, $feed, $urlManager);
                 $this->injectTaxedPrices($pse, $taxCalculatorsArray, $feed, $this->getTaxedRules());
