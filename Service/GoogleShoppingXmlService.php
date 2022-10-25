@@ -109,36 +109,11 @@ class GoogleShoppingXmlService
                 $this->injectGoogleCategories($pse, $feed);
                 $this->injectUrls($pse, $feed, $urlManager);
                 $this->injectTaxedPrices($pse, $taxCalculatorsArray, $feed, $this->getTaxedRules());
-                // 0,05
-
-
-
                 $this->injectCustomAssociationFields($pse, $feed, $fieldAssociationCollection);
-                // 0,067
-
                 $this->injectImages($pse);
-                // 0,0857
-
-
                 $this->injectBrand($pse, $feed);
-                // 0,15
-
-
-
-
-
-
                 $this->injectAttributesInTitle($pse, $feed);
-
-                // 0,48
-
-
                 $pseArray[] = $pse;
-                //0,57
-                $timestamp_fin = microtime(true);
-                $difference_ms = $timestamp_fin - $timestamp_debut;
-
-
                 $i++;
             }
 
