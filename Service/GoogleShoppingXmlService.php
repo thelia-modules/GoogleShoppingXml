@@ -9,7 +9,6 @@ use GoogleShoppingXml\Model\GoogleshoppingxmlFeed;
 use GoogleShoppingXml\Model\GoogleshoppingxmlFeedQuery;
 use GoogleShoppingXml\Model\GoogleshoppingxmlGoogleFieldAssociation;
 use GoogleShoppingXml\Model\GoogleshoppingxmlGoogleFieldAssociationQuery;
-use GoogleShoppingXml\Model\GoogleshoppingxmlIgnoreCategoryQuery;
 use GoogleShoppingXml\Model\GoogleshoppingxmlLogQuery;
 use GoogleShoppingXml\Tools\GtinChecker;
 use Propel\Runtime\ActiveQuery\Criteria;
@@ -101,17 +100,16 @@ class GoogleShoppingXmlService
             $taxCalculatorsArray = [];
             $fieldAssociationCollection = $this->getFieldAssociationCollection($feed);
 
-
-
             $i = 0;
             while ($pse = $stmt->fetch(\PDO::FETCH_ASSOC)) {
                 $this->injectGoogleCategories($pse, $feed);
                 $this->injectUrls($pse, $feed, $urlManager);
                 $this->injectTaxedPrices($pse, $taxCalculatorsArray, $feed, $this->getTaxedRules());
                 $this->injectCustomAssociationFields($pse, $feed, $fieldAssociationCollection);
+                $this->injectAttributesInTitle($pse, $feed);
                 $this->injectImages($pse);
                 $this->injectBrand($pse, $feed);
-                $this->injectAttributesInTitle($pse, $feed);
+
                 $pseArray[] = $pse;
                 $i++;
             }
@@ -222,7 +220,6 @@ class GoogleShoppingXmlService
             $shippingStr .= '<g:price>' . $formattedPrice . '</g:price>' . PHP_EOL;
             $shippingStr .= '</g:shipping>' . PHP_EOL;
         }
-
 
         foreach ($pseArray as &$pse) {
             if ($pse['PRODUCT_VISIBLE'] == 1) {
@@ -691,14 +688,11 @@ class GoogleShoppingXmlService
      */
     protected function injectAttributesInTitle(&$pse, $feed)
     {
-
         $attributesConcatArray = $this->getArrayAttributesConcatValues($feed->getLang()->getLocale(), null, ' - ');
 
         if (array_key_exists($pse['ID'], $attributesConcatArray)) {
             $pse['TITLE'] .= ' - ' . $attributesConcatArray[$pse['ID']];
         }
-
-
     }
 
 
@@ -784,9 +778,6 @@ class GoogleShoppingXmlService
 
     protected function getArrayAttributesConcatValues($locale, $attribute_id = null, $separator = '/')
     {
-        $timestamp_debut = microtime(true);
-
-
         $con = Propel::getConnection();
 
         $sql = 'SELECT attribute_combination.product_sale_elements_id AS PSE_ID, GROUP_CONCAT(attribute_av_i18n.title SEPARATOR \'' . $separator . '\') AS CONCAT FROM attribute_combination
@@ -806,19 +797,12 @@ class GoogleShoppingXmlService
         }
 
         $stmt->execute();
-
         $rows = $stmt->fetchAll(\PDO::FETCH_ASSOC);
-
-
 
         $attrib_by_pse = array();
         foreach ($rows as $row) {
             $attrib_by_pse[$row['PSE_ID']] = $row['CONCAT'];
         }
-        $timestamp_fin = microtime(true);
-
-        $difference_ms = $timestamp_fin - $timestamp_debut;
-
         return $attrib_by_pse;
     }
 
