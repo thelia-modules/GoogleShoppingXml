@@ -44,6 +44,8 @@ class FeedXmlController extends BaseFrontController
 
     private $ean_rule;
 
+    private $currencyCode;
+
     private $nb_pse;
     private $nb_pse_invisible;
     private $nb_pse_error;
@@ -55,7 +57,7 @@ class FeedXmlController extends BaseFrontController
 
     const DEFAULT_EAN_RULE = self::EAN_RULE_CHECK_STRICT;
 
-    public function getFeedXmlAction($feedId, Request $request, EventDispatcherInterface $eventDispatcher)
+    public function getFeedXmlAction($feedId, Request $request, EventDispatcherInterface $eventDispatcher, \Thelia\Core\HttpFoundation\Request $requestThelia)
     {
         $this->logger = GoogleshoppingxmlLogQuery::create();
         $this->ean_rule = GoogleShoppingXml::getConfigValue("ean_rule", self::DEFAULT_EAN_RULE);
@@ -67,6 +69,11 @@ class FeedXmlController extends BaseFrontController
 
         if ($feed == null) {
             $this->pageNotFound();
+        }
+        $this->currencyCode=$feed->getCurrency()->getCode();
+
+        if (!$this->currencyCode){
+            $this->currencyCode = CurrencyQuery::create()->filterByByDefault(1)->findOne()->getCode();
         }
 
         try {
@@ -83,7 +90,7 @@ class FeedXmlController extends BaseFrontController
             $this->nb_pse = 0;
             $this->nb_pse_invisible = 0;
             $this->nb_pse_error = 0;
-            $content = $this->renderXmlAll($feed, $pseArray, $shippingArray, $eventDispatcher);
+            $content = $this->renderXmlAll($feed, $pseArray, $shippingArray, $eventDispatcher, $requestThelia);
 
             if ($this->nb_pse_invisible > 0) {
                 $this->logger->logInfo(
@@ -136,7 +143,7 @@ class FeedXmlController extends BaseFrontController
         }
     }
 
-    protected function renderXmlAll($feed, &$pseArray, $shippingArray, EventDispatcherInterface $eventDispatcher)
+    protected function renderXmlAll($feed, &$pseArray, $shippingArray, EventDispatcherInterface $eventDispatcher,\Thelia\Core\HttpFoundation\Request $request)
     {
         $checkAvailability = ConfigQuery::checkAvailableStock();
 
@@ -176,14 +183,20 @@ class FeedXmlController extends BaseFrontController
             $shippingStr .= '<g:shipping>'.PHP_EOL;
             $shippingStr .= '<g:country>'.$shipping['country_code'].'</g:country>'.PHP_EOL;
             $shippingStr .= '<g:service>'.$shipping['service'].'</g:service>'.PHP_EOL;
-            $formattedPrice = MoneyFormat::getInstance($this->getRequest())->formatByCurrency($shipping['price'], null, null, null, $shipping['currency_id']);
+            $formattedPrice = MoneyFormat::getInstance($request)->format(
+                $shipping['price'],
+                null,
+                null,
+                null,
+                CurrencyQuery::create()->filterById($shipping['currency_id'])->findOne()->getCode() ?? $this->currencyCode
+            );
             $shippingStr .= '<g:price>'. $formattedPrice . '</g:price>'.PHP_EOL;
             $shippingStr .= '</g:shipping>'.PHP_EOL;
         }
 
         foreach ($pseArray as &$pse) {
             if ($pse['PRODUCT_VISIBLE'] == 1) {
-                $xmlPse = $this->renderXmlOnePse($feed, $pse, $shippingStr, $checkAvailability, $eventDispatcher);
+                $xmlPse = $this->renderXmlOnePse($feed, $pse, $shippingStr, $checkAvailability, $eventDispatcher, $request);
                 if (!empty($xmlPse)) {
                     $this->nb_pse++;
                 }else{
@@ -207,7 +220,7 @@ class FeedXmlController extends BaseFrontController
      * @param bool $checkAvailability
      * @return string
      */
-    protected function renderXmlOnePse($feed, &$pse, $shippingStr, $checkAvailability, EventDispatcherInterface $eventDispatcher)
+    protected function renderXmlOnePse($feed, &$pse, $shippingStr, $checkAvailability, EventDispatcherInterface $eventDispatcher,\Thelia\Core\HttpFoundation\Request $request)
     {
         $str = '<item>'.PHP_EOL;
         $str .= '<g:id>'.$pse['ID'].'</g:id>'.PHP_EOL;
@@ -295,12 +308,25 @@ class FeedXmlController extends BaseFrontController
             return '';
         }
 
-        $formattedTaxedPrice = MoneyFormat::getInstance($this->getRequest())->formatByCurrency($pse['TAXED_PRICE'], null, null, null, $feed->getCurrencyId());
+
+
+        $formattedTaxedPrice = MoneyFormat::getInstance($request)->format(
+            $pse['TAXED_PRICE'],
+            null,
+            null,
+            null,
+            $this->currencyCode
+        );
 
         $str .= '<g:price>'.$formattedTaxedPrice.'</g:price>'.PHP_EOL;
 
         if (!empty($pse['TAXED_PROMO_PRICE']) && $pse['TAXED_PROMO_PRICE'] < $pse['TAXED_PRICE']) {
-            $formattedTaxedPromoPrice = MoneyFormat::getInstance($this->getRequest())->formatByCurrency($pse['TAXED_PROMO_PRICE'], null, null, null, $feed->getCurrencyId());
+            $formattedTaxedPromoPrice = MoneyFormat::getInstance($request)->format(
+                $pse['TAXED_PROMO_PRICE'],
+                null,
+                null,
+                null,
+                $this->currencyCode);
             $str .= '<g:sale_price>'.$formattedTaxedPromoPrice.'</g:sale_price>'.PHP_EOL;
         }
 
@@ -384,7 +410,7 @@ class FeedXmlController extends BaseFrontController
         foreach ($pse['CUSTOM_FIELD_ARRAY'] as $field) {
             $str .= '<g:'.$field['FIELD_NAME'].'>'.$this->xmlSafeEncode($field['FIELD_VALUE']).'</g:'.$field['FIELD_NAME'].'>'.PHP_EOL;
         }
-        
+
         $additionalFieldEvent = new AdditionalFieldEvent($pse['ID']);
         $eventDispatcher->dispatch($additionalFieldEvent, AdditionalFieldEvent::ADD_FIELD_EVENT);
 
@@ -415,7 +441,7 @@ class FeedXmlController extends BaseFrontController
      */
     protected function getProductItems($feed, $limit = null, $offset = null)
     {
-        $sql = 'SELECT 
+        $sql = 'SELECT
 
                 pse.ID AS ID,
                 product.ID AS ID_PRODUCT,
@@ -432,9 +458,9 @@ class FeedXmlController extends BaseFrontController
                 COALESCE(price_on_currency.PROMO_PRICE, CASE WHEN NOT ISNULL(price_default.PROMO_PRICE) THEN ROUND(price_default.PROMO_PRICE * :currate, 2) END) AS PROMO_PRICE,
                 rewriting_url.URL AS REWRITTEN_URL,
                 COALESCE(product_image_on_pse.FILE, product_image_default.FILE) AS IMAGE_NAME
-                
+
                 FROM product_sale_elements AS pse
-                
+
                 INNER JOIN product ON (pse.PRODUCT_ID = product.ID)
                 LEFT OUTER JOIN product_price price_on_currency ON (pse.ID = price_on_currency.PRODUCT_SALE_ELEMENTS_ID AND price_on_currency.CURRENCY_ID = :currid)
                 LEFT OUTER JOIN product_price price_default ON (pse.ID = price_default.PRODUCT_SALE_ELEMENTS_ID AND price_default.FROM_DEFAULT_CURRENCY = 1)
