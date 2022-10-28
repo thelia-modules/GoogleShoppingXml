@@ -9,6 +9,7 @@ use GoogleShoppingXml\Model\GoogleshoppingxmlFeed;
 use GoogleShoppingXml\Model\GoogleshoppingxmlFeedQuery;
 use GoogleShoppingXml\Model\GoogleshoppingxmlGoogleFieldAssociation;
 use GoogleShoppingXml\Model\GoogleshoppingxmlGoogleFieldAssociationQuery;
+use GoogleShoppingXml\Model\GoogleshoppingxmlIgnoreCategoryQuery;
 use GoogleShoppingXml\Model\GoogleshoppingxmlLogQuery;
 use GoogleShoppingXml\Tools\GtinChecker;
 use Propel\Runtime\ActiveQuery\Criteria;
@@ -238,13 +239,18 @@ class GoogleShoppingXmlService
 
         foreach ($pseArray as &$pse) {
             if ($pse['PRODUCT_VISIBLE'] == 1) {
-                $xmlPse = $this->renderXmlOnePse($feed, $pse, $shippingStr, $checkAvailability);
-                if (!empty($xmlPse)) {
-                    $this->nb_pse++;
-                }else{
-                    $this->nb_pse_error++;
+                $categoryId = $pse["CATEGORY_ID"];
+                $ignoreCategory = GoogleshoppingxmlIgnoreCategoryQuery::create()->findOneByCategoryId($categoryId);
+                if ($ignoreCategory->getIsExportable() === 1) {
+                    $xmlPse = $this->renderXmlOnePse($feed, $pse, $shippingStr, $checkAvailability);
+
+                    if (!empty($xmlPse)) {
+                        $this->nb_pse++;
+                    } else {
+                        $this->nb_pse_error++;
+                    }
+                    $str .= $xmlPse;
                 }
-                $str .= $xmlPse;
             } else {
                 $this->nb_pse_invisible++;
             }

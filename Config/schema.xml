@@ -72,5 +72,17 @@
         <behavior name="timestampable" />
     </table>
 
+
+    <table name="googleshoppingxml_ignore_category"  namespace="GoogleShoppingXml\Model">
+        <column autoIncrement="true" name="id" primaryKey="true" required="true" type="INTEGER"/>
+
+        <column name="is_exportable" defaultValue="1" type="INTEGER" required="true" />
+        <column name="category_id"  type="INTEGER" required="true" />
+
+        <foreign-key foreignTable="category" name="fk_googleshoppingxml_category_is_exportable_id" onDelete="CASCADE" onUpdate="RESTRICT">
+            <reference foreign="id" local="category_id" />
+        </foreign-key>
+    </table>
+
     <external-schema filename="local/config/schema.xml" referenceOnly="true"/>
 </database>

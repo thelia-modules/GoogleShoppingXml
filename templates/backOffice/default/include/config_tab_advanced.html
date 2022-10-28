@@ -147,7 +147,9 @@
     </div>
 </div>
 
-<div class="row">
+
+
+<div style="display: flex">
     <div class="col-md-4">
         <div class="panel panel-default">
             <div class="panel-heading clearfix">
@@ -180,4 +182,132 @@
             </div>
         </div>
     </div>
+
+
+
+
+
+
+<!-- CATEGORY IGNORED V2 -->
+
+
+<div class="col-md-6">
+    <div class="well well-sm">
+        <div class="form-group">
+            <form method="POST" action="{url path='/admin/module/GoogleShoppingXml/add/category'}" id="related_content_form">
+
+                <p class="title title-without-tabs">{intl l='Configuration of feed '}</p>
+                <p>{intl l='Filter feed by category '}
+
+
+                    {ifloop rel="categories"}
+                <div class="input-group">
+                {$exclude_from_tree = "-1"}
+
+                <select id="selected-category" class="form-control">
+                        <option value="">{intl l='Select a category...'}</option>
+                        {loop name="categories" type="category-tree" category="0" exclude=$exclude_from_tree visible="*" backend_context="1" lang="$edit_language_id" return_url=false}
+                            <option value="{$ID}">{$TITLE}</option>
+                        {/loop}
+                </select>
+                <input type="hidden" name="selectedId" id="selected-index" value="">
+
+
+
+                    <span class="input-group-btn" onclick="addIdSelected()" id="content_add_button">
+	                           <button class="btn btn-primary action-btn" type="submit"><span class="glyphicon glyphicon-plus-sign"></span></button>
+	                        </span>
+
+                </div>
+                <span class="help-block">{intl l='Select a category and click (+) to add it'}</span>
+                {/ifloop}
+
+                {elseloop rel="categories"}
+                <div class="alert alert-info">{intl l="No categories found"}</div>
+                {/elseloop}
+
+            </form>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-striped table-condensed table-left-aligned">
+                <thead>
+                <tr>
+                    <th>{intl l='ID'}</th>
+
+                    <th>{intl l='Category title'}</th>
+
+                    {hook name="product.categories-table-header" location="product_categories_table_header" }
+
+                    <th class="actions">{intl l="Actions"}</th>
+                </tr>
+                </thead>
+
+                <tbody>
+                {loop name="additional_categories" type="category" visible="*" product=$product_id exclude=$DEFAULT_CATEGORY backend_context="1" lang="$edit_language_id" return_url=false}
+                <tr>
+                    {$IS_IGNORABLE = $ignore_category_array[$LOOP_COUNT-1]["IsExportable"]}
+                    {if $IS_IGNORABLE == 1}
+                    <td>{$ID}</td>
+                    <td>{$TITLE}</td>
+                    <input type="hidden" name="product_id" value="{$ID}" />
+                    <input type="hidden" name="current_tab" value="related" />
+                    <input type="hidden" name="additional_category_id" value="" />
+
+                    {hook name="product.categories-table-row" location="product_categories_table_row" }
+
+                    <td class="actions">
+                        {loop type="auth" name="can_delete" role="ADMIN" resources="admin.product" access="UPDATE"}
+                        <a onclick="addId(this)" class="btn btn-default btn-xs delete-category" id="remove_button_id" title="{intl l='Remove the product from this category'}" href="#delete_category_dialog" data-value="{$ID}" data-toggle="modal">
+                            <span class="glyphicon glyphicon-trash"></span>
+                        </a>
+
+                        {/loop}
+                    </td>
+                    {/if}
+                </tr>
+                {/loop}
+                </tbody>
+            </table>
+        </div>
+    </div>
 </div>
+</div>
+
+
+
+
+
+{* Delete category confirmation dialog *}
+
+{capture "delete_category_dialog"}
+<input type="hidden" name="product_id" value="{$product_id}" />
+<input type="hidden" name="additional_category_id" id="additional_category_delete_id" value=""/>
+
+<input type="hidden" name="current_tab" value="related" />
+{/capture}
+
+{include
+file = "includes/generic-confirm-dialog.html"
+
+dialog_id       = "delete_category_dialog"
+dialog_title    = {intl l="Remove category"}
+dialog_message  = {intl l="Do you really want to remove this category ?"}
+
+form_action     = {token_url path='/admin/module/GoogleShoppingXml/deleteCategory'}
+form_content    = {$smarty.capture.delete_category_dialog nofilter}
+}
+
+<script>
+    function addId(element) {
+        document.getElementById('additional_category_delete_id').setAttribute('value',element.getAttribute('data-value'))
+    }
+    function addIdSelected(){
+        var e = document.getElementById("selected-category");
+        var value = e.options[e.selectedIndex].value;
+        console.log(value);
+        document.getElementById('selected-index').setAttribute('value',value)
+    }
+
+
+</script>

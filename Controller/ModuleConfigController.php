@@ -4,10 +4,13 @@ namespace GoogleShoppingXml\Controller;
 
 use GoogleShoppingXml\GoogleShoppingXml;
 use GoogleShoppingXml\Model\GoogleshoppingxmlGoogleFieldAssociationQuery;
+use GoogleShoppingXml\Model\GoogleshoppingxmlIgnoreCategory;
+use GoogleShoppingXml\Model\GoogleshoppingxmlIgnoreCategoryQuery;
 use Propel\Runtime\Propel;
 use Thelia\Controller\Admin\BaseAdminController;
 use Thelia\Core\Security\AccessManager;
 use Thelia\Core\Security\Resource\AdminResources;
+use Thelia\Model\CategoryQuery;
 
 class ModuleConfigController extends BaseAdminController
 {
@@ -21,12 +24,28 @@ class ModuleConfigController extends BaseAdminController
 
         $ean_rule = GoogleShoppingXml::getConfigValue("ean_rule", FeedXmlController::DEFAULT_EAN_RULE);
 
+        $ignoreCategoryList = GoogleshoppingxmlIgnoreCategoryQuery::create()->find();
+
+        if(!$ignoreCategoryList->getData())
+        {
+            if($categoryList = CategoryQuery::create()->find()->getData()){
+                foreach ($categoryList as $category){
+                    $ignoreCategory=new GoogleshoppingxmlIgnoreCategory();
+                    $ignoreCategory->setCategoryId($category->getId());
+                    $ignoreCategory->save();
+                }
+            }
+        }
+        $ignoreCategoryList = GoogleshoppingxmlIgnoreCategoryQuery::create()->find()->toArray();
+
+
         return $this->render(
             "module-configuration",
             [
                 'field_association_array' => $fieldAssociationArray,
                 'pse_count' => $this->getNumberOfPse(),
-                'ean_rule' => $ean_rule
+                'ean_rule' => $ean_rule,
+                'ignore_category_array' => $ignoreCategoryList
             ]
         );
     }
@@ -39,4 +58,8 @@ class ModuleConfigController extends BaseAdminController
         $rows = $stmt->fetchAll(\PDO::FETCH_ASSOC);
         return $rows[0]['nb'];
     }
+
+
+
+
 }

@@ -16,6 +16,9 @@
     </route>
 
 
+
+
+
     <!-- FEED CONFIGURATION -->
 
     <route id="googleshoppingxml.feed.add" path="/admin/module/googleshoppingxml/feed/add" methods="POST">
@@ -66,10 +69,25 @@
     </route>
 
 
+
+
+
     <!-- XML ERROR LOG -->
 
     <route id="googleshoppingxml.log.get" path="/admin/module/googleshoppingxml/log/get" methods="GET">
         <default key="_controller">GoogleShoppingXml\Controller\LogController::getLogAction</default>
+    </route>
+
+
+    <!-- ignore category in feed -->
+
+
+    <route id="googleshooping.delete.category" path="/admin/module/GoogleShoppingXml/deleteCategory">
+        <default key="_controller">GoogleShoppingXml\Controller\CategoryController::deleteCategory</default>
+    </route>
+
+    <route id="googleshooping.add.category" path="/admin/module/GoogleShoppingXml/add/category"  methods="POST">
+        <default key="_controller">GoogleShoppingXml\Controller\CategoryController::addCategory</default>
     </route>
 
 </routes>

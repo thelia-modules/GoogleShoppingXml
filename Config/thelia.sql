@@ -17,9 +17,9 @@ CREATE TABLE `googleshoppingxml_feed`
     `currency_id` INTEGER NOT NULL,
     `country_id` INTEGER NOT NULL,
     PRIMARY KEY (`id`),
-    INDEX `FI_googleshoppingxml_feed_lang_id` (`lang_id`),
-    INDEX `FI_googleshoppingxml_feed_currency_id` (`currency_id`),
-    INDEX `FI_googleshoppingxml_feed_country_id` (`country_id`),
+    INDEX `fi_googleshoppingxml_feed_lang_id` (`lang_id`),
+    INDEX `fi_googleshoppingxml_feed_currency_id` (`currency_id`),
+    INDEX `fi_googleshoppingxml_feed_country_id` (`country_id`),
     CONSTRAINT `fk_googleshoppingxml_feed_lang_id`
         FOREIGN KEY (`lang_id`)
         REFERENCES `lang` (`id`)
@@ -51,7 +51,7 @@ CREATE TABLE `googleshoppingxml_taxonomy`
     `lang_id` INTEGER NOT NULL,
     PRIMARY KEY (`id`),
     UNIQUE INDEX `googleshoppingxml_taxonomy_unique_couple_thelia_category_id_lang` (`thelia_category_id`, `lang_id`),
-    INDEX `FI_googleshoppingxml_thelia_lang_id` (`lang_id`),
+    INDEX `fi_googleshoppingxml_thelia_lang_id` (`lang_id`),
     CONSTRAINT `fk_googleshoppingxml_taxonomy_thelia_category_id`
         FOREIGN KEY (`thelia_category_id`)
         REFERENCES `category` (`id`)
@@ -80,8 +80,8 @@ CREATE TABLE `googleshoppingxml_google_field_association`
     `id_related_feature` INTEGER,
     PRIMARY KEY (`id`),
     UNIQUE INDEX `unique_googleshoppingxml_google_field_association_google_field` (`google_field`),
-    INDEX `FI_googleshoppingxml_gl_field_association_id_attribute` (`id_related_attribute`),
-    INDEX `FI_googleshoppingxml_gl_field_association_id_feature` (`id_related_feature`),
+    INDEX `fi_googleshoppingxml_gl_field_association_id_attribute` (`id_related_attribute`),
+    INDEX `fi_googleshoppingxml_gl_field_association_id_feature` (`id_related_feature`),
     CONSTRAINT `fk_googleshoppingxml_gl_field_association_id_attribute`
         FOREIGN KEY (`id_related_attribute`)
         REFERENCES `attribute` (`id`)
@@ -112,8 +112,8 @@ CREATE TABLE `googleshoppingxml_log`
     `created_at` DATETIME,
     `updated_at` DATETIME,
     PRIMARY KEY (`id`),
-    INDEX `FI_googleshoppingxml_log_feed_id` (`feed_id`),
-    INDEX `FI_googleshoppingxml_log_pse_id` (`pse_id`),
+    INDEX `fi_googleshoppingxml_log_feed_id` (`feed_id`),
+    INDEX `fi_googleshoppingxml_log_pse_id` (`pse_id`),
     CONSTRAINT `fk_googleshoppingxml_log_feed_id`
         FOREIGN KEY (`feed_id`)
         REFERENCES `googleshoppingxml_feed` (`id`)
@@ -122,6 +122,26 @@ CREATE TABLE `googleshoppingxml_log`
     CONSTRAINT `fk_googleshoppingxml_log_pse_id`
         FOREIGN KEY (`pse_id`)
         REFERENCES `product_sale_elements` (`id`)
+        ON UPDATE RESTRICT
+        ON DELETE CASCADE
+) ENGINE=InnoDB;
+
+-- ---------------------------------------------------------------------
+-- googleshoppingxml_ignore_category
+-- ---------------------------------------------------------------------
+
+DROP TABLE IF EXISTS `googleshoppingxml_ignore_category`;
+
+CREATE TABLE `googleshoppingxml_ignore_category`
+(
+    `id` INTEGER NOT NULL AUTO_INCREMENT,
+    `is_exportable` INTEGER DEFAULT 1 NOT NULL,
+    `category_id` INTEGER NOT NULL,
+    PRIMARY KEY (`id`),
+    INDEX `fi_googleshoppingxml_category_is_exportable_id` (`category_id`),
+    CONSTRAINT `fk_googleshoppingxml_category_is_exportable_id`
+        FOREIGN KEY (`category_id`)
+        REFERENCES `category` (`id`)
         ON UPDATE RESTRICT
         ON DELETE CASCADE
 ) ENGINE=InnoDB;

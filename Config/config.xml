@@ -26,14 +26,19 @@
             <tag name="hook.event_listener" event="home.bottom" type="back" templates="render:home-bottom.html" />
             <tag name="hook.event_listener" event="home.js" type="back" templates="render:home-js.html" />
         </hook>
-    </hooks>
 
-    <services>
-        <service id="googleshoppingxml.service" class="GoogleShoppingXml\Service\GoogleShoppingXmlService">
-            <argument type="service" id="service_container" />
-            <argument type="service" id="event_dispatcher"/>
-            <argument type="service" id="request"/>
-        </service>
-    </services>
+        <!--  <hook id="ignore.categories.hook.id" class="GoogleShoppingXml\Hook\HookIgnoreCategories" scope="request">
+              <tag name="hook.event_listener" event="ignore.categories" type="back" method="onHookIgnoreCategories"/>
+          </hook>-->
+      </hooks>
 
-</config>
+
+      <services>
+          <service id="googleshoppingxml.service" class="GoogleShoppingXml\Service\GoogleShoppingXmlService">
+              <argument type="service" id="service_container" />
+              <argument type="service" id="event_dispatcher"/>
+              <argument type="service" id="request"/>
+          </service>
+      </services>
+
+  </config>
