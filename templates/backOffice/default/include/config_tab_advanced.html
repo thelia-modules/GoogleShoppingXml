@@ -146,8 +146,8 @@
 
     </div>
 </div>
+<div style="display: flex">
 
-<div class="row">
     <div class="col-md-4">
         <div class="panel panel-default">
             <div class="panel-heading clearfix">
@@ -179,5 +179,151 @@
                 </form>
             </div>
         </div>
+</div>
+
+<!-- CATEGORY IGNORED V2 -->
+
+
+<div class="col-md-6">
+    <div class="well well-sm">
+        <div class="form-group">
+            <form method="POST" action="{url path='/admin/module/GoogleShoppingXml/add/category'}" id="related_content_form">
+
+                <p class="title title-without-tabs">{intl l='Excluded Categories'}</p>
+                <p>{intl l='Filter feed by category '}
+
+
+                <div class="input-group">
+
+
+
+                    <select id="selected-category" class="form-control">
+                        <option value="">{intl l='Select a category...'}</option>
+
+                        {foreach from=$category_title_array item=category_title}
+
+                        {$ID = $category_title.category_id}
+                        {$TITLE = $category_title.title}
+
+                        <option value="{$ID}"> {$ID} | {$TITLE}</option>
+
+                        {/foreach}
+                    </select>
+
+                    <input type="hidden" name="selectedId" id="selected-index" value="">
+
+                    <span class="input-group-btn" onclick="addIdSelected()" id="content_add_button">
+	                           <button class="btn btn-primary action-btn" type="submit"><span class="glyphicon glyphicon-plus-sign"></span></button>
+	                        </span>
+
+                </div>
+                <span class="help-block">{intl l='Select a category and click (+) to add it'}</span>
+
+
+                {if !isset($category_title_array)}
+                <div class="alert alert-info">{intl l="No categories found"}</div>
+                {/if}
+
+            </form>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-striped table-condensed table-left-aligned">
+                <thead>
+                <tr>
+                    <th>{intl l='ID'}</th>
+
+                    <th>{intl l='Category title'}</th>
+
+                    {hook name="product.categories-table-header" location="product_categories_table_header" }
+
+                    <th class="actions">{intl l="Actions"}</th>
+                </tr>
+                </thead>
+
+                <tbody>
+                {foreach from=$category_title_array item=category_title}
+
+                {$ID = $category_title.category_id}
+                {$TITLE = $category_title.title}
+                {$IS_EXPORTABLE = $category_title.is_exportable}
+                <tr>
+                    {if $IS_EXPORTABLE == 0}
+                    <td>{$ID}</td>
+                    <td>{$TITLE}</td>
+                    <input type="hidden" name="current_tab" value="related" />
+                    <input type="hidden" name="additional_category_id" value="" />
+
+                    {hook name="product.categories-table-row" location="product_categories_table_row" }
+
+                    <td class="actions">
+                        {loop type="auth" name="can_delete" role="ADMIN" resources="admin.product" access="UPDATE"}
+                        <a onclick="addId(this)" class="btn btn-default btn-xs delete-category" id="remove_button_id" title="{intl l='Remove the product from this category'}" href="#delete_category_dialog" data-value="{$ID}" data-toggle="modal">
+                            <span class="glyphicon glyphicon-trash"></span>
+                        </a>
+
+                        {/loop}
+                    </td>
+                    {/if}
+                </tr>
+                {/foreach}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+<div class="col-md-4">
+    <div class="well well-sm">
+        <form method="POST" action="{url path='/admin/module/GoogleShoppingXml/modify/quantityForOneProduct'}" id="formQuantityForOneProduct">
+            <div class="panel-title">
+                <p class="title title-without-tabs">{intl l="Filter by total stock of a product"}</p>
+            </div>
+            <span class="help-block">{intl l='This filter allows you to restrict the generation of the feed by the total stock of a product'}</span>
+            {$QUANTITY = $quantity_for_one_product}
+
+
+            <input type="number" min="0" id="quantityForOneProduct" class="form-control" value="{$QUANTITY}" name="quantityForOneProduct"/>
+
+            <button class="btn btn-success form-control" type="submit" style="margin-top: 20px">
+                <span class="glyphicon glyphicon-ok"></span>
+                {intl l="Save"}
+            </button>
+        </form>
     </div>
 </div>
+</div>
+
+
+{* Delete category confirmation dialog *}
+
+{capture "delete_category_dialog"}
+<input type="hidden" name="additional_category_id" id="additional_category_delete_id" value=""/>
+
+<input type="hidden" name="current_tab" value="related" />
+{/capture}
+
+{include
+file = "includes/generic-confirm-dialog.html"
+
+dialog_id       = "delete_category_dialog"
+dialog_title    = {intl l="Remove category"}
+dialog_message  = {intl l="Do you really want to remove this category ?"}
+
+form_action     = {token_url path='/admin/module/GoogleShoppingXml/deleteCategory'}
+form_content    = {$smarty.capture.delete_category_dialog nofilter}
+}
+
+<script>
+    function addId(element) {
+        document.getElementById('additional_category_delete_id').setAttribute('value',element.getAttribute('data-value'))
+    }
+    function addIdSelected(){
+        var e = document.getElementById("selected-category");
+        var value = e.options[e.selectedIndex].value;
+        console.log(value);
+        document.getElementById('selected-index').setAttribute('value',value)
+    }
+
+
+</script>

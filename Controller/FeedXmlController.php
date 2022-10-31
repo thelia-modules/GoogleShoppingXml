@@ -384,7 +384,7 @@ class FeedXmlController extends BaseFrontController
         foreach ($pse['CUSTOM_FIELD_ARRAY'] as $field) {
             $str .= '<g:'.$field['FIELD_NAME'].'>'.$this->xmlSafeEncode($field['FIELD_VALUE']).'</g:'.$field['FIELD_NAME'].'>'.PHP_EOL;
         }
-        
+
         $additionalFieldEvent = new AdditionalFieldEvent($pse['ID']);
         $eventDispatcher->dispatch($additionalFieldEvent, AdditionalFieldEvent::ADD_FIELD_EVENT);
 
@@ -415,7 +415,7 @@ class FeedXmlController extends BaseFrontController
      */
     protected function getProductItems($feed, $limit = null, $offset = null)
     {
-        $sql = 'SELECT 
+        $sql = 'SELECT
 
                 pse.ID AS ID,
                 product.ID AS ID_PRODUCT,
@@ -432,9 +432,9 @@ class FeedXmlController extends BaseFrontController
                 COALESCE(price_on_currency.PROMO_PRICE, CASE WHEN NOT ISNULL(price_default.PROMO_PRICE) THEN ROUND(price_default.PROMO_PRICE * :currate, 2) END) AS PROMO_PRICE,
                 rewriting_url.URL AS REWRITTEN_URL,
                 COALESCE(product_image_on_pse.FILE, product_image_default.FILE) AS IMAGE_NAME
-                
+
                 FROM product_sale_elements AS pse
-                
+
                 INNER JOIN product ON (pse.PRODUCT_ID = product.ID)
                 LEFT OUTER JOIN product_price price_on_currency ON (pse.ID = price_on_currency.PRODUCT_SALE_ELEMENTS_ID AND price_on_currency.CURRENCY_ID = :currid)
                 LEFT OUTER JOIN product_price price_default ON (pse.ID = price_default.PRODUCT_SALE_ELEMENTS_ID AND price_default.FROM_DEFAULT_CURRENCY = 1)
@@ -446,7 +446,9 @@ class FeedXmlController extends BaseFrontController
                 LEFT OUTER JOIN product_sale_elements_product_image pse_image ON (pse.ID = pse_image.PRODUCT_SALE_ELEMENTS_ID)
                 LEFT OUTER JOIN product_image product_image_default ON (pse.PRODUCT_ID = product_image_default.PRODUCT_ID AND product_image_default.POSITION = 1)
                 LEFT OUTER JOIN product_image product_image_on_pse ON (product_image_on_pse.ID = pse_image.PRODUCT_IMAGE_ID)
-
+                INNER JOIN googleshoppingxml_ignore_category ON (googleshoppingxml_ignore_category.category_id = product_category.category_id)
+                WHERE googleshoppingxml_ignore_category.is_exportable = 1
+                AND :quantityForOneProduct < (Select SUM(quantity) from product_sale_elements where product_id = product.ID)
                 GROUP BY pse.ID';
 
         $limit = $this->checkPositiveInteger($limit);
@@ -468,6 +470,8 @@ class FeedXmlController extends BaseFrontController
         $stmt->bindValue(':locale', $feed->getLang()->getLocale(), \PDO::PARAM_STR);
         $stmt->bindValue(':currid', $feed->getCurrencyId(), \PDO::PARAM_INT);
         $stmt->bindValue(':currate', $feed->getCurrency()->getRate(), \PDO::PARAM_STR);
+        $quantityForOneProduct = GoogleShoppingXml::getConfigValue("quantityForOneProduct");
+        $stmt->bindValue(':quantityForOneProduct',$quantityForOneProduct, \PDO::PARAM_STR);
 
         $stmt->execute();
         $pseArray = $stmt->fetchAll(\PDO::FETCH_ASSOC);
