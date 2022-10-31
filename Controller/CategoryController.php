@@ -4,11 +4,17 @@ namespace GoogleShoppingXml\Controller;
 
 use GoogleShoppingXml\Model\GoogleshoppingxmlIgnoreCategoryQuery;
 use Thelia\Controller\Admin\BaseAdminController;
+use Thelia\Core\Security\AccessManager;
+use Thelia\Core\Security\Resource\AdminResources;
 
 class CategoryController extends BaseAdminController
 {
     public function deleteCategory(): \Symfony\Component\HttpFoundation\Response
     {
+        if (null !== $response = $this->checkAuth(array(AdminResources::MODULE), 'GoogleShoppingXml', AccessManager::VIEW)) {
+            return $response;
+        }
+
         $request = $this->getRequest();
 
         $redirectParameters = array(
@@ -20,15 +26,17 @@ class CategoryController extends BaseAdminController
             return $this->generateRedirectFromRoute("admin.module.configure", array(), $redirectParameters);
         }
 
-        GoogleshoppingxmlIgnoreCategoryQuery::create()->findOneByCategoryId($id_category)->setIsExportable(0)->save();
+        GoogleshoppingxmlIgnoreCategoryQuery::create()->findOneByCategoryId($id_category)->setIsExportable(1)->save();
 
         return $this->generateRedirectFromRoute("admin.module.configure", array(), $redirectParameters);
-
-
     }
 
     public function addCategory(): \Symfony\Component\HttpFoundation\Response
     {
+        if (null !== $response = $this->checkAuth(array(AdminResources::MODULE), 'GoogleShoppingXml', AccessManager::VIEW)) {
+            return $response;
+        }
+
         $redirectParameters = array(
             'module_code' => 'GoogleShoppingXml',
             'current_tab' => 'advanced'
@@ -39,7 +47,7 @@ class CategoryController extends BaseAdminController
         if (!$id_category = $request->get('selectedId')){
             return $this->generateRedirectFromRoute("admin.module.configure", array(), $redirectParameters);
         }
-        GoogleshoppingxmlIgnoreCategoryQuery::create()->findOneByCategoryId($id_category)->setIsExportable(1)->save();
+        GoogleshoppingxmlIgnoreCategoryQuery::create()->findOneByCategoryId($id_category)->setIsExportable(0)->save();
 
 
 

@@ -10,6 +10,7 @@ use Propel\Runtime\Propel;
 use Thelia\Controller\Admin\BaseAdminController;
 use Thelia\Core\Security\AccessManager;
 use Thelia\Core\Security\Resource\AdminResources;
+use Thelia\Model\CategoryI18nQuery;
 use Thelia\Model\CategoryQuery;
 
 class ModuleConfigController extends BaseAdminController
@@ -26,6 +27,13 @@ class ModuleConfigController extends BaseAdminController
 
         $ignoreCategoryList = GoogleshoppingxmlIgnoreCategoryQuery::create()->find();
 
+        $quantityForOneProduct = GoogleShoppingXml::getConfigValue("quantityForOneProduct",null);
+
+        if ($quantityForOneProduct === null){
+            GoogleShoppingXml::setConfigValue("quantityForOneProduct",0);
+            $quantityForOneProduct = 0;
+        }
+
         if(!$ignoreCategoryList->getData())
         {
             if($categoryList = CategoryQuery::create()->find()->getData()){
@@ -35,9 +43,20 @@ class ModuleConfigController extends BaseAdminController
                     $ignoreCategory->save();
                 }
             }
+            $ignoreCategoryList = GoogleshoppingxmlIgnoreCategoryQuery::create()->find();
         }
-        $ignoreCategoryList = GoogleshoppingxmlIgnoreCategoryQuery::create()->find()->toArray();
 
+        $categoryTitleList = [];
+
+        foreach ($ignoreCategoryList as $ignoreCategory){
+            $categoryTitle=CategoryI18nQuery::create()->filterById($ignoreCategory->getCategoryId())->findOne()->getTitle();
+            $ignoreCategory = GoogleshoppingxmlIgnoreCategoryQuery::create()->findOneByCategoryId($ignoreCategory->getCategoryId());
+            $categoryTitleList[] = [
+                'title' => $categoryTitle,
+                'category_id' => $ignoreCategory->getCategoryId(),
+                'is_exportable' => $ignoreCategory->getIsExportable(),
+            ];
+        }
 
         return $this->render(
             "module-configuration",
@@ -45,7 +64,8 @@ class ModuleConfigController extends BaseAdminController
                 'field_association_array' => $fieldAssociationArray,
                 'pse_count' => $this->getNumberOfPse(),
                 'ean_rule' => $ean_rule,
-                'ignore_category_array' => $ignoreCategoryList
+                'category_title_array' => $categoryTitleList,
+                'quantity_for_one_product'=>$quantityForOneProduct
             ]
         );
     }

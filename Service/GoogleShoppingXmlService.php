@@ -224,18 +224,13 @@ class GoogleShoppingXmlService
 
         foreach ($pseArray as &$pse) {
             if ($pse['PRODUCT_VISIBLE'] == 1) {
-                $categoryId = $pse["CATEGORY_ID"];
-                $ignoreCategory = GoogleshoppingxmlIgnoreCategoryQuery::create()->findOneByCategoryId($categoryId);
-                if ($ignoreCategory->getIsExportable() === 1) {
                     $xmlPse = $this->renderXmlOnePse($feed, $pse, $shippingStr, $checkAvailability);
-
                     if (!empty($xmlPse)) {
                         $this->nb_pse++;
                     } else {
                         $this->nb_pse_error++;
                     }
                     $str .= $xmlPse;
-                }
             } else {
                 $this->nb_pse_invisible++;
             }
@@ -462,7 +457,6 @@ class GoogleShoppingXmlService
     protected function getProductItems($feed, $limit = null, $offset = null)
     {
         $sql = 'SELECT 
-
                 pse.ID AS ID,
                 product.ID AS ID_PRODUCT,
                 product.REF AS REF_PRODUCT,
@@ -476,7 +470,11 @@ class GoogleShoppingXmlService
                 FROM product_sale_elements AS pse
                 INNER JOIN product ON (pse.PRODUCT_ID = product.ID)
                 LEFT OUTER JOIN product_i18n ON (pse.PRODUCT_ID = product_i18n.ID AND product_i18n.LOCALE = :locale)
+                INNER JOIN product_category ON (pse.PRODUCT_ID = product_category.product_id)
+                INNER JOIN googleshoppingxml_ignore_category ON (googleshoppingxml_ignore_category.category_id = product_category.category_id)
                 WHERE  product.VISIBLE = 1
+                AND googleshoppingxml_ignore_category.is_exportable = 1
+                AND :quantityForOneProduct < (Select SUM(quantity) from product_sale_elements where product_id = product.ID)
                 GROUP BY pse.ID';
 
         $limit = $this->checkPositiveInteger($limit);
@@ -496,6 +494,10 @@ class GoogleShoppingXmlService
         $con = Propel::getConnection();
         $stmt = $con->prepare($sql);
         $stmt->bindValue(':locale', $feed->getLang()->getLocale(), \PDO::PARAM_STR);
+
+        $quantityForOneProduct = GoogleShoppingXml::getConfigValue("quantityForOneProduct");
+        $stmt->bindValue(':quantityForOneProduct',$quantityForOneProduct, \PDO::PARAM_STR);
+
 
         $stmt->execute();
         return $stmt;
