@@ -196,35 +196,40 @@
         <div class="form-group">
             <form method="POST" action="{url path='/admin/module/GoogleShoppingXml/add/category'}" id="related_content_form">
 
-                <p class="title title-without-tabs">{intl l='Configuration of feed '}</p>
+                <p class="title title-without-tabs">{intl l='Excluded Categories'}</p>
                 <p>{intl l='Filter feed by category '}
 
 
-                    {ifloop rel="categories"}
                 <div class="input-group">
-                {$exclude_from_tree = "-1"}
+
+
 
                 <select id="selected-category" class="form-control">
-                        <option value="">{intl l='Select a category...'}</option>
-                        {loop name="categories" type="category-tree" category="0" exclude=$exclude_from_tree visible="*" backend_context="1" lang="$edit_language_id" return_url=false}
-                            <option value="{$ID}">{$TITLE}</option>
-                        {/loop}
+                    <option value="">{intl l='Select a category...'}</option>
+
+                    {foreach from=$category_title_array item=category_title}
+
+                        {$ID = $category_title.category_id}
+                        {$TITLE = $category_title.title}
+
+                    <option value="{$ID}"> {$ID} | {$TITLE}</option>
+
+                    {/foreach}
                 </select>
+
                 <input type="hidden" name="selectedId" id="selected-index" value="">
 
-
-
-                    <span class="input-group-btn" onclick="addIdSelected()" id="content_add_button">
+                <span class="input-group-btn" onclick="addIdSelected()" id="content_add_button">
 	                           <button class="btn btn-primary action-btn" type="submit"><span class="glyphicon glyphicon-plus-sign"></span></button>
 	                        </span>
 
                 </div>
                 <span class="help-block">{intl l='Select a category and click (+) to add it'}</span>
-                {/ifloop}
 
-                {elseloop rel="categories"}
+
+                {if !isset($category_title_array)}
                 <div class="alert alert-info">{intl l="No categories found"}</div>
-                {/elseloop}
+                {/if}
 
             </form>
         </div>
@@ -244,10 +249,13 @@
                 </thead>
 
                 <tbody>
-                {loop name="additional_categories" type="category" visible="*" product=$product_id exclude=$DEFAULT_CATEGORY backend_context="1" lang="$edit_language_id" return_url=false}
+                {foreach from=$category_title_array item=category_title}
+
+                {$ID = $category_title.category_id}
+                {$TITLE = $category_title.title}
+                {$IS_EXPORTABLE = $category_title.is_exportable}
                 <tr>
-                    {$IS_IGNORABLE = $ignore_category_array[$LOOP_COUNT-1]["IsExportable"]}
-                    {if $IS_IGNORABLE == 1}
+                    {if $IS_EXPORTABLE == 0}
                     <td>{$ID}</td>
                     <td>{$TITLE}</td>
                     <input type="hidden" name="product_id" value="{$ID}" />
@@ -266,16 +274,33 @@
                     </td>
                     {/if}
                 </tr>
-                {/loop}
+                {/foreach}
                 </tbody>
             </table>
         </div>
     </div>
+
+</div>
+<div class="col-md-4">
+    <div class="well well-sm">
+        <form method="POST" action="{url path='/admin/module/GoogleShoppingXml/modify/quantityForOneProduct'}" id="formQuantityForOneProduct">
+                <div class="panel-title">
+                    <p class="title title-without-tabs">{intl l="Filter by total stock of a product"}</p>
+                </div>
+            <span class="help-block">{intl l='This filter allows you to restrict the generation of the feed by the total stock of a product'}</span>
+            {$QUANTITY = $quantity_for_one_product}
+
+
+            <input type="number" min="0" id="quantityForOneProduct" class="form-control" value="{$QUANTITY}" name="quantityForOneProduct"/>
+
+            <button class="btn btn-success form-control" type="submit" style="margin-top: 20px">
+                <span class="glyphicon glyphicon-ok"></span>
+                {intl l="Save"}
+            </button>
+        </form>
+    </div>
 </div>
 </div>
-
-
-
 
 
 {* Delete category confirmation dialog *}
