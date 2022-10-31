@@ -29,6 +29,7 @@ use Thelia\Model\AreaDeliveryModuleQuery;
 use Thelia\Model\Base\BrandI18nQuery;
 use Thelia\Model\Base\ProductCategoryQuery;
 use Thelia\Model\ConfigQuery;
+use Thelia\Model\CurrencyQuery;
 use Thelia\Model\LangQuery;
 use Thelia\Model\Module;
 use Thelia\Model\ModuleQuery;
@@ -51,6 +52,8 @@ class GoogleShoppingXmlService
     private $logger;
 
     private $ean_rule;
+
+    private $currencyCode;
 
     private $nb_pse;
     private $nb_pse_invisible;
@@ -89,6 +92,12 @@ class GoogleShoppingXmlService
 
         if ($feed == null) {
             return null;
+        }
+
+        $this->currencyCode=$feed->getCurrency()->getCode();
+
+        if (!$this->currencyCode){
+            $this->currencyCode = CurrencyQuery::create()->filterByByDefault(1)->findOne()->getCode();
         }
 
         try {
@@ -214,12 +223,18 @@ class GoogleShoppingXmlService
 
         $shippingStr = '';
         foreach ($shippingArray as $shipping) {
-            $shippingStr .= '<g:shipping>'.PHP_EOL;
-            $shippingStr .= '<g:country>'.$shipping['country_code'].'</g:country>'.PHP_EOL;
-            $shippingStr .= '<g:service>'.$shipping['service'].'</g:service>'.PHP_EOL;
-            $formattedPrice = MoneyFormat::getInstance($this->request)->formatByCurrency($shipping['price'], null, null, null, $shipping['currency_id']);
-            $shippingStr .= '<g:price>'. $formattedPrice . '</g:price>'.PHP_EOL;
-            $shippingStr .= '</g:shipping>'.PHP_EOL;
+            $shippingStr .= '<g:shipping>' . PHP_EOL;
+            $shippingStr .= '<g:country>' . $shipping['country_code'] . '</g:country>' . PHP_EOL;
+            $shippingStr .= '<g:service>' . $shipping['service'] . '</g:service>' . PHP_EOL;
+            $formattedPrice = MoneyFormat::getInstance($this->request)->format(
+                $shipping['price'],
+                null,
+                null,
+                null,
+                CurrencyQuery::create()->filterById($shipping['currency_id'])->findOne()->getCode() ?? $this->currencyCode
+            );
+            $shippingStr .= '<g:price>' . $formattedPrice . '</g:price>' . PHP_EOL;
+            $shippingStr .= '</g:shipping>' . PHP_EOL;
         }
 
         foreach ($pseArray as &$pse) {
@@ -336,13 +351,26 @@ class GoogleShoppingXmlService
             return '';
         }
 
-        $formattedTaxedPrice = MoneyFormat::getInstance($this->request)->formatByCurrency($pse['TAXED_PRICE'], null, null, null, $feed->getCurrencyId());
+
+
+        $formattedTaxedPrice = MoneyFormat::getInstance($this->request)->format(
+            $pse['TAXED_PRICE'],
+            null,
+            null,
+            null,
+            $this->currencyCode
+        );
 
         $str .= '<g:price>'.$formattedTaxedPrice.'</g:price>'.PHP_EOL;
 
         if (!empty($pse['TAXED_PROMO_PRICE']) && $pse['TAXED_PROMO_PRICE'] < $pse['TAXED_PRICE']) {
-            $formattedTaxedPromoPrice = MoneyFormat::getInstance($this->request)->formatByCurrency($pse['TAXED_PROMO_PRICE'], null, null, null, $feed->getCurrencyId());
-            $str .= '<g:sale_price>'.$formattedTaxedPromoPrice.'</g:sale_price>'.PHP_EOL;
+            $formattedTaxedPromoPrice = MoneyFormat::getInstance($this->request)->format(
+                $pse['TAXED_PROMO_PRICE'],
+                null,
+                null,
+                null,
+                $this->currencyCode);
+            $str .= '<g:sale_price>' . $formattedTaxedPromoPrice . '</g:sale_price>' . PHP_EOL;
         }
 
 
