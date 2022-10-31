@@ -72,4 +72,19 @@
         <default key="_controller">GoogleShoppingXml\Controller\LogController::getLogAction</default>
     </route>
 
+    <!-- ignore category in feed & filter by quantity for one product -->
+
+    <route id="googleshoopingxml.delete.category" path="/admin/module/GoogleShoppingXml/deleteCategory">
+      <default key="_controller">GoogleShoppingXml\Controller\CategoryController::deleteCategory</default>
+    </route>
+
+    <route id="googleshoopingxml.add.category" path="/admin/module/GoogleShoppingXml/add/category"  methods="POST">
+      <default key="_controller">GoogleShoppingXml\Controller\CategoryController::addCategory</default>
+    </route>
+
+    <route id="googleshoopingxml.save.quantity.for.one.product" path="/admin/module/GoogleShoppingXml/modify/quantityForOneProduct"  methods="POST">
+      <default key="_controller">GoogleShoppingXml\Controller\QuantityForOneProductController::saveQuantityForOneProduct</default>
+    </route>
+
+
 </routes>
