@@ -229,7 +229,7 @@ class GoogleShoppingXmlService
             $formattedPrice = MoneyFormat::getInstance($this->request)->format(
                 $shipping['price'],
                 null,
-                null,
+                '.',
                 null,
                 CurrencyQuery::create()->filterById($shipping['currency_id'])->findOne()->getCode() ?? $this->currencyCode
             );
@@ -356,7 +356,7 @@ class GoogleShoppingXmlService
         $formattedTaxedPrice = MoneyFormat::getInstance($this->request)->format(
             $pse['TAXED_PRICE'],
             null,
-            null,
+            '.',
             null,
             $this->currencyCode
         );
@@ -367,7 +367,7 @@ class GoogleShoppingXmlService
             $formattedTaxedPromoPrice = MoneyFormat::getInstance($this->request)->format(
                 $pse['TAXED_PROMO_PRICE'],
                 null,
-                null,
+                '.',
                 null,
                 $this->currencyCode);
             $str .= '<g:sale_price>' . $formattedTaxedPromoPrice . '</g:sale_price>' . PHP_EOL;
