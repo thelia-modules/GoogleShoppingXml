@@ -78,6 +78,9 @@
         <default key="_controller">GoogleShoppingXml\Controller\LogController::getLogAction</default>
     </route>
 
+    <route id="googleshoppingxml.log.delete" path="/admin/module/googleshoppingxml/log/delete" methods="GET">
+        <default key="_controller">GoogleShoppingXml\Controller\LogController::deleteLogAction</default>
+    </route>
 
     <!-- ignore category in feed & filter by quantity for one product -->
 
