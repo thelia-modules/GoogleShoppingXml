@@ -4,6 +4,7 @@ namespace GoogleShoppingXml\Controller;
 
 use GoogleShoppingXml\Model\GoogleshoppingxmlLog;
 use GoogleShoppingXml\Model\GoogleshoppingxmlLogQuery;
+use Propel\Runtime\ActiveQuery\Criteria;
 use Thelia\Controller\Admin\BaseAdminController;
 use Thelia\Core\Security\AccessManager;
 use Thelia\Core\Security\Resource\AdminResources;
@@ -66,5 +67,21 @@ class LogController extends BaseAdminController
         }
 
         return $this->jsonResponse(json_encode($logResults));
+    }
+
+    public function deleteLogAction()
+    {
+        if (null !== $response = $this->checkAuth(array(AdminResources::MODULE), array('GoogleShoppingXml'), AccessManager::CREATE)) {
+            return $response;
+        }
+
+        //date de suppression m-1 un mois avant
+        $dateSuppression = date("Y-m-d h:i:s",mktime(0, 0, 0, date("m")-1, date("d"),   date("Y")));
+
+        GoogleshoppingxmlLogQuery::create()
+            ->filterByCreatedAt($dateSuppression, Criteria::LESS_EQUAL)
+            ->delete();
+
+        return self::getLogAction();
     }
 }

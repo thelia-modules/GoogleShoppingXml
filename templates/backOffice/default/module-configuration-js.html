@@ -257,11 +257,51 @@
             });
         }
 
+        function deleteXmlLogAjax() {
+            $loader.show();
+            var limit = $("select#js_select_log_limit option:checked").val();
+
+            var offset = 0;
+            if (errorLogResult != null) {
+                offset = (logCurrentPage - 1) * limit;
+            }
+
+            var dataToSend = {
+                limit : limit,
+                offset : offset
+            };
+
+            $('.js_checkbox_level_log:checked').each(function (checkbox) {
+                dataToSend[errorLevelInfo[this.dataset.level].name] = 1;
+            });
+
+            $.ajax({
+                url      : '{url path="/admin/module/googleshoppingxml/log/delete"}',
+                data     : dataToSend,
+                type     : 'get',
+                dataType : 'json',
+                success  : function(data){
+                    errorLogResult = data;
+                    updateLogTable();
+                    $loader.hide();
+                },
+                error : function(jqXHR, textStatus, errorThrown) {
+                    $("#js_tab_xml_log").html("<tr><td colspan=\"5\">{intl l='An error has occurred during the server request.'}</td></tr>");
+                    $loader.hide();
+                }
+            });
+        }
 
         $('.js_btn_gsxml_log_refresh').on('click',function(e){
             e.preventDefault();
             logCurrentPage = 1;
             getXmlLogAjax();
+        });
+
+        $('.js_btn_gsxml_log_delete').on('click',function(e){
+            e.preventDefault();
+            logCurrentPage = 1;
+            deleteXmlLogAjax();
         });
 
         $('.js_tab_gsxml_log').on('click',function(e){

@@ -18,6 +18,7 @@ return array(
     'Date' => 'Date',
     'Delete association' => 'Supprimer l\'association',
     'Delete confirmation' => 'Confirmation de suppression',
+    'Delete old log' => 'Supprimer les anciens messages',
     'Details ...' => 'Détails ...',
     'Divide your catalog into X parts' => 'Diviser votre catalogue en X parties',
     'Do not include any EAN code' => 'N\'inclure aucun code EAN',
