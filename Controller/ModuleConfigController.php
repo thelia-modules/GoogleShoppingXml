@@ -59,7 +59,7 @@ class ModuleConfigController extends BaseAdminController
         }
 
         return $this->render(
-            "module-configuration",
+            "xml-module-configuration",
             [
                 'field_association_array' => $fieldAssociationArray,
                 'pse_count' => $this->getNumberOfPse(),
