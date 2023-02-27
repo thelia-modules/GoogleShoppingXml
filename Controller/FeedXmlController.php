@@ -474,7 +474,7 @@ class FeedXmlController extends BaseFrontController
                 LEFT OUTER JOIN product_image product_image_on_pse ON (product_image_on_pse.ID = pse_image.PRODUCT_IMAGE_ID)
                 INNER JOIN googleshoppingxml_ignore_category ON (googleshoppingxml_ignore_category.category_id = product_category.category_id)
                 WHERE googleshoppingxml_ignore_category.is_exportable = 1
-                AND :quantityForOneProduct < (Select SUM(quantity) from product_sale_elements where product_id = product.ID)
+                AND pse.quantity >=:quantityForOneProduct
                 GROUP BY pse.ID';
 
         $limit = $this->checkPositiveInteger($limit);
