@@ -16,7 +16,6 @@
 
     <hooks>
         <hook id="googleshoppingxml.module.config.hook" class="GoogleShoppingXml\Hook\HookManager" scope="request">
-            <tag name="hook.event_listener" event="module.config-js" type="back" templates="render:xml-module-configuration-js.html" />
             <tag name="hook.event_listener" event="main.head-css" type="back" />
             <tag name="hook.event_listener" event="home.bottom" type="back" templates="render:home-bottom.html" />
             <tag name="hook.event_listener" event="home.js" type="back" templates="render:home-js.html" />
