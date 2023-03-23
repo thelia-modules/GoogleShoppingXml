@@ -5,8 +5,8 @@ namespace GoogleShoppingXml\Controller;
 use GoogleShoppingXml\GoogleShoppingXml;
 use GoogleShoppingXml\Model\GoogleshoppingxmlGoogleFieldAssociation;
 use GoogleShoppingXml\Model\GoogleshoppingxmlGoogleFieldAssociationQuery;
-use Symfony\Component\HttpFoundation\Request;
 use Thelia\Controller\Admin\BaseAdminController;
+use Thelia\Core\HttpFoundation\Request;
 use Thelia\Core\Security\AccessManager;
 use Thelia\Core\Security\Resource\AdminResources;
 use Thelia\Core\Translation\Translator;
@@ -35,7 +35,7 @@ class GoogleFieldAssociationController extends BaseAdminController
         'shipping_height', 'min_handling_time', 'max_handling_time', 'tax'
     );
 
-    public function addFieldAction(Request $request)
+    public function addFieldAction()
     {
         if (null !== $response = $this->checkAuth(array(AdminResources::MODULE), array('GoogleShoppingXml'), AccessManager::CREATE)) {
             return $response;
@@ -45,7 +45,7 @@ class GoogleFieldAssociationController extends BaseAdminController
 
         try {
             $fieldAssociation = new GoogleshoppingxmlGoogleFieldAssociation();
-            $this->hydrateFieldAssociationObjectWithRequestContent($fieldAssociation, $request);
+            $this->hydrateFieldAssociationObjectWithRequestContent($fieldAssociation, $this->getRequest());
             $fieldAssociation->save();
         } catch (\Exception $e) {
             $message = $e->getMessage();
@@ -64,7 +64,7 @@ class GoogleFieldAssociationController extends BaseAdminController
     }
 
 
-    public function updateFieldAction(Request $request)
+    public function updateFieldAction(Request $httpRequest)
     {
         if (null !== $response = $this->checkAuth(array(AdminResources::MODULE), array('GoogleShoppingXml'), AccessManager::UPDATE)) {
             return $response;
@@ -74,9 +74,10 @@ class GoogleFieldAssociationController extends BaseAdminController
 
         try {
             $fieldAssociation = GoogleshoppingxmlGoogleFieldAssociationQuery::create()
-                ->findOneById($request->request->get('id'));
+                ->findOneById($httpRequest->request->get('id'));
+            
             if ($fieldAssociation != null) {
-                $this->hydrateFieldAssociationObjectWithRequestContent($fieldAssociation, $this->getRequest());
+                $this->hydrateFieldAssociationObjectWithRequestContent($fieldAssociation, $httpRequest);
                 $fieldAssociation->save();
             } else {
                 throw new \Exception(Translator::getInstance()->trans('Unable to find the field association to update.', [], GoogleShoppingXml::DOMAIN_NAME));
@@ -98,7 +99,7 @@ class GoogleFieldAssociationController extends BaseAdminController
     }
 
 
-    public function deleteFieldAction(Request $request)
+    public function deleteFieldAction(Request $httpRequest)
     {
         if (null !== $response = $this->checkAuth(array(AdminResources::MODULE), array('GoogleShoppingXml'), AccessManager::DELETE)) {
             return $response;
@@ -108,7 +109,7 @@ class GoogleFieldAssociationController extends BaseAdminController
 
         try {
             $fieldAssociation = GoogleshoppingxmlGoogleFieldAssociationQuery::create()
-                ->findOneById($request->request->get('id_field_to_delete'));
+                ->findOneById($httpRequest->request->get('id_field_to_delete'));
             if ($fieldAssociation != null) {
                 $fieldAssociation->delete();
             } else {
@@ -202,7 +203,7 @@ class GoogleFieldAssociationController extends BaseAdminController
         return $fieldAssociation;
     }
 
-    public function setEanRuleAction(Request $request)
+    public function setEanRuleAction(Request $httpRequest)
     {
         if (null !== $response = $this->checkAuth(array(AdminResources::MODULE), array('GoogleShoppingXml'), AccessManager::UPDATE)) {
             return $response;
@@ -215,7 +216,7 @@ class GoogleFieldAssociationController extends BaseAdminController
             FeedXmlController::EAN_RULE_NONE
         ];
 
-        $gtinRule = $request->request->get('gtin_rule');
+        $gtinRule = $httpRequest->request->get('gtin_rule');
         if ($gtinRule != null && in_array($gtinRule, $ruleArray)) {
             GoogleShoppingXml::setConfigValue("ean_rule", $gtinRule);
         }

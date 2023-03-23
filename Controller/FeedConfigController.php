@@ -5,8 +5,8 @@ namespace GoogleShoppingXml\Controller;
 use GoogleShoppingXml\Form\FeedManagementForm;
 use GoogleShoppingXml\GoogleShoppingXml;
 use GoogleShoppingXml\Model\GoogleshoppingxmlFeedQuery;
-use Symfony\Component\HttpFoundation\Request;
 use Thelia\Controller\Admin\BaseAdminController;
+use Thelia\Core\HttpFoundation\Request;
 use Thelia\Core\Security\AccessManager;
 use Thelia\Core\Security\Resource\AdminResources;
 use Thelia\Core\Translation\Translator;
@@ -33,7 +33,7 @@ class FeedConfigController extends BaseAdminController
 
     protected function addOrUpdateFeed()
     {
-        $form = $this->createForm(FeedManagementForm::getName());
+        $form = $this->createForm(FeedManagementForm::class);
 
         try {
             $formData = $this->validateForm($form)->getData();
@@ -49,7 +49,6 @@ class FeedConfigController extends BaseAdminController
                 ->save();
 
         } catch (\Exception $e) {
-            $message = null;
             $message = $e->getMessage();
             $this->setupFormErrorContext(
                 Translator::getInstance()->trans("GoogleShoppingXml configuration", [], GoogleShoppingXml::DOMAIN_NAME),
@@ -75,7 +74,7 @@ class FeedConfigController extends BaseAdminController
             return $response;
         }
 
-        $feedId = $request->get('id_feed_to_delete');
+        $feedId = $request->request->get('id_feed_to_delete');
 
         $feed = GoogleshoppingxmlFeedQuery::create()->findOneById($feedId);
         if ($feed != null) {

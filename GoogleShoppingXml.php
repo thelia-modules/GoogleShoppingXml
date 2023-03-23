@@ -17,7 +17,7 @@ class GoogleShoppingXml extends BaseModule
     /* @var string */
     const UPDATE_PATH = __DIR__ . DS . 'Config' . DS . 'update';
 
-    public function postActivation(ConnectionInterface $con = null): void
+    public function preActivation(ConnectionInterface $con = null)
     {
         if (!$this->getConfigValue('is_initialized', false)) {
             $database = new Database($con);
@@ -26,6 +26,8 @@ class GoogleShoppingXml extends BaseModule
 
             $this->setConfigValue('is_initialized', true);
         }
+        
+        return true;
     }
 
     public function update($currentVersion, $newVersion, ConnectionInterface $con = null): void

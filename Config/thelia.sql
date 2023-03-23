@@ -17,9 +17,9 @@ CREATE TABLE `googleshoppingxml_feed`
     `currency_id` INTEGER NOT NULL,
     `country_id` INTEGER NOT NULL,
     PRIMARY KEY (`id`),
-    INDEX `FI_googleshoppingxml_feed_lang_id` (`lang_id`),
-    INDEX `FI_googleshoppingxml_feed_currency_id` (`currency_id`),
-    INDEX `FI_googleshoppingxml_feed_country_id` (`country_id`),
+    INDEX `fi_googleshoppingxml_feed_lang_id` (`lang_id`),
+    INDEX `fi_googleshoppingxml_feed_currency_id` (`currency_id`),
+    INDEX `fi_googleshoppingxml_feed_country_id` (`country_id`),
     CONSTRAINT `fk_googleshoppingxml_feed_lang_id`
         FOREIGN KEY (`lang_id`)
         REFERENCES `lang` (`id`)
@@ -124,22 +124,6 @@ CREATE TABLE `googleshoppingxml_log`
         REFERENCES `product_sale_elements` (`id`)
         ON UPDATE RESTRICT
         ON DELETE CASCADE
-) ENGINE=InnoDB;
-
-DROP TABLE IF EXISTS `googleshoppingxml_ignore_category`;
-
-CREATE TABLE `googleshoppingxml_ignore_category`
-(
-    `id` INTEGER NOT NULL AUTO_INCREMENT,
-    `is_exportable` INTEGER DEFAULT 1 NOT NULL,
-    `category_id` INTEGER NOT NULL,
-    PRIMARY KEY (`id`),
-    INDEX `fi_googleshoppingxml_category_is_exportable_id` (`category_id`),
-    CONSTRAINT `fk_googleshoppingxml_category_is_exportable_id`
-        FOREIGN KEY (`category_id`)
-            REFERENCES `category` (`id`)
-            ON UPDATE RESTRICT
-            ON DELETE CASCADE
 ) ENGINE=InnoDB;
 
 # This restores the fkey checks, after having unset them earlier

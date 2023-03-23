@@ -4,18 +4,20 @@ namespace GoogleShoppingXml\Controller;
 
 use GoogleShoppingXml\Model\GoogleshoppingxmlLog;
 use GoogleShoppingXml\Model\GoogleshoppingxmlLogQuery;
-use Symfony\Component\HttpFoundation\Request;
 use Thelia\Controller\Admin\BaseAdminController;
 use Thelia\Core\Security\AccessManager;
 use Thelia\Core\Security\Resource\AdminResources;
 
 class LogController extends BaseAdminController
 {
-    public function getLogAction(Request $request)
+    public function getLogAction()
     {
         if (null !== $response = $this->checkAuth(array(AdminResources::MODULE), array('GoogleShoppingXml'), AccessManager::CREATE)) {
             return $response;
         }
+
+        /** @var \Thelia\Core\HttpFoundation\Request $request **/
+        $request = $this->getRequest();
 
         $limit = $request->get('limit', 50);
         $offset = $request->get('offset', null);

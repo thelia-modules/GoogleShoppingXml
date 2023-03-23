@@ -1,15 +1,5 @@
 <?php
 
-/*
- * This file is part of the Thelia package.
- * http://www.thelia.net
- *
- * (c) OpenStudio <info@thelia.net>
- *
- * For the full copyright and license information, please view the LICENSE
- * file that was distributed with this source code.
- */
-
 namespace GoogleShoppingXml\Controller;
 
 use GoogleShoppingXml\Model\GoogleshoppingxmlIgnoreCategoryQuery;
@@ -22,40 +12,43 @@ class CategoryController extends BaseAdminController
 {
     public function deleteCategory(Request $request): \Symfony\Component\HttpFoundation\Response
     {
-        if (null !== $response = $this->checkAuth([AdminResources::MODULE], 'GoogleShoppingXml', AccessManager::VIEW)) {
+        if (null !== $response = $this->checkAuth(array(AdminResources::MODULE), 'GoogleShoppingXml', AccessManager::VIEW)) {
             return $response;
         }
 
-        $redirectParameters = [
+        $redirectParameters = array(
             'module_code' => 'GoogleShoppingXml',
-            'current_tab' => 'advanced',
-        ];
+            'current_tab' => 'advanced'
+        );
 
-        if (!$id_category = $request->get('additional_category_id')) {
-            return $this->generateRedirectFromRoute('admin.module.configure', [], $redirectParameters);
+        if (!$id_category = $request->get('additional_category_id')){
+            return $this->generateRedirectFromRoute("admin.module.configure", array(), $redirectParameters);
         }
 
         GoogleshoppingxmlIgnoreCategoryQuery::create()->findOneByCategoryId($id_category)->setIsExportable(1)->save();
 
-        return $this->generateRedirectFromRoute('admin.module.configure', [], $redirectParameters);
+        return $this->generateRedirectFromRoute("admin.module.configure", array(), $redirectParameters);
     }
 
     public function addCategory(Request $request): \Symfony\Component\HttpFoundation\Response
     {
-        if (null !== $response = $this->checkAuth([AdminResources::MODULE], 'GoogleShoppingXml', AccessManager::VIEW)) {
+        if (null !== $response = $this->checkAuth(array(AdminResources::MODULE), 'GoogleShoppingXml', AccessManager::VIEW)) {
             return $response;
         }
 
-        $redirectParameters = [
+        $redirectParameters = array(
             'module_code' => 'GoogleShoppingXml',
-            'current_tab' => 'advanced',
-        ];
+            'current_tab' => 'advanced'
+        );
 
-        if (!$id_category = $request->get('selectedId')) {
-            return $this->generateRedirectFromRoute('admin.module.configure', [], $redirectParameters);
+        if (!$id_category = $request->get('selectedId')){
+            return $this->generateRedirectFromRoute("admin.module.configure", array(), $redirectParameters);
         }
         GoogleshoppingxmlIgnoreCategoryQuery::create()->findOneByCategoryId($id_category)->setIsExportable(0)->save();
 
-        return $this->generateRedirectFromRoute('admin.module.configure', [], $redirectParameters);
+
+
+        return $this->generateRedirectFromRoute("admin.module.configure", array(), $redirectParameters);
     }
+
 }
