@@ -21,6 +21,9 @@
         </author>
     </authors>
     <type>classic</type>
-    <thelia>2.3.0</thelia>
+    <required>
+        <module version=">=1.1.0">TheliaLibrary</module>
+    </required>
+    <thelia>2.5.0</thelia>
     <stability>other</stability>
 </module>
