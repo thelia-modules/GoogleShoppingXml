@@ -5,9 +5,9 @@ namespace GoogleShoppingXml\Controller;
 use GoogleShoppingXml\Form\GoogleTaxonomyForm;
 use GoogleShoppingXml\GoogleShoppingXml;
 use GoogleShoppingXml\Model\GoogleshoppingxmlTaxonomyQuery;
-use Symfony\Component\HttpFoundation\Request;
 use Thelia\Controller\Admin\BaseAdminController;
 use Thelia\Core\HttpFoundation\JsonResponse;
+use Thelia\Core\HttpFoundation\Request;
 use Thelia\Core\Security\AccessManager;
 use Thelia\Core\Security\Resource\AdminResources;
 use Thelia\Core\Translation\Translator;
@@ -71,9 +71,7 @@ class GoogleTaxonomyController extends BaseAdminController
             return $response;
         }
 
-        $message = null;
-
-        $form = $this->createForm(GoogleTaxonomyForm::getName());
+        $form = $this->createForm(GoogleTaxonomyForm::class);
 
         try {
             $formData = $this->validateForm($form)->getData();

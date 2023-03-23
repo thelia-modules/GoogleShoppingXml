@@ -17,7 +17,7 @@
         </div>
 
         <div class="alert alert-help">
-            {form name="googleshoppingxml.feed.management"}
+            {form name="googleshoppingxml_form_feed_management_form"}
             <div class="row">
                 <form method="post" action='{url path="/admin/module/googleshoppingxml/feed/add"}'>
                     {form_hidden_fields form=$form}
@@ -78,7 +78,7 @@
         {loop type="googleshoppingxml.feed" name="googleshoppingxml_feed"}
 
         <div class="row">
-            {form name="googleshoppingxml.feed.management"}
+            {form name="googleshoppingxml_form_feed_management_form"}
             <form method="post" action='{url path="/admin/module/googleshoppingxml/feed/update"}'>
                 {form_hidden_fields form=$form}
 

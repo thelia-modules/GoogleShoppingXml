@@ -3,10 +3,8 @@
 
 namespace GoogleShoppingXml\Form;
 
-use GoogleShoppingXml\GoogleShoppingXml;
 use Symfony\Component\Form\Extension\Core\Type\NumberType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
-use Thelia\Core\Translation\Translator;
 use Thelia\Form\BaseForm;
 use Symfony\Component\Validator\Constraints;
 
@@ -27,10 +25,5 @@ class GoogleTaxonomyForm extends BaseForm
                     new Constraints\NotBlank(),
                 )
             ));
-    }
-
-    public static function getName()
-    {
-        return "googleshoppingxml_taxonomy";
     }
 }

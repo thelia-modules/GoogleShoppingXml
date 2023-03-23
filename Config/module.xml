@@ -13,11 +13,11 @@
         <language>en_US</language>
         <language>fr_FR</language>
     </languages>
-    <version>2.0.2</version>
+    <version>3.0.0</version>
     <authors>
         <author>
-            <name>Théophile Pumain</name>
-            <email>tpumain@openstudio.fr</email>
+            <name>Bertrand TOURLONIAS</name>
+            <email>btourlonias@openstudio.fr</email>
         </author>
     </authors>
     <type>classic</type>
