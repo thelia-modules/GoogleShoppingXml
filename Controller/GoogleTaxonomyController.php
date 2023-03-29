@@ -7,8 +7,10 @@ use GoogleShoppingXml\GoogleShoppingXml;
 use GoogleShoppingXml\Model\GoogleshoppingxmlTaxonomyQuery;
 use Thelia\Controller\Admin\BaseAdminController;
 use Thelia\Core\HttpFoundation\JsonResponse;
+use Thelia\Core\HttpFoundation\Request;
 use Thelia\Core\Security\AccessManager;
 use Thelia\Core\Security\Resource\AdminResources;
+use Thelia\Core\Translation\Translator;
 use Thelia\Model\Lang;
 use Thelia\Model\LangQuery;
 
@@ -69,9 +71,7 @@ class GoogleTaxonomyController extends BaseAdminController
             return $response;
         }
 
-        $message = null;
-
-        $form = new GoogleTaxonomyForm($this->getRequest());
+        $form = $this->createForm(GoogleTaxonomyForm::class);
 
         try {
             $formData = $this->validateForm($form)->getData();
@@ -96,7 +96,7 @@ class GoogleTaxonomyController extends BaseAdminController
         } catch (\Exception $e) {
             $message = $e->getMessage();
             $this->setupFormErrorContext(
-                $this->getTranslator()->trans("GoogleShoppingXml configuration", [], GoogleShoppingXml::DOMAIN_NAME),
+                Translator::getInstance()->trans("GoogleShoppingXml configuration", [], GoogleShoppingXml::DOMAIN_NAME),
                 $message,
                 $form,
                 $e
@@ -113,13 +113,13 @@ class GoogleTaxonomyController extends BaseAdminController
         );
     }
 
-    public function deleteTaxonomyAction()
+    public function deleteTaxonomyAction(Request $request)
     {
         if (null !== $response = $this->checkAuth(array(AdminResources::MODULE), array('GoogleShoppingXml'), AccessManager::DELETE)) {
             return $response;
         }
 
-        $categoryId = $this->getRequest()->request->get('category_id');
+        $categoryId = $request->request->get('category_id');
 
         GoogleshoppingxmlTaxonomyQuery::create()
             ->filterByTheliaCategoryId($categoryId)

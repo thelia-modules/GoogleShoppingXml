@@ -16,9 +16,6 @@
     </route>
 
 
-
-
-
     <!-- FEED CONFIGURATION -->
 
     <route id="googleshoppingxml.feed.add" path="/admin/module/googleshoppingxml/feed/add" methods="POST">
@@ -69,19 +66,7 @@
     </route>
 
 
-
-
-
-    <!-- XML ERROR LOG -->
-
-    <route id="googleshoppingxml.log.get" path="/admin/module/googleshoppingxml/log/get" methods="GET">
-        <default key="_controller">GoogleShoppingXml\Controller\LogController::getLogAction</default>
-    </route>
-
-
-    <!-- ignore category in feed & filter by quantity for one product -->
-
-
+    <!-- IGNORE CATEGORY -->
     <route id="googleshoopingxml.delete.category" path="/admin/module/GoogleShoppingXml/deleteCategory">
         <default key="_controller">GoogleShoppingXml\Controller\CategoryController::deleteCategory</default>
     </route>
@@ -90,8 +75,9 @@
         <default key="_controller">GoogleShoppingXml\Controller\CategoryController::addCategory</default>
     </route>
 
-    <route id="googleshoopingxml.save.quantity.for.one.product" path="/admin/module/GoogleShoppingXml/modify/quantityForOneProduct"  methods="POST">
-        <default key="_controller">GoogleShoppingXml\Controller\QuantityForOneProductController::saveQuantityForOneProduct</default>
-    </route>
 
+    <!-- XML ERROR LOG -->
+    <route id="googleshoppingxml.log.get" path="/admin/module/googleshoppingxml/log/get" methods="GET">
+        <default key="_controller">GoogleShoppingXml\Controller\LogController::getLogAction</default>
+    </route>
 </routes>

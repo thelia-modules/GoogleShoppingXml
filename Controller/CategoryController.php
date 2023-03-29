@@ -4,18 +4,17 @@ namespace GoogleShoppingXml\Controller;
 
 use GoogleShoppingXml\Model\GoogleshoppingxmlIgnoreCategoryQuery;
 use Thelia\Controller\Admin\BaseAdminController;
+use Thelia\Core\HttpFoundation\Request;
 use Thelia\Core\Security\AccessManager;
 use Thelia\Core\Security\Resource\AdminResources;
 
 class CategoryController extends BaseAdminController
 {
-    public function deleteCategory(): \Symfony\Component\HttpFoundation\Response
+    public function deleteCategory(Request $request): \Symfony\Component\HttpFoundation\Response
     {
         if (null !== $response = $this->checkAuth(array(AdminResources::MODULE), 'GoogleShoppingXml', AccessManager::VIEW)) {
             return $response;
         }
-
-        $request = $this->getRequest();
 
         $redirectParameters = array(
             'module_code' => 'GoogleShoppingXml',
@@ -26,12 +25,14 @@ class CategoryController extends BaseAdminController
             return $this->generateRedirectFromRoute("admin.module.configure", array(), $redirectParameters);
         }
 
-        GoogleshoppingxmlIgnoreCategoryQuery::create()->findOneByCategoryId($id_category)->setIsExportable(1)->save();
+        GoogleshoppingxmlIgnoreCategoryQuery::create()
+            ->filterByCategoryId($id_category)
+            ->delete();
 
         return $this->generateRedirectFromRoute("admin.module.configure", array(), $redirectParameters);
     }
 
-    public function addCategory(): \Symfony\Component\HttpFoundation\Response
+    public function addCategory(Request $request): \Symfony\Component\HttpFoundation\Response
     {
         if (null !== $response = $this->checkAuth(array(AdminResources::MODULE), 'GoogleShoppingXml', AccessManager::VIEW)) {
             return $response;
@@ -42,14 +43,15 @@ class CategoryController extends BaseAdminController
             'current_tab' => 'advanced'
         );
 
-        $request = $this->getRequest();
-
         if (!$id_category = $request->get('selectedId')){
             return $this->generateRedirectFromRoute("admin.module.configure", array(), $redirectParameters);
         }
-        GoogleshoppingxmlIgnoreCategoryQuery::create()->findOneByCategoryId($id_category)->setIsExportable(0)->save();
 
-
+        GoogleshoppingxmlIgnoreCategoryQuery::create()
+            ->filterByCategoryId($id_category)
+            ->findOneOrCreate()
+            ->setIsExportable(0)
+            ->save();
 
         return $this->generateRedirectFromRoute("admin.module.configure", array(), $redirectParameters);
     }

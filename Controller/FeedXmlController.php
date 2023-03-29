@@ -61,11 +61,6 @@ class FeedXmlController extends BaseFrontController
 
         $feed = GoogleshoppingxmlFeedQuery::create()->findOneById($feedId);
 
-        $request = $this->getRequest();
-
-        $limit = $request->get('limit', null);
-        $offset = $request->get('offset', null);
-
         if ($feed == null) {
             $this->pageNotFound();
         }
@@ -76,13 +71,10 @@ class FeedXmlController extends BaseFrontController
                 $fs->mkdir(GoogleShoppingXmlService::XML_FILES_DIR);
             }
 
-            $feedXml = GoogleShoppingXmlService::XML_FILES_DIR.$feed->getLabel().'.xml';
+            $feedXml = GoogleShoppingXmlService::XML_FILES_DIR . $feed->getLabel() . '.xml';
 
             if (!$fs->exists($feedXml)) {
-                /** @var GoogleShoppingXmlService $googleShoppingXmlService */
-                $googleShoppingXmlService = $this->getContainer()->get('googleshoppingxml.service');
-                $content = $googleShoppingXmlService->getFeedXmlAction($feedId, $limit, $offset);
-                $fs->dumpFile($feedXml, $content);
+                $this->nullResponse();
             }
 
             $response = new Response();
@@ -92,7 +84,7 @@ class FeedXmlController extends BaseFrontController
             return $response;
 
         } catch (\Exception $ex) {
-            $this->logger->logFatal($feed, null, $ex->getMessage(), $ex->getFile()." at line ".$ex->getLine());
+            $this->logger->logFatal($feed, null, $ex->getMessage(), $ex->getFile() . " at line " . $ex->getLine());
             throw $ex;
         }
     }

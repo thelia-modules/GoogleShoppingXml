@@ -7,7 +7,7 @@
 {block name="page-title"}{intl l='GoogleShoppingXml'}{/block}
 
 {block name="check-auth"}
-{check_auth role="ADMIN" module=$module_code access="view" login_tpl="/admin/login"}
+{check_auth role="ADMIN" module="GoogleShoppingXml" access="view" login_tpl="/admin/login"}
 {/block}
 
 {block name="main-content"}
@@ -32,7 +32,7 @@
             </ul>
         </div>
 
-        {hook name="module.configuration" location="module_configuration" modulecode="$module_code"}
+        {hook name="module.configuration" location="module_configuration" modulecode="GoogleShoppingXml"}
 
         <div class="general-block-decorator">
             <div class="row">
@@ -95,7 +95,7 @@
 {/block}
 
 {block name="javascript-initialization"}
-{include file="module-configuration-js.html"}
+{include file="xml-module-configuration-js.html"}
 {/block}
 
 

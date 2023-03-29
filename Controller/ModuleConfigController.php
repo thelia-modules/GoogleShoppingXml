@@ -4,14 +4,12 @@ namespace GoogleShoppingXml\Controller;
 
 use GoogleShoppingXml\GoogleShoppingXml;
 use GoogleShoppingXml\Model\GoogleshoppingxmlGoogleFieldAssociationQuery;
-use GoogleShoppingXml\Model\GoogleshoppingxmlIgnoreCategory;
 use GoogleShoppingXml\Model\GoogleshoppingxmlIgnoreCategoryQuery;
 use Propel\Runtime\Propel;
 use Thelia\Controller\Admin\BaseAdminController;
 use Thelia\Core\Security\AccessManager;
 use Thelia\Core\Security\Resource\AdminResources;
-use Thelia\Model\CategoryI18nQuery;
-use Thelia\Model\CategoryQuery;
+use Thelia\Model\Map\CategoryI18nTableMap;
 
 class ModuleConfigController extends BaseAdminController
 {
@@ -25,46 +23,29 @@ class ModuleConfigController extends BaseAdminController
 
         $ean_rule = GoogleShoppingXml::getConfigValue("ean_rule", FeedXmlController::DEFAULT_EAN_RULE);
 
-        $ignoreCategoryList = GoogleshoppingxmlIgnoreCategoryQuery::create()->find();
+        $locale = $this->getRequest()->getSession()->getLang()->getLocale();
+
+        $ignoreCategoryList = GoogleshoppingxmlIgnoreCategoryQuery::create()
+            ->addAsColumn('category_title', CategoryI18nTableMap::COL_TITLE)
+            ->addAsColumn('category_id', CategoryI18nTableMap::COL_ID)
+            ->useCategoryQuery()
+                ->useCategoryI18nQuery()
+                    ->filterByLocale($locale)
+                ->endUse()
+            ->endUse()
+            ->find()
+            ->toArray();
 
         $quantityForOneProduct = GoogleShoppingXml::getConfigValue("quantityForOneProduct",null);
 
-        if ($quantityForOneProduct === null){
-            GoogleShoppingXml::setConfigValue("quantityForOneProduct",0);
-            $quantityForOneProduct = 0;
-        }
-
-        if(!$ignoreCategoryList->getData())
-        {
-            if($categoryList = CategoryQuery::create()->find()->getData()){
-                foreach ($categoryList as $category){
-                    $ignoreCategory=new GoogleshoppingxmlIgnoreCategory();
-                    $ignoreCategory->setCategoryId($category->getId());
-                    $ignoreCategory->save();
-                }
-            }
-            $ignoreCategoryList = GoogleshoppingxmlIgnoreCategoryQuery::create()->find();
-        }
-
-        $categoryTitleList = [];
-
-        foreach ($ignoreCategoryList as $ignoreCategory){
-            $categoryTitle=CategoryI18nQuery::create()->filterById($ignoreCategory->getCategoryId())->findOne()->getTitle();
-            $ignoreCategory = GoogleshoppingxmlIgnoreCategoryQuery::create()->findOneByCategoryId($ignoreCategory->getCategoryId());
-            $categoryTitleList[] = [
-                'title' => $categoryTitle,
-                'category_id' => $ignoreCategory->getCategoryId(),
-                'is_exportable' => $ignoreCategory->getIsExportable(),
-            ];
-        }
 
         return $this->render(
-            "module-configuration",
+            "xml-module-configuration",
             [
                 'field_association_array' => $fieldAssociationArray,
                 'pse_count' => $this->getNumberOfPse(),
                 'ean_rule' => $ean_rule,
-                'category_title_array' => $categoryTitleList,
+                'ignoreCategoryList' => $ignoreCategoryList,
                 'quantity_for_one_product'=>$quantityForOneProduct
             ]
         );
@@ -78,8 +59,4 @@ class ModuleConfigController extends BaseAdminController
         $rows = $stmt->fetchAll(\PDO::FETCH_ASSOC);
         return $rows[0]['nb'];
     }
-
-
-
-
 }

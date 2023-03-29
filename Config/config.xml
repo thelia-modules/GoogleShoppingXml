@@ -8,33 +8,47 @@
         <command class="GoogleShoppingXml\Command\GenerateXmlFileCommand" />
     </commands>
 
-    <loops>
-        <loop name="googleshoppingxml.category.associated" class="GoogleShoppingXml\Loop\AssociatedCategoryLoop" />
-        <loop name="googleshoppingxml.feed" class="GoogleShoppingXml\Loop\FeedLoop" />
-    </loops>
-
     <forms>
         <form name="googleshoppingxml.taxonomy" class="GoogleShoppingXml\Form\GoogleTaxonomyForm" />
         <form name="googleshoppingxml.feed.management" class="GoogleShoppingXml\Form\FeedManagementForm" />
     </forms>
 
+    <loops>
+        <loop name="googleshoppingxml.category.associated" class="GoogleShoppingXml\Loop\AssociatedCategoryLoop" />
+        <loop name="googleshoppingxml.feed" class="GoogleShoppingXml\Loop\FeedLoop" />
+    </loops>
+
     <hooks>
         <hook id="googleshoppingxml.module.config.hook" class="GoogleShoppingXml\Hook\HookManager" scope="request">
-            <tag name="hook.event_listener" event="module.configuration" type="back" templates="render:module-configuration.html" />
-            <tag name="hook.event_listener" event="module.config-js" type="back" templates="render:module-configuration-js.html" />
             <tag name="hook.event_listener" event="main.head-css" type="back" />
             <tag name="hook.event_listener" event="home.bottom" type="back" templates="render:home-bottom.html" />
             <tag name="hook.event_listener" event="home.js" type="back" templates="render:home-js.html" />
         </hook>
       </hooks>
 
-
-      <services>
-          <service id="googleshoppingxml.service" class="GoogleShoppingXml\Service\GoogleShoppingXmlService">
-              <argument type="service" id="service_container" />
-              <argument type="service" id="event_dispatcher"/>
-              <argument type="service" id="request"/>
-          </service>
-      </services>
+    <services>
+        <service id="googleshoppingxml.service" class="GoogleShoppingXml\Service\GoogleShoppingXmlService">
+            <argument type="service" id="service_container" />
+            <argument type="service" id="event_dispatcher"/>
+            <argument type="service" id="request_stack"/>
+        </service>
+        <service id="googleshoppingxml.sqlQueryService" class="GoogleShoppingXml\Service\Provider\SQLQueryService">
+        </service>
+        <service id="googleshoppingxml.shippingService" class="GoogleShoppingXml\Service\ShippingService">
+            <argument type="service" id="service_container" />
+        </service>
+        <service id="googleshoppingxml.productProvider" class="GoogleShoppingXml\Service\Provider\ProductProvider">
+            <argument type="service" id="googleshoppingxml.sqlQueryService" />
+            <argument type="service" id="googleshoppingxml.shippingService"/>
+            <argument type="service" id="request_stack"/>
+        </service>
+        <service id="googleshoppingxml.logger" class="GoogleShoppingXml\Model\GoogleshoppingxmlLogQuery">
+        </service>
+        <service id="googleshoppingxml.xmlGenerator" class="GoogleShoppingXml\Service\XmlGenerator">
+        </service>
+        <service id="googleshoppingxml.imageService" class="GoogleShoppingXml\Service\ImageService">
+            <argument type="service" id="request_stack"/>
+        </service>
+    </services>
 
   </config>
