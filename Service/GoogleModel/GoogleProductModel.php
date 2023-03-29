@@ -268,11 +268,11 @@ class GoogleProductModel
     }
 
     /**
-     * @param string $imageFile
+     * @param string $imageId
      */
-    public function setImageLink(string $imageFile): void
+    public function setImageLink(string $imageId): void
     {
-        $this->image_link = URL::getInstance()->absoluteUrl("image-library/productImage/$imageFile/full");
+        $this->image_link = URL::getInstance()->absoluteUrl("image-library/productImage/$imageId/full");
     }
 
     /**

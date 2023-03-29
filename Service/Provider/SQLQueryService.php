@@ -59,7 +59,7 @@ class SQLQueryService
                 pi.description AS "description",                
                 IF(pse.quantity>0, "in stock", "out of stock") AS "availability",
                 CONCAT(@BASEURL := "' . $baseUrl . '",rurl.url) AS "link",
-                IF(pseimgs.pse_image_id != "", pseimgs.pse_image_file, pimgs.product_image_file) AS "image_link",
+                IF(pseimgs.pse_image_id != "", pseimgs.pse_image_id, pimgs.product_image_id) AS "image_link",
                 IF(pse.promo=1, pp.promo_price, pp.price) AS "price",
                 bi.title AS "brand",
                 IF(pse.ean_code!="", "yes", "no") AS "identifier_exists",
