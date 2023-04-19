@@ -65,6 +65,10 @@
         <default key="_controller">GoogleShoppingXml\Controller\GoogleFieldAssociationController::setEanRuleAction</default>
     </route>
 
+    <route id="googleshoppingxml.advanced.setbrandrule" path="/admin/module/googleshoppingxml/advanced/setBrandRule" methods="POST">
+        <default key="_controller">GoogleShoppingXml\Controller\GoogleFieldAssociationController::setBrandRuleAction</default>
+    </route>
+
 
     <!-- IGNORE CATEGORY -->
     <route id="googleshoopingxml.delete.category" path="/admin/module/GoogleShoppingXml/deleteCategory">
@@ -75,11 +79,6 @@
         <default key="_controller">GoogleShoppingXml\Controller\CategoryController::addCategory</default>
     </route>
 
-    <!-- IMAGE -->
-    <route id="googleshoppingxml.image.product.get" path="/image-library/productImage/{imageId}/full" methods="GET">
-        <default key="_controller">GoogleShoppingXml\Controller\ImageController::getImage</default>
-        <requirement key="imageId">\d+</requirement>
-    </route>
 
     <!-- XML ERROR LOG -->
     <route id="googleshoppingxml.log.get" path="/admin/module/googleshoppingxml/log/get" methods="GET">

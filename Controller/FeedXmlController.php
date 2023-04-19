@@ -54,6 +54,9 @@ class FeedXmlController extends BaseFrontController
 
     const DEFAULT_EAN_RULE = self::EAN_RULE_CHECK_STRICT;
 
+    const BRAND_RULE_CHECK_STRICT = "check_strict";
+    const BRAND_RULE_NONE = "none";
+
     public function getFeedXmlAction($feedId)
     {
         $this->logger = GoogleshoppingxmlLogQuery::create();

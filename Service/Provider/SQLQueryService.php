@@ -37,8 +37,21 @@ class SQLQueryService
                 JOIN attribute_av av ON ac.attribute_av_id = av.id
                 JOIN attribute_av_i18n avi ON av.id = avi.id	
                 WHERE avi.locale=:p1
-                GROUP BY ac.product_sale_elements_id                 
+                GROUP BY ac.product_sale_elements_id 
+                
+            ), product_images_query AS (
+                SELECT pimg.product_id as pid, pimg.file AS product_image_file, pimg.id as product_image_id
+                FROM product_image AS pimg
+                GROUP BY pimg.product_id 
+                ORDER BY pimg.position
+                
+            ), pse_images_query AS (
+                SELECT pseimg.`product_sale_elements_id` as pseid, pimg.file as pse_image_file, pimg.id as pse_image_id
+                FROM product_sale_elements_product_image AS pseimg
+                JOIN product_image AS pimg ON pimg.id=pseimg.product_image_id
+                GROUP BY pseimg.`product_sale_elements_id`
             )
+
             
             SELECT
                 pse.id AS "id", 
@@ -46,7 +59,7 @@ class SQLQueryService
                 pi.description AS "description",                
                 IF(pse.quantity>0, "in stock", "out of stock") AS "availability",
                 CONCAT(@BASEURL := "' . $baseUrl . '",rurl.url) AS "link",
-                productimg.id AS "image_link",
+                IF(pseimgs.pse_image_id != "", pseimgs.pse_image_file, pimgs.product_image_file) AS "image_link",
                 IF(pse.promo=1, pp.promo_price, pp.price) AS "price",
                 bi.title AS "brand",
                 IF(pse.ean_code!="", "yes", "no") AS "identifier_exists",
@@ -67,7 +80,8 @@ class SQLQueryService
             JOIN brand AS b ON b.id = p.brand_id
             JOIN brand_i18n AS bi ON b.id = bi.id
             JOIN product_category AS pc ON pc.product_id=p.id AND pc.default_category=1
-            JOIN product_image AS productimg ON productimg.product_id = p.id AND productimg.position=1
+            JOIN product_images_query AS pimgs ON pimgs.pid=p.id
+            LEFT JOIN pse_images_query AS pseimgs ON pseimgs.pseid=pse.id
             JOIN category AS c ON c.id=pc.category_id
             LEFT JOIN googleshoppingxml_ignore_category gc ON gc.category_id=c.id
             JOIN googleshoppingxml_taxonomy AS gt ON gt.thelia_category_id = c.id
@@ -76,9 +90,9 @@ class SQLQueryService
             	SELECT p.id AS "product_id", pse.quantity AS "stock" FROM product p JOIN `product_sale_elements` pse ON pse.`product_id` = p.id WHERE pse.quantity>0 GROUP BY p.id HAVING COUNT(pse.id) > 2
                 UNION
                 SELECT p.id AS "product_id", pse.quantity AS "stock" FROM product p JOIN `product_sale_elements` pse ON pse.`product_id` = p.id WHERE 1 GROUP BY p.id HAVING COUNT(pse.id) = 1 AND pse.quantity > 0
-                ) AS stock ON stock.`product_id`=p.id    
-                    
+                ) AS stock ON stock.`product_id`=p.id        
             WHERE 
+            
             pi.locale=:p2 
             AND rurl.view_locale=:p3 
             AND bi.locale=:p4 
