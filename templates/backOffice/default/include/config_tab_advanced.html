@@ -34,6 +34,7 @@
                             <option value="1">{intl l="Fixed value"}</option>
                             <option value="2">{intl l="Linked to a Thelia attribute"}</option>
                             <option value="3">{intl l="Linked to a Thelia feature"}</option>
+                            <option value="4">{intl l="Brand"}</option>
                         </select>
                     </div>
 
@@ -62,6 +63,7 @@
                                 {/loop}
                             </select>
                         </div>
+
                     </div>
 
 
@@ -76,12 +78,18 @@
             </div>
         </div>
 
-
+        {$brand = false}
 
         {foreach from=$field_association_array item=field_association}
             {$ID = $field_association.Id}
             {$GOOGLE_FIELD = $field_association.GoogleField}
             {$ASSOCIATION_TYPE = $field_association.AssociationType}
+
+            {if $field_association.AssociationType == 4}
+                {$brand = true}
+            {else}
+                {$brand = false}
+            {/if}
 
             <div class="row">
                 <form method="post" action='{url path="/admin/module/googleshoppingxml/advanced/field/update"}'>
@@ -97,6 +105,7 @@
                             <option value="1" {if $ASSOCIATION_TYPE == 1}selected{/if}>{intl l="Fixed value"}</option>
                             <option value="2" {if $ASSOCIATION_TYPE == 2}selected{/if}>{intl l="Linked to a Thelia attribute"}</option>
                             <option value="3" {if $ASSOCIATION_TYPE == 3}selected{/if}>{intl l="Linked to a Thelia feature"}</option>
+                            <option value="4" {if $ASSOCIATION_TYPE == 4}selected{/if}>{intl l="Brand"}</option>
                         </select>
                     </div>
 
@@ -173,6 +182,30 @@
                         </div>
                         <div class="radio">
                             <label><input type="radio" name="gtin_rule" value="none" {if $ean_rule == "none"}checked="checked"{/if}>{intl l="Do not include any EAN code"}</label>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <button class="btn btn-success form-control" type="submit"><span class="glyphicon glyphicon-ok"></span> {intl l="Save"}</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        <div class="panel panel-default">
+            <div class="panel-heading clearfix">
+                <div class="panel-title">
+                    {intl l='Field "Brand" configuration'}
+                    <a href="https://support.google.com/merchants/answer/6324461?hl=fr&ref_topic=6324338"><span class="glyphicon glyphicon-question-sign"></span></a>
+                </div>
+            </div>
+            <div class="panel-body">
+                <small>{intl l='Inclure ou non le champs brand dans l\'export du fichier XML'}</small>
+                <form action="{url path='/admin/module/googleshoppingxml/advanced/setBrandRule'}" method="post">
+                    <div class="form-group">
+                        <div class="radio">
+                            <label><input type="radio" name="brand_rule" value="check_strict" {if $brand_rule == "check_strict"}checked="checked"{/if}>{intl l="Inclure la marque"}</label>
+                        </div>
+                        <div class="radio">
+                            <label><input type="radio" name="brand_rule" value="none" {if $brand_rule == "none"}checked="checked"{/if}>{intl l="Ne pas Inclure la marque"}</label>
                         </div>
                     </div>
                     <div class="form-group">
