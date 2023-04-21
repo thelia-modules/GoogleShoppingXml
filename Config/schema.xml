@@ -42,6 +42,7 @@
         <column name="google_field" type="VARCHAR" size="255" required="true" />
         <column name="association_type" type="INTEGER" required="true" />
         <column name="fixed_value" type="VARCHAR" size="255" />
+        <column name="brand_value" type="VARCHAR" size="255" />
         <column name="id_related_attribute" type="INTEGER" />
         <column name="id_related_feature" type="INTEGER" />
         <foreign-key foreignTable="attribute" name="fk_googleshoppingxml_gl_field_association_id_attribute" onDelete="CASCADE" onUpdate="RESTRICT">

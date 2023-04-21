@@ -16,6 +16,7 @@ class GoogleFieldAssociationController extends BaseAdminController
     const ASSO_TYPE_FIXED_VALUE = 1;
     const ASSO_TYPE_RELATED_TO_THELIA_ATTRIBUTE = 2;
     const ASSO_TYPE_RELATED_TO_THELIA_FEATURE = 3;
+    const ASSO_TYPE_BRAND = 4;
 
     // The following are already defined in the XML output file by the module and cannot be overwritten.
     const FIELDS_NATIVELY_DEFINED = array(
@@ -195,6 +196,10 @@ class GoogleFieldAssociationController extends BaseAdminController
                 }
                 $fieldAssociation->setIdRelatedFeature($thelia_feature_id);
                 break;
+            case self::ASSO_TYPE_BRAND:
+                $brandValue = $request->get('brand_value');
+                $fieldAssociation->setBrandValue($brandValue);
+                break;
             default:
                 throw new \Exception(Translator::getInstance()->trans('The chosen association type is unknown.', [], GoogleShoppingXml::DOMAIN_NAME));
         }
@@ -219,6 +224,34 @@ class GoogleFieldAssociationController extends BaseAdminController
         $gtinRule = $httpRequest->request->get('gtin_rule');
         if ($gtinRule != null && in_array($gtinRule, $ruleArray)) {
             GoogleShoppingXml::setConfigValue("ean_rule", $gtinRule);
+        }
+
+        $redirectParameters = array(
+            'module_code' => 'GoogleShoppingXml',
+            'current_tab' => 'advanced'
+        );
+
+        if (!empty($message)) {
+            $redirectParameters['error_message_advanced_tab'] = $message;
+        }
+
+        return $this->generateRedirectFromRoute("admin.module.configure", array(), $redirectParameters);
+    }
+
+    public function setBrandRuleAction(Request $httpRequest)
+    {
+        if (null !== $response = $this->checkAuth(array(AdminResources::MODULE), array('GoogleShoppingXml'), AccessManager::UPDATE)) {
+            return $response;
+        }
+
+        $ruleArray = [
+            FeedXmlController::BRAND_RULE_CHECK_STRICT,
+            FeedXmlController::BRAND_RULE_NONE
+        ];
+
+        $brandRule = $httpRequest->request->get('brand_rule');
+        if ($brandRule !== null && in_array($brandRule, $ruleArray, true)) {
+            GoogleShoppingXml::setConfigValue("brand_rule", $brandRule);
         }
 
         $redirectParameters = array(

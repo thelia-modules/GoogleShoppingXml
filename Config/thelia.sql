@@ -76,6 +76,7 @@ CREATE TABLE `googleshoppingxml_google_field_association`
     `google_field` VARCHAR(255) NOT NULL,
     `association_type` INTEGER NOT NULL,
     `fixed_value` VARCHAR(255),
+    `brand_value` VARCHAR(255),
     `id_related_attribute` INTEGER,
     `id_related_feature` INTEGER,
     PRIMARY KEY (`id`),

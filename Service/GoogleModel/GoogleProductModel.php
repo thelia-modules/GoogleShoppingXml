@@ -19,6 +19,10 @@ class GoogleProductModel
     const EAN_RULE_NONE = "none";
     const DEFAULT_EAN_RULE = self::EAN_RULE_CHECK_STRICT;
 
+    const BRAND_RULE_CHECK_STRICT = "check_strict";
+    const BRAND_RULE_NONE = "none";
+    const DEFAULT_BRAND_RULE = self::BRAND_RULE_CHECK_STRICT;
+
     /** @var int */
     protected $id;
 
@@ -223,7 +227,20 @@ class GoogleProductModel
      */
     public function setBrand(string $brand): GoogleProductModel
     {
-        $this->brand = $brand;
+        $brandRule = GoogleShoppingXml::getConfigValue("brand_rule", self::DEFAULT_BRAND_RULE);
+
+        $this->identifier_exists = "no";
+        $this->brand = null;
+
+        if (!$brand || $brandRule === self::BRAND_RULE_NONE) {
+            return $this;
+        }
+
+        if ($brandRule === self::BRAND_RULE_CHECK_STRICT) {
+            $this->identifier_exists = "yes";
+            $this->brand = $brand;
+        }
+
         return $this;
     }
 
@@ -268,11 +285,11 @@ class GoogleProductModel
     }
 
     /**
-     * @param string $imageId
+     * @param string $imageFile
      */
-    public function setImageLink(string $imageId): void
+    public function setImageLink(string $imageFile): void
     {
-        $this->image_link = URL::getInstance()->absoluteUrl("image-library/productImage/$imageId/full");
+        $this->image_link = URL::getInstance()->absoluteUrl("image-library/productImage/$imageFile/full");
     }
 
     /**

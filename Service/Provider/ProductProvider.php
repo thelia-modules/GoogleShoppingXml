@@ -15,8 +15,6 @@ use Symfony\Component\HttpFoundation\RequestStack;
 use Thelia\Model\ConfigQuery;
 use Thelia\Model\Map\AttributeAvI18nTableMap;
 use Thelia\Model\Map\AttributeI18nTableMap;
-use Thelia\Model\Map\FeatureAvI18nTableMap;
-use Thelia\Model\Map\FeatureI18nTableMap;
 use Thelia\Model\TaxRuleQuery;
 use Thelia\TaxEngine\Calculator;
 use Thelia\Tools\MoneyFormat;
@@ -80,14 +78,13 @@ class ProductProvider
             $extraStaticFields = $this->getExtraStaticFields();
 
             $extraAttributeFields = $this->getExtraAttributeFields($row['id'], $locale);
-            $extraFeatureFields = $this->getExtraFeatureFields($row['id'], $locale);
 
             yield (new GoogleProductModel(
                 $taxCalculator,
                 $moneyFormat,
                 $shipping,
                 $feed->getCurrency(),
-                array_merge($extraStaticFields, $extraAttributeFields, $extraFeatureFields),
+                array_merge($extraStaticFields, $extraAttributeFields),
                 'g:')
             )->build($row);
         }
@@ -104,50 +101,26 @@ class ProductProvider
             ->toArray();
     }
 
-    private function getExtraAttributeFields(int $pseId, string $locale = 'en_US')
+    private function getExtraAttributeFields(int $pseId, string $locale ='en_US')
     {
         return GoogleshoppingxmlGoogleFieldAssociationQuery::create()
             ->select(['value', 'google_field'])
             ->addAsColumn('value', AttributeAvI18nTableMap::COL_TITLE)
             ->addAsColumn('google_field', GoogleshoppingxmlGoogleFieldAssociationTableMap::COL_GOOGLE_FIELD)
             ->useAttributeQuery()
-            ->useAttributeCombinationQuery()
-            ->useAttributeAvQuery()
-            ->useAttributeAvI18nQuery()
-            ->filterByLocale($locale)
-            ->endUse()
-            ->endUse()
-            ->useProductSaleElementsQuery()
-            ->filterById($pseId)
-            ->endUse()
-            ->endUse()
-            ->endUse()
-            ->find()
-            ->toArray();
-    }
-
-    private function getExtraFeatureFields(int $pseId, string $locale = 'en_US')
-    {
-        return GoogleshoppingxmlGoogleFieldAssociationQuery::create()
-            ->select(['value', 'google_field'])
-            ->addAsColumn('value', FeatureAvI18nTableMap::COL_TITLE)
-            ->addAsColumn('google_field', GoogleshoppingxmlGoogleFieldAssociationTableMap::COL_GOOGLE_FIELD)
-            ->useFeatureQuery()
-                ->useFeatureProductQuery()
-                    ->useFeatureAvQuery()
-                        ->useFeatureAvI18nQuery()
+                ->useAttributeCombinationQuery()
+                    ->useAttributeAvQuery()
+                        ->useAttributeAvI18nQuery()
                             ->filterByLocale($locale)
                         ->endUse()
                     ->endUse()
-                    ->useProductQuery()
-                        ->useProductSaleElementsQuery()
-                            ->filterById($pseId)
-                        ->endUse()
+                    ->useProductSaleElementsQuery()
+                        ->filterById($pseId)
                     ->endUse()
                 ->endUse()
             ->endUse()
             ->find()
-            ->toArray();
+        ->toArray();
     }
 
     /**
