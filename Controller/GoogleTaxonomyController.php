@@ -71,7 +71,7 @@ class GoogleTaxonomyController extends BaseAdminController
             return $response;
         }
 
-        $form = $this->createForm(GoogleTaxonomyForm::class);
+        $form = $this->createForm("googleshoppingxml.taxonomy");
 
         try {
             $formData = $this->validateForm($form)->getData();

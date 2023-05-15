@@ -22,6 +22,7 @@ class ModuleConfigController extends BaseAdminController
         $fieldAssociationArray = GoogleshoppingxmlGoogleFieldAssociationQuery::create()->find()->toArray();
 
         $ean_rule = GoogleShoppingXml::getConfigValue("ean_rule", FeedXmlController::DEFAULT_EAN_RULE);
+        $brandRule = GoogleShoppingXml::getConfigValue("brand_rule", 0);
 
         $locale = $this->getRequest()->getSession()->getLang()->getLocale();
 
@@ -45,6 +46,7 @@ class ModuleConfigController extends BaseAdminController
                 'field_association_array' => $fieldAssociationArray,
                 'pse_count' => $this->getNumberOfPse(),
                 'ean_rule' => $ean_rule,
+                'brand_rule' => $brandRule,
                 'ignoreCategoryList' => $ignoreCategoryList,
                 'quantity_for_one_product'=>$quantityForOneProduct
             ]

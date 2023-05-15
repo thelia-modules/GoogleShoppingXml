@@ -65,6 +65,10 @@
         <default key="_controller">GoogleShoppingXml\Controller\GoogleFieldAssociationController::setEanRuleAction</default>
     </route>
 
+    <route id="googleshoppingxml.advanced.setbrandrule" path="/admin/module/googleshoppingxml/advanced/setBrandRule" methods="GET">
+        <default key="_controller">GoogleShoppingXml\Controller\GoogleFieldAssociationController::setBrandRuleAction</default>
+    </route>
+
 
     <!-- IGNORE CATEGORY -->
     <route id="googleshoopingxml.delete.category" path="/admin/module/GoogleShoppingXml/deleteCategory">

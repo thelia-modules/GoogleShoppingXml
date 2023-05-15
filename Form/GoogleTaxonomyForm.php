@@ -26,9 +26,4 @@ class GoogleTaxonomyForm extends BaseForm
                 )
             ));
     }
-
-    public function getName()
-    {
-        return "googleshoppingxml_taxonomy";
-    }
 }

@@ -182,7 +182,48 @@
             </div>
         </div>
     </div>
+    <div class="col-md-4">
+            <div class="panel panel-default">
+                <div class="panel-heading clearfix">
+                    <div class="panel-title">
+                        {intl l='Field "Brand" configuration'}
+                    </div>
+                </div>
+                <div class="panel-body">
+                    <small>{intl l='Does Brand\'s should be included in the XML field "brand" ?'}</small>
+                    <form action="{url path='/admin/module/googleshoppingxml/advanced/setBrandRule'}" method="GET">
+                        <div class="form-group">
+                            <div class="checkbox">
+                                <label>
+                                    <input type="checkbox" name="brand_rule" value="1" {if $brand_rule == "1"}checked="checked"{/if} >
+                                    {intl l="Include all Brands, ignore empty"}
+                                </label>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <button class="btn btn-success form-control" type="submit"><span class="glyphicon glyphicon-ok"></span> {intl l="Save"}</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            <div class="well well-sm">
+                <form method="POST" action="{url path='/admin/module/GoogleShoppingXml/modify/quantityForOneProduct'}" id="formQuantityForOneProduct">
+                    <div class="panel-title">
+                        <p class="title title-without-tabs">{intl l="Filter by total stock of a product"}</p>
+                    </div>
+                    <span class="help-block">{intl l='This filter allows you to restrict the generation of the feed by the total stock of a product'}</span>
+                    {$QUANTITY = $quantity_for_one_product}
 
+
+                    <input type="number" min="0" id="quantityForOneProduct" class="form-control" value="{$QUANTITY}" name="quantityForOneProduct"/>
+
+                    <button class="btn btn-success form-control" type="submit" style="margin-top: 20px">
+                        <span class="glyphicon glyphicon-ok"></span>
+                        {intl l="Save"}
+                    </button>
+                </form>
+            </div>
+        </div>
 
 
 
@@ -191,7 +232,7 @@
     <!-- CATEGORY IGNORED V2 -->
 
 
-    <div class="col-md-6">
+    <div class="col-md-4">
         <div class="well well-sm">
             <div class="form-group">
                 <form method="POST" action="{url path='/admin/module/GoogleShoppingXml/add/category'}" id="related_content_form">
@@ -270,27 +311,7 @@
                 </table>
             </div>
         </div>
-
-    </div>
-    <div class="col-md-4">
-        <div class="well well-sm">
-            <form method="POST" action="{url path='/admin/module/GoogleShoppingXml/modify/quantityForOneProduct'}" id="formQuantityForOneProduct">
-                <div class="panel-title">
-                    <p class="title title-without-tabs">{intl l="Filter by total stock of a product"}</p>
-                </div>
-                <span class="help-block">{intl l='This filter allows you to restrict the generation of the feed by the total stock of a product'}</span>
-                {$QUANTITY = $quantity_for_one_product}
-
-
-                <input type="number" min="0" id="quantityForOneProduct" class="form-control" value="{$QUANTITY}" name="quantityForOneProduct"/>
-
-                <button class="btn btn-success form-control" type="submit" style="margin-top: 20px">
-                    <span class="glyphicon glyphicon-ok"></span>
-                    {intl l="Save"}
-                </button>
-            </form>
-        </div>
-    </div>
+   </div>
 </div>
 
 

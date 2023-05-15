@@ -223,7 +223,12 @@ class GoogleProductModel
      */
     public function setBrand(string $brand): GoogleProductModel
     {
-        $this->brand = $brand;
+        if (GoogleShoppingXml::getConfigValue("brand_rule", 0)) {
+            $this->brand = $brand;
+            return $this;
+        }
+
+        $this->brand = null;
         return $this;
     }
 

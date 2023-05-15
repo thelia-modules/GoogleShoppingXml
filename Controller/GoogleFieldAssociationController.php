@@ -75,7 +75,7 @@ class GoogleFieldAssociationController extends BaseAdminController
         try {
             $fieldAssociation = GoogleshoppingxmlGoogleFieldAssociationQuery::create()
                 ->findOneById($httpRequest->request->get('id'));
-            
+
             if ($fieldAssociation != null) {
                 $this->hydrateFieldAssociationObjectWithRequestContent($fieldAssociation, $httpRequest);
                 $fieldAssociation->save();
@@ -229,6 +229,22 @@ class GoogleFieldAssociationController extends BaseAdminController
         if (!empty($message)) {
             $redirectParameters['error_message_advanced_tab'] = $message;
         }
+
+        return $this->generateRedirectFromRoute("admin.module.configure", array(), $redirectParameters);
+    }
+
+    public function setBrandRuleAction()
+    {
+        if (null !== $response = $this->checkAuth(array(AdminResources::MODULE), array('GoogleShoppingXml'), AccessManager::UPDATE)) {
+            return $response;
+        }
+
+        GoogleShoppingXml::setConfigValue("brand_rule", (bool)$this->getRequest()->get('brand_rule'));
+
+        $redirectParameters = array(
+            'module_code' => 'GoogleShoppingXml',
+            'current_tab' => 'advanced'
+        );
 
         return $this->generateRedirectFromRoute("admin.module.configure", array(), $redirectParameters);
     }

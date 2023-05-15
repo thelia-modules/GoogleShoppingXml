@@ -33,7 +33,7 @@ class FeedConfigController extends BaseAdminController
 
     protected function addOrUpdateFeed()
     {
-        $form = $this->createForm(FeedManagementForm::class);
+        $form = $this->createForm("googleshoppingxml.feed.management");
 
         try {
             $formData = $this->validateForm($form)->getData();

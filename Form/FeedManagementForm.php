@@ -3,7 +3,6 @@
 namespace GoogleShoppingXml\Form;
 
 use GoogleShoppingXml\GoogleShoppingXml;
-use Symfony\Component\Form\Extension\Core\Type\NumberType;
 use Thelia\Core\Translation\Translator;
 use Thelia\Form\BaseForm;
 
@@ -43,10 +42,5 @@ class FeedManagementForm extends BaseForm
                     'for' => 'currency_id'
                 )
             ));
-    }
-
-    public function getName()
-    {
-        return "googleshoppingxml_feed_management";
     }
 }
