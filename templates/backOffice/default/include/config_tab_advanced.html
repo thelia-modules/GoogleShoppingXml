@@ -180,4 +180,26 @@
             </div>
         </div>
     </div>
+
+    <div class="col-md-4">
+        <div class="panel panel-default">
+            <div class="panel-heading clearfix">
+                <div class="panel-title">
+                    {intl l='Compatibility SQL'}
+                </div>
+            </div>
+            <div class="panel-body">
+                {form name="googleshoppingxml_form_compatibility_sql_form"}
+                <form action="{url path='/admin/module/googleshoppingxml/advanced/compatibility-sql'}" method="post">
+                    {form_hidden_fields}
+                    {render_form_field field="success_url" value={url path="/admin/module/GoogleShoppingXml"}}
+                    {render_form_field field="enable_optimisation"}
+                    <div class="form-group">
+                        <button class="btn btn-success form-control" type="submit"><span class="glyphicon glyphicon-ok"></span> {intl l="Save"}</button>
+                    </div>
+                </form>
+                {/form}
+            </div>
+        </div>
+    </div>
 </div>

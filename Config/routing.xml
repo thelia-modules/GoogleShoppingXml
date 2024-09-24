@@ -65,6 +65,10 @@
         <default key="_controller">GoogleShoppingXml\Controller\GoogleFieldAssociationController::setEanRuleAction</default>
     </route>
 
+    <route id="googleshoppingxml.advanced.compatibility-sql" path="/admin/module/googleshoppingxml/advanced/compatibility-sql" methods="POST">
+        <default key="_controller">GoogleShoppingXml\Controller\GoogleFieldAssociationController::setCompatibilitySqlAction</default>
+    </route>
+
 
     <!-- XML ERROR LOG -->
     <route id="googleshoppingxml.log.get" path="/admin/module/googleshoppingxml/log/get" methods="GET">

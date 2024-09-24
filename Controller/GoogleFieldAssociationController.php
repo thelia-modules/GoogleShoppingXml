@@ -2,6 +2,7 @@
 
 namespace GoogleShoppingXml\Controller;
 
+use GoogleShoppingXml\Form\CompatibilitySqlForm;
 use GoogleShoppingXml\GoogleShoppingXml;
 use GoogleShoppingXml\Model\GoogleshoppingxmlGoogleFieldAssociation;
 use GoogleShoppingXml\Model\GoogleshoppingxmlGoogleFieldAssociationQuery;
@@ -9,7 +10,9 @@ use Thelia\Controller\Admin\BaseAdminController;
 use Thelia\Core\HttpFoundation\Request;
 use Thelia\Core\Security\AccessManager;
 use Thelia\Core\Security\Resource\AdminResources;
+use Thelia\Core\Template\ParserContext;
 use Thelia\Core\Translation\Translator;
+use Thelia\Log\Tlog;
 
 class GoogleFieldAssociationController extends BaseAdminController
 {
@@ -231,5 +234,29 @@ class GoogleFieldAssociationController extends BaseAdminController
         }
 
         return $this->generateRedirectFromRoute("admin.module.configure", array(), $redirectParameters);
+    }
+
+    public function setCompatibilitySqlAction(ParserContext $parserContext)
+    {
+        $form = $this->createForm(CompatibilitySqlForm::getName());
+
+        try {
+            $compatibilityForm = $this->validateForm($form);
+
+            GoogleShoppingXml::setConfigValue(GoogleShoppingXml::ENABLE_SQL_8_COMPATIBILITY, $compatibilityForm->get('enable_optimisation')->getData());
+
+            return $this->generateSuccessRedirect($form);
+        }catch (\Exception $exception) {
+            Tlog::getInstance()->error($exception->getMessage());
+
+            $form->setErrorMessage($exception->getMessage());
+
+            $parserContext
+                ->addForm($form)
+                ->setGeneralError($exception->getMessage())
+            ;
+
+            return $this->generateErrorRedirect($form);
+        }
     }
 }

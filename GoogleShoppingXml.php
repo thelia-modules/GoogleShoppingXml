@@ -17,6 +17,8 @@ class GoogleShoppingXml extends BaseModule
     /* @var string */
     const UPDATE_PATH = __DIR__ . DS . 'Config' . DS . 'update';
 
+    const ENABLE_SQL_8_COMPATIBILITY = 'enable_sql_8_compatibility';
+
     public function preActivation(ConnectionInterface $con = null)
     {
         if (!$this->getConfigValue('is_initialized', false)) {

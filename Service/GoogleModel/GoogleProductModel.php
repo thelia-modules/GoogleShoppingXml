@@ -207,7 +207,7 @@ class GoogleProductModel
      * @param string $item_group_id
      * @return GoogleProductModel
      */
-    public function setItemGroupId(string $item_group_id): GoogleProductModel
+    public function setItemGroupId(?string $item_group_id): GoogleProductModel
     {
         $this->item_group_id = $item_group_id;
         return $this;
@@ -217,7 +217,7 @@ class GoogleProductModel
      * @param string $brand
      * @return GoogleProductModel
      */
-    public function setBrand(string $brand): GoogleProductModel
+    public function setBrand(?string $brand): GoogleProductModel
     {
         $this->brand = $brand;
         return $this;
@@ -227,7 +227,7 @@ class GoogleProductModel
      * @param string $google_product_category
      * @return GoogleProductModel
      */
-    public function setGoogleProductCategory(string $google_product_category): GoogleProductModel
+    public function setGoogleProductCategory(?string $google_product_category): GoogleProductModel
     {
         $this->google_product_category = $google_product_category;
         return $this;
@@ -247,7 +247,7 @@ class GoogleProductModel
      * @param string $product_type
      * @return GoogleProductModel
      */
-    public function setProductType(string $product_type): GoogleProductModel
+    public function setProductType(?string $product_type): GoogleProductModel
     {
         $this->product_type = $product_type;
         return $this;
@@ -257,7 +257,7 @@ class GoogleProductModel
      * @param array $shipping
      * @return GoogleProductModel
      */
-    public function setshipping(array $shipping): GoogleProductModel
+    public function setshipping(?array $shipping): GoogleProductModel
     {
         $this->shipping = $shipping;
         return $this;
@@ -266,7 +266,7 @@ class GoogleProductModel
     /**
      * @param int $imageId
      */
-    public function setImageLink(int $imageId): void
+    public function setImageLink(?int $imageId): void
     {
         $this->image_link = URL::getInstance()->absoluteUrl("legacy-image-library/product_image_$imageId/full/max/0/default.jpg");
     }
