@@ -73,12 +73,12 @@ class SQLQueryService
             FROM `product_sale_elements`AS pse
             
             LEFT JOIN product AS p ON pse.product_id = p.id
-            LEFT JOIN product_i18n AS pi ON p.id = pi.id
+            LEFT JOIN product_i18n AS pi ON p.id = pi.id AND pi.locale=:p2 
             LEFT JOIN attribute_title AS attrib ON attrib.id = pse.id
-            LEFT JOIN rewriting_url AS rurl ON rurl.view = "product" AND rurl.view_id = p.id
+            LEFT JOIN rewriting_url AS rurl ON rurl.view = "product" AND rurl.view_id = p.id AND rurl.view_locale=:p3 
             LEFT JOIN product_price AS pp ON pp.product_sale_elements_id = pse.id
             LEFT JOIN brand AS b ON b.id = p.brand_id
-            LEFT JOIN brand_i18n AS bi ON b.id = bi.id
+            LEFT JOIN brand_i18n AS bi ON b.id = bi.id AND bi.locale=:p4 
             LEFT JOIN product_category AS pc ON pc.product_id=p.id AND pc.default_category=1
             LEFT JOIN product_images_query AS pimgs ON pimgs.pid=p.id
             LEFT JOIN pse_images_query AS pseimgs ON pseimgs.pseid=pse.id
@@ -88,10 +88,7 @@ class SQLQueryService
             
             WHERE 
             
-            pi.locale=:p2 
-            AND rurl.view_locale=:p3 
-            AND bi.locale=:p4 
-            AND p.visible=1
+            p.visible=1
             AND pi.title!=""
             AND pi.description!=""
             
@@ -139,25 +136,22 @@ class SQLQueryService
             FROM `product_sale_elements`AS pse
             
             LEFT JOIN product AS p ON pse.product_id = p.id
-            LEFT JOIN product_i18n AS pi ON p.id = pi.id
+            LEFT JOIN product_i18n AS pi ON p.id = pi.id AND pi.locale=:p2
             LEFT JOIN attribute_combination AS ac ON ac.product_sale_elements_id = pse.id
             LEFT JOIN attribute AS a ON a.id = ac.attribute_id	
             LEFT JOIN attribute_av AS av ON ac.attribute_av_id = av.id
             LEFT JOIN attribute_av_i18n AS avi ON av.id = avi.id 
-            LEFT JOIN rewriting_url AS rurl ON rurl.view = "product" AND rurl.view_id = p.id
+            LEFT JOIN rewriting_url AS rurl ON rurl.view = "product" AND rurl.view_id = p.id AND rurl.view_locale=:p3 
             LEFT JOIN product_price AS pp ON pp.product_sale_elements_id = pse.id
             LEFT JOIN brand AS b ON b.id = p.brand_id
-            LEFT JOIN brand_i18n AS bi ON b.id = bi.id
+            LEFT JOIN brand_i18n AS bi ON b.id = bi.id AND bi.locale=:p4 
             LEFT JOIN product_category AS pc ON pc.product_id=p.id AND pc.default_category=1
             LEFT JOIN category AS c ON c.id=pc.category_id
             LEFT JOIN googleshoppingxml_taxonomy AS gt ON gt.thelia_category_id = c.id
             
             WHERE 
             
-            pi.locale=:p2 
-            AND rurl.view_locale=:p3 
-            AND bi.locale=:p4 
-            AND p.visible=1
+            p.visible=1
             AND pi.title!=""
             AND pi.description!=""
             
