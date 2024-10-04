@@ -224,7 +224,7 @@ class GoogleShoppingXmlService
         $shippingStr = '';
         foreach ($shippingArray as $shipping) {
             $shippingStr .= '<g:shipping>' . PHP_EOL;
-            $shippingStr .= '<g:country>' . $shipping['country_code'] . '</g:country>' . PHP_EOL;
+            $shippingStr .= '<g:country>' . $shipping['country'] . '</g:country>' . PHP_EOL;
             $shippingStr .= '<g:service>' . $shipping['service'] . '</g:service>' . PHP_EOL;
             $formattedPrice = MoneyFormat::getInstance($this->request)->format(
                 $shipping['price'],
@@ -870,7 +870,7 @@ class GoogleShoppingXmlService
 
         foreach ($shippingInfoArray as $moduleTitle => $postagePrice) {
             $shippingItem = [];
-            $shippingItem['country_code'] = $feed->getCountry()->getIsoalpha2();
+            $shippingItem['country'] = $feed->getCountry()->getIsoalpha2();
             $shippingItem['service'] = $moduleTitle;
             $shippingItem['price'] = $postagePrice;
             $shippingItem['currency_id'] = $feed->getCurrencyId();
