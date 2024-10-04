@@ -30,7 +30,7 @@ class ShippingService
         $shippingInfoArray = $this->getShippings($feed);
 
         foreach ($shippingInfoArray as $moduleTitle => $postagePrice) {
-            $shippingItem['country_code'] = $feed->getCountry()->getIsoalpha2();
+            $shippingItem['country'] = $feed->getCountry()->getIsoalpha2();
             $shippingItem['service'] = $moduleTitle;
             $shippingItem['price'] = $moneyFormat->format(
                 $postagePrice,
