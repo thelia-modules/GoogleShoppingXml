@@ -23,7 +23,7 @@ class GoogleFieldAssociationController extends BaseAdminController
     // The following are already defined in the XML output file by the module and cannot be overwritten.
     const FIELDS_NATIVELY_DEFINED = array(
         'id', 'title', 'description', 'link', 'image_link', 'availability', 'price', 'sale_price', 'identifier_exists',
-        'shipping', 'google_product_category', 'product_type', 'gtin', 'identifier_exists', 'item_group_id'
+        'shipping', 'google_product_category', 'product_type', 'gtin', 'identifier_exists', 'item_group_id', 'shipping_weight'
     );
 
     const GOOGLE_FIELD_LIST = array(
@@ -35,7 +35,7 @@ class GoogleFieldAssociationController extends BaseAdminController
         'size', 'size_type', 'size_system', 'item_group_id', 'adwords_redirect', 'custom_label_0', 'custom_label_1',
         'custom_label_2', 'custom_label_3', 'custom_label_4', 'promotion_id', 'shipping', 'included_destination',
         'excluded_destination', 'shipping_label', 'shipping_weight', 'shipping_length', 'shipping_width',
-        'shipping_height', 'min_handling_time', 'max_handling_time', 'tax'
+        'shipping_height', 'min_handling_time', 'max_handling_time', 'tax', 'shipping_weight'
     );
 
     public function addFieldAction()

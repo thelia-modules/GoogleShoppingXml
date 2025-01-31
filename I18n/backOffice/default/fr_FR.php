@@ -89,4 +89,6 @@ return array(
     'Within the Google Merchant Center, you have to create "feeds" for each language, currency and country that you target.' => 'Dans la page "Google Merchant Center", créez un "flux" pour chaque ensemble de langue/devise/pays que vous souhaitez.',
     'XML' => 'XML',
     'Yes' => 'Oui',
+    'Generate' => 'Générer',
+    'Download XML' => 'Télécharger XML',
 );

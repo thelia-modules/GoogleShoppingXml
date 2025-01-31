@@ -2,39 +2,19 @@
 
 namespace GoogleShoppingXml\Controller;
 
-use GoogleShoppingXml\Events\AdditionalFieldEvent;
+use Exception;
 use GoogleShoppingXml\GoogleShoppingXml;
-use GoogleShoppingXml\Model\GoogleshoppingxmlFeed;
 use GoogleShoppingXml\Model\GoogleshoppingxmlFeedQuery;
-use GoogleShoppingXml\Model\GoogleshoppingxmlGoogleFieldAssociation;
-use GoogleShoppingXml\Model\GoogleshoppingxmlGoogleFieldAssociationQuery;
 use GoogleShoppingXml\Model\GoogleshoppingxmlLogQuery;
 use GoogleShoppingXml\Service\GoogleShoppingXmlService;
-use GoogleShoppingXml\Tools\GtinChecker;
-use Propel\Runtime\ActiveQuery\Criteria;
-use Propel\Runtime\Propel;
+use GoogleShoppingXml\Service\Provider\ProductProvider;
+use GoogleShoppingXml\Service\XmlGenerator;
 use Symfony\Component\Filesystem\Filesystem;
-use Thelia\Action\Image;
-use Thelia\Controller\Front\BaseFrontController;
-use Thelia\Core\Event\Image\ImageEvent;
-use Thelia\Core\Event\TheliaEvents;
+use Thelia\Controller\Admin\BaseAdminController;
 use Thelia\Core\HttpFoundation\Response;
 use Thelia\Core\Translation\Translator;
-use Thelia\Model\AreaDeliveryModuleQuery;
-use Thelia\Model\ConfigQuery;
-use Thelia\Model\Currency;
-use Thelia\Model\CurrencyQuery;
-use Thelia\Model\Module;
-use Thelia\Model\ModuleQuery;
-use Thelia\Model\OrderPostage;
-use Thelia\Model\TaxRule;
-use Thelia\Model\TaxRuleQuery;
-use Thelia\Module\BaseModule;
-use Thelia\TaxEngine\Calculator;
-use Thelia\Tools\MoneyFormat;
-use Thelia\Tools\URL;
 
-class FeedXmlController extends BaseFrontController
+class FeedXmlController extends BaseAdminController
 {
     /**
      * @var GoogleshoppingxmlLogQuery $logger
@@ -42,10 +22,6 @@ class FeedXmlController extends BaseFrontController
     private $logger;
 
     private $ean_rule;
-
-    private $nb_pse;
-    private $nb_pse_invisible;
-    private $nb_pse_error;
 
     const EAN_RULE_ALL = "all";
     const EAN_RULE_CHECK_FLEXIBLE = "check_flexible";
@@ -87,5 +63,52 @@ class FeedXmlController extends BaseFrontController
             $this->logger->logFatal($feed, null, $ex->getMessage(), $ex->getFile() . " at line " . $ex->getLine());
             throw $ex;
         }
+    }
+
+    public function generateFeedXmlAction($feedId, ProductProvider $productProviderService, XmlGenerator $xmlGenerator)
+    {
+        $this->logger = GoogleshoppingxmlLogQuery::create();
+        $feed = GoogleshoppingxmlFeedQuery::create()->findOneById($feedId);
+
+        if ($feed == null) {
+            $this->pageNotFound();
+        }
+
+        $fs = new Filesystem();
+
+        if (!$fs->exists(GoogleShoppingXmlService::XML_FILES_DIR)) {
+            $fs->mkdir(GoogleShoppingXmlService::XML_FILES_DIR);
+        }
+
+        try {
+            $fileName = $feed->getLabel() . '.xml';
+            $filePath = GoogleShoppingXmlService::XML_FILES_DIR . $fileName;
+
+            if ($fs->exists($filePath)) {
+                $fs->remove($filePath);
+            }
+
+            $xmlGenerator->export($productProviderService->getContent($feed), $filePath);
+
+        } catch (Exception $ex) {
+            $this->logger->logFatal($feed, null, $ex->getMessage());
+        }
+
+        $this->logger->logSuccess($feed, null,
+            Translator::getInstance()->trans(
+                'The XML file has been successfully generated.',
+                [],
+                GoogleShoppingXml::DOMAIN_NAME
+            )
+        );
+
+        return $this->generateRedirectFromRoute(
+            "admin.module.configure",
+            array(),
+            array(
+                'module_code' => 'GoogleShoppingXml',
+                'current_tab' => 'feeds'
+            )
+        );
     }
 }

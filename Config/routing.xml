@@ -15,6 +15,11 @@
         <requirement key="feedId">\d+</requirement>
     </route>
 
+    <route id="googleshoppingxml.generatefeedxml" path="/googleshoppingxml/feed/xml/{feedId}/generate">
+        <default key="_controller">GoogleShoppingXml\Controller\FeedXmlController::generateFeedXmlAction</default>
+        <requirement key="feedId">\d+</requirement>
+    </route>
+
 
     <!-- FEED CONFIGURATION -->
 
