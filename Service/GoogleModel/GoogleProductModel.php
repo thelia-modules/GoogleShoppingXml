@@ -61,6 +61,9 @@ class GoogleProductModel
     /** @var string */
     protected $condition;
 
+    /** @var string */
+    protected $shipping_weight;
+
     /** @var array */
     protected $shipping;
 
@@ -250,6 +253,16 @@ class GoogleProductModel
     public function setProductType(?string $product_type): GoogleProductModel
     {
         $this->product_type = $product_type;
+        return $this;
+    }
+
+    /**
+     * @param string|null $shipping_weight
+     * @return GoogleProductModel
+     */
+    public function setShippingWeight(?string $shipping_weight): GoogleProductModel
+    {
+        $this->shipping_weight = $shipping_weight.' kg';
         return $this;
     }
 
