@@ -15,11 +15,6 @@
         <requirement key="feedId">\d+</requirement>
     </route>
 
-    <route id="googleshoppingxml.generatefeedxml" path="/googleshoppingxml/feed/xml/{feedId}/generate">
-        <default key="_controller">GoogleShoppingXml\Controller\FeedXmlController::generateFeedXmlAction</default>
-        <requirement key="feedId">\d+</requirement>
-    </route>
-
 
     <!-- FEED CONFIGURATION -->
 
@@ -33,6 +28,11 @@
 
     <route id="googleshoppingxml.feed.delete" path="/admin/module/googleshoppingxml/feed/delete" methods="POST">
         <default key="_controller">GoogleShoppingXml\Controller\FeedConfigController::deleteFeedAction</default>
+    </route>
+
+    <route id="googleshoppingxml.generatefeedxml" path="/googleshoppingxml/feed/xml/{feedId}/generate">
+        <default key="_controller">GoogleShoppingXml\Controller\FeedConfigController::generateFeedXmlAction</default>
+        <requirement key="feedId">\d+</requirement>
     </route>
 
 

@@ -5,11 +5,16 @@ namespace GoogleShoppingXml\Controller;
 use GoogleShoppingXml\Form\FeedManagementForm;
 use GoogleShoppingXml\GoogleShoppingXml;
 use GoogleShoppingXml\Model\GoogleshoppingxmlFeedQuery;
+use GoogleShoppingXml\Model\GoogleshoppingxmlLogQuery;
+use GoogleShoppingXml\Service\GoogleShoppingXmlService;
+use GoogleShoppingXml\Service\Provider\ProductProvider;
+use GoogleShoppingXml\Service\XmlGenerator;
 use Thelia\Controller\Admin\BaseAdminController;
 use Thelia\Core\HttpFoundation\Request;
 use Thelia\Core\Security\AccessManager;
 use Thelia\Core\Security\Resource\AdminResources;
 use Thelia\Core\Translation\Translator;
+use Symfony\Component\Filesystem\Filesystem;
 
 class FeedConfigController extends BaseAdminController
 {
@@ -80,6 +85,55 @@ class FeedConfigController extends BaseAdminController
         if ($feed != null) {
             $feed->delete();
         }
+
+        return $this->generateRedirectFromRoute(
+            "admin.module.configure",
+            array(),
+            array(
+                'module_code' => 'GoogleShoppingXml',
+                'current_tab' => 'feeds'
+            )
+        );
+    }
+
+
+
+    public function generateFeedXmlAction($feedId, ProductProvider $productProviderService, XmlGenerator $xmlGenerator)
+    {
+        $this->logger = GoogleshoppingxmlLogQuery::create();
+        $feed = GoogleshoppingxmlFeedQuery::create()->findOneById($feedId);
+
+        if ($feed == null) {
+            $this->pageNotFound();
+        }
+
+        $fs = new Filesystem();
+
+        if (!$fs->exists(GoogleShoppingXmlService::XML_FILES_DIR)) {
+            $fs->mkdir(GoogleShoppingXmlService::XML_FILES_DIR);
+        }
+
+        try {
+            $fileName = $feed->getLabel() . '.xml';
+            $filePath = GoogleShoppingXmlService::XML_FILES_DIR . $fileName;
+
+            if ($fs->exists($filePath)) {
+                $fs->remove($filePath);
+            }
+
+            $xmlGenerator->export($productProviderService->getContent($feed), $filePath);
+
+        } catch (Exception $ex) {
+            $this->logger->logFatal($feed, null, $ex->getMessage());
+        }
+
+        $this->logger->logSuccess($feed, null,
+            Translator::getInstance()->trans(
+                'The XML file has been successfully generated.',
+                [],
+                GoogleShoppingXml::DOMAIN_NAME
+            )
+        );
 
         return $this->generateRedirectFromRoute(
             "admin.module.configure",
