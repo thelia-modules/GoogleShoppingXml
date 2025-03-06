@@ -76,6 +76,9 @@ class ProductProvider
         }
 
         while ($row = $resultStatement->fetch(PDO::FETCH_ASSOC)) {
+            if (!isset($row['link'])){
+                continue;
+            }
             $taxCalculator->loadTaxRuleWithoutProduct($taxeRules[$row['TAX_RULE_ID']], $feed->getCountry());
 
             $row['title'] = $row['product_title'];
