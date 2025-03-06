@@ -12,6 +12,7 @@ use GoogleShoppingXml\Service\GoogleShoppingXmlService;
 use GoogleShoppingXml\Service\Provider\ProductProvider;
 use GoogleShoppingXml\Service\XmlGenerator;
 
+use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
@@ -92,13 +93,13 @@ class GenerateXmlFileCommand extends ContainerAwareCommand
                 )
             );
 
-            return 1;
+            return Command::SUCCESS;
         }
 
         //OH BOY !
         $this->executeLegacyGeneration($fs, $feeds->find());
 
-        return 1;
+        return Command::SUCCESS;
     }
 
     /**
