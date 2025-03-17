@@ -143,7 +143,7 @@ class SQLQueryService
             LEFT JOIN attribute AS a ON a.id = ac.attribute_id	
             LEFT JOIN attribute_av AS av ON ac.attribute_av_id = av.id
             LEFT JOIN attribute_av_i18n AS avi ON av.id = avi.id 
-            LEFT JOIN rewriting_url AS rurl ON rurl.view = "product" AND rurl.view_id = p.id AND rurl.view_locale=:p3 
+            LEFT JOIN rewriting_url AS rurl ON rurl.view = "product" AND rurl.view_id = p.id AND rurl.view_locale=:p3 AND rurl.redirected IS NULL
             LEFT JOIN product_price AS pp ON pp.product_sale_elements_id = pse.id
             LEFT JOIN brand AS b ON b.id = p.brand_id
             LEFT JOIN brand_i18n AS bi ON b.id = bi.id AND bi.locale=:p4 
