@@ -5,7 +5,7 @@ namespace GoogleShoppingXml;
 use Propel\Runtime\Connection\ConnectionInterface;
 use Symfony\Component\DependencyInjection\Loader\Configurator\ServicesConfigurator;
 use Symfony\Component\Finder\Finder;
-use Thelia\Install\Database;
+use Thelia\Core\Install\Database;
 use Thelia\Module\BaseModule;
 
 class GoogleShoppingXml extends BaseModule
@@ -19,7 +19,7 @@ class GoogleShoppingXml extends BaseModule
 
     const ENABLE_SQL_8_COMPATIBILITY = 'enable_sql_8_compatibility';
 
-    public function preActivation(ConnectionInterface $con = null)
+    public function preActivation(?ConnectionInterface $con = null): bool
     {
         if (!$this->getConfigValue('is_initialized', false)) {
             $database = new Database($con);

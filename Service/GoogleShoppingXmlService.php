@@ -24,6 +24,7 @@ use Thelia\Core\Event\TheliaEvents;
 use Thelia\Core\HttpFoundation\Request;
 use Thelia\Core\HttpFoundation\Session\Session;
 use Thelia\Core\Translation\Translator;
+use Thelia\Domain\Taxation\TaxEngine\Calculator;
 use Thelia\Log\Tlog;
 use Thelia\Model\AreaDeliveryModuleQuery;
 use Thelia\Model\Base\BrandI18nQuery;
@@ -40,7 +41,6 @@ use Thelia\Model\RewritingUrlQuery;
 use Thelia\Model\TaxRule;
 use Thelia\Model\TaxRuleQuery;
 use Thelia\Module\BaseModule;
-use Thelia\TaxEngine\Calculator;
 use Thelia\Tools\MoneyFormat;
 use Thelia\Tools\URL;
 

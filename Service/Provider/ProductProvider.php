@@ -12,6 +12,7 @@ use GoogleShoppingXml\Service\ShippingService;
 use Propel\Runtime\Exception\PropelException;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Thelia\Core\Template\Loop\ProductSaleElementsImage;
+use Thelia\Domain\Taxation\TaxEngine\Calculator;
 use Thelia\Model\Base\ProductQuery;
 use Thelia\Model\Category;
 use Thelia\Model\CategoryQuery;
@@ -19,7 +20,6 @@ use Thelia\Model\ConfigQuery;
 use Thelia\Model\ProductImageQuery;
 use Thelia\Model\ProductSaleElementsProductImageQuery;
 use Thelia\Model\TaxRuleQuery;
-use Thelia\TaxEngine\Calculator;
 use Thelia\Tools\MoneyFormat;
 use Thelia\Tools\URL;
 

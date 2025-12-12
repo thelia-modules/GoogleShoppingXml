@@ -7,8 +7,8 @@ use GoogleShoppingXml\Service\ImageService;
 use GoogleShoppingXml\Tools\GtinChecker;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Thelia\Core\HttpFoundation\Request;
+use Thelia\Domain\Taxation\TaxEngine\Calculator;
 use Thelia\Model\Currency;
-use Thelia\TaxEngine\Calculator;
 use Thelia\Tools\MoneyFormat;
 use Thelia\Tools\URL;
 
