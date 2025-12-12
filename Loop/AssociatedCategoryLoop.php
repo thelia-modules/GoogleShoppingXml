@@ -5,6 +5,7 @@ namespace GoogleShoppingXml\Loop;
 use GoogleShoppingXml\Model\Map\GoogleshoppingxmlTaxonomyTableMap;
 use Propel\Runtime\ActiveQuery\Criteria;
 use Propel\Runtime\ActiveQuery\Join;
+use Propel\Runtime\ActiveQuery\ModelCriteria;
 use Thelia\Core\Template\Element\BaseI18nLoop;
 use Thelia\Core\Template\Element\LoopResult;
 use Thelia\Core\Template\Element\LoopResultRow;
@@ -17,7 +18,7 @@ use Thelia\Model\Map\CategoryTableMap;
 
 class AssociatedCategoryLoop extends BaseI18nLoop implements PropelSearchLoopInterface
 {
-    public function getArgDefinitions()
+    public function getArgDefinitions(): ArgumentCollection
     {
         return new ArgumentCollection(
             Argument::createIntTypeArgument('category_id'),
@@ -25,7 +26,7 @@ class AssociatedCategoryLoop extends BaseI18nLoop implements PropelSearchLoopInt
         );
     }
 
-    public function buildModelCriteria()
+    public function buildModelCriteria(): ModelCriteria
     {
         $query = CategoryQuery::create();
 
@@ -56,7 +57,7 @@ class AssociatedCategoryLoop extends BaseI18nLoop implements PropelSearchLoopInt
     }
 
 
-    public function parseResults(LoopResult $loopResult)
+    public function parseResults(LoopResult $loopResult): LoopResult
     {
         /** @var Category $data */
         foreach ($loopResult->getResultDataCollection() as $data) {

@@ -4,6 +4,7 @@ namespace GoogleShoppingXml\Loop;
 
 use GoogleShoppingXml\Model\GoogleshoppingxmlFeed;
 use GoogleShoppingXml\Model\GoogleshoppingxmlFeedQuery;
+use Propel\Runtime\ActiveQuery\ModelCriteria;
 use Thelia\Core\Template\Element\BaseLoop;
 use Thelia\Core\Template\Element\LoopResult;
 use Thelia\Core\Template\Element\LoopResultRow;
@@ -12,12 +13,12 @@ use Thelia\Core\Template\Loop\Argument\ArgumentCollection;
 
 class FeedLoop extends BaseLoop implements PropelSearchLoopInterface
 {
-    public function getArgDefinitions()
+    public function getArgDefinitions(): ArgumentCollection
     {
         return new ArgumentCollection();
     }
 
-    public function buildModelCriteria()
+    public function buildModelCriteria(): ModelCriteria
     {
         $query = GoogleshoppingxmlFeedQuery::create();
 
@@ -25,7 +26,7 @@ class FeedLoop extends BaseLoop implements PropelSearchLoopInterface
     }
 
 
-    public function parseResults(LoopResult $loopResult)
+    public function parseResults(LoopResult $loopResult): LoopResult
     {
         /** @var GoogleshoppingxmlFeed $data */
         foreach ($loopResult->getResultDataCollection() as $data) {
