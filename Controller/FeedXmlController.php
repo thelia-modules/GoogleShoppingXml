@@ -7,7 +7,7 @@ use GoogleShoppingXml\Model\GoogleshoppingxmlFeedQuery;
 use GoogleShoppingXml\Model\GoogleshoppingxmlLogQuery;
 use GoogleShoppingXml\Service\GoogleShoppingXmlService;
 use Symfony\Component\Filesystem\Filesystem;
-use Thelia\Core\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\Response;
 use Thelia\Controller\Front\BaseFrontController;
 
 class FeedXmlController extends BaseFrontController
