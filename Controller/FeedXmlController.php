@@ -74,7 +74,47 @@ class FeedXmlController extends BaseFrontController
             $feedXml = GoogleShoppingXmlService::XML_FILES_DIR . $feed->getLabel() . '.xml';
 
             if (!$fs->exists($feedXml)) {
-                $this->nullResponse();
+                return $this->nullResponse();
+            }
+
+            $response = new Response();
+            $response->setContent(file_get_contents($feedXml));
+            $response->headers->set('Content-Type', 'application/xml');
+
+            return $response;
+
+        } catch (\Exception $ex) {
+            $this->logger->logFatal($feed, null, $ex->getMessage(), $ex->getFile() . " at line " . $ex->getLine());
+            throw $ex;
+        }
+    }
+
+    public function getLiaFeedXmlAction($feedId)
+    {
+        $dealerModuleId = GoogleShoppingXml::getConfigValue('dealer_module_id', null);
+        $dealerModule = $dealerModuleId ? ModuleQuery::create()->filterByActivate(1)->findPk($dealerModuleId) : null;
+        if (null === $dealerModule) {
+            return $this->pageNotFound();
+        }
+
+        $this->logger = GoogleshoppingxmlLogQuery::create();
+
+        $feed = GoogleshoppingxmlFeedQuery::create()->findOneById($feedId);
+
+        if ($feed == null) {
+            return $this->pageNotFound();
+        }
+        $fs = new Filesystem();
+
+        try {
+            if (!$fs->exists(GoogleShoppingXmlService::XML_FILES_DIR)) {
+                $fs->mkdir(GoogleShoppingXmlService::XML_FILES_DIR);
+            }
+
+            $feedXml = GoogleShoppingXmlService::XML_FILES_DIR . $feed->getLabel() . '_lia.xml';
+
+            if (!$fs->exists($feedXml)) {
+                return $this->nullResponse();
             }
 
             $response = new Response();

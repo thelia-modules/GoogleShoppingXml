@@ -6,6 +6,7 @@
 
     <commands>
         <command class="GoogleShoppingXml\Command\GenerateXmlFileCommand" />
+        <command class="GoogleShoppingXml\Command\GenerateLiaXmlFileCommand" />
     </commands>
 
     <forms>
@@ -34,12 +35,18 @@
         </service>
         <service id="googleshoppingxml.sqlQueryService" class="GoogleShoppingXml\Service\Provider\SQLQueryService">
         </service>
+        <service id="googleshoppingxml.liaSqlQueryService" class="GoogleShoppingXml\Service\Provider\LiaSQLQueryService">
+        </service>
         <service id="googleshoppingxml.shippingService" class="GoogleShoppingXml\Service\ShippingService">
             <argument type="service" id="service_container" />
         </service>
         <service id="googleshoppingxml.productProvider" class="GoogleShoppingXml\Service\Provider\ProductProvider">
             <argument type="service" id="googleshoppingxml.sqlQueryService" />
             <argument type="service" id="googleshoppingxml.shippingService"/>
+            <argument type="service" id="request_stack"/>
+        </service>
+        <service id="googleshoppingxml.liaProductProvider" class="GoogleShoppingXml\Service\Provider\LiaProductProvider">
+            <argument type="service" id="googleshoppingxml.liaSqlQueryService" />
             <argument type="service" id="request_stack"/>
         </service>
         <service id="googleshoppingxml.logger" class="GoogleShoppingXml\Model\GoogleshoppingxmlLogQuery">
