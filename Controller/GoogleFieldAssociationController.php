@@ -10,6 +10,7 @@ use Thelia\Core\HttpFoundation\Request;
 use Thelia\Core\Security\AccessManager;
 use Thelia\Core\Security\Resource\AdminResources;
 use Thelia\Core\Translation\Translator;
+use Thelia\Model\ModuleQuery;
 
 class GoogleFieldAssociationController extends BaseAdminController
 {
@@ -229,6 +230,28 @@ class GoogleFieldAssociationController extends BaseAdminController
         if (!empty($message)) {
             $redirectParameters['error_message_advanced_tab'] = $message;
         }
+
+        return $this->generateRedirectFromRoute("admin.module.configure", array(), $redirectParameters);
+    }
+
+    public function setDealerModuleAction(Request $httpRequest)
+    {
+        if (null !== $response = $this->checkAuth(array(AdminResources::MODULE), array('GoogleShoppingXml'), AccessManager::UPDATE)) {
+            return $response;
+        }
+
+        $dealerModuleId = (int) $httpRequest->request->get('dealer_module_id') ?: null;
+
+        if ($dealerModuleId !== null && !ModuleQuery::create()->filterByActivate(1)->findPk($dealerModuleId)) {
+            $dealerModuleId = null;
+        }
+
+        GoogleShoppingXml::setConfigValue('dealer_module_id', $dealerModuleId);
+
+        $redirectParameters = array(
+            'module_code' => 'GoogleShoppingXml',
+            'current_tab' => 'advanced'
+        );
 
         return $this->generateRedirectFromRoute("admin.module.configure", array(), $redirectParameters);
     }

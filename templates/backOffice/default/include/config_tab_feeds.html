@@ -114,7 +114,7 @@
                 {/form_field}
 
                 {form_field form=$form field="country_id"}
-                <div class="form-group col-md-3 {if $error}has-error{/if}">
+                <div class="form-group col-md-2 {if $error}has-error{/if}">
                     <select id="{$label_attr.for}" class="form-control" name="{$name}">
                         {loop type="country" name="loop_country_update_feed"}
                         <option value="{$ID}" {if $ID==$COUNTRY_ID}selected{/if}>{$TITLE}</option>
@@ -134,7 +134,7 @@
             </form>
             {/form}
 
-            <div class="form-group col-md-2">
+            <div class="form-group col-md-3">
                 <div class="btn-group">
                     <a class="js_download_xml_feed btn btn-info" href="{url path="/googleshoppingxml/feed/xml/{$ID}/feed.xml"}" data-feedid="{$ID_FEED}" download>
                         {intl l="XML"}
@@ -143,6 +143,16 @@
                         <span class="glyphicon glyphicon-link"></span>
                     </a>
                 </div>
+                {if $dealer_module_active}
+                <div class="btn-group">
+                    <a class="js_download_lia_feed btn btn-info" href="{url path="/googleshoppingxml/feed/xml/{$ID}/lia.xml"}" data-feedid="{$ID_FEED}" download>
+                        {intl l="LIA"}
+                    </a>
+                    <a href="#" class="js_btn_clipboard btn-control-feed btn btn-default" data-toggle="tooltip" title="{intl l='Copy LIA link into clipboard'}" data-clipboardtext="{url path="/googleshoppingxml/feed/xml/{$ID}/lia.xml"}">
+                        <span class="glyphicon glyphicon-link"></span>
+                    </a>
+                </div>
+                {/if}
 
                 <a href="#" class="js_btn_configure_custom_xml btn btn-primary btn-control-feed" data-toggle="tooltip" title="{intl l='Configure custom XML'}" data-feedid="{$ID_FEED}">
                     <span class="glyphicon glyphicon-wrench"></span>

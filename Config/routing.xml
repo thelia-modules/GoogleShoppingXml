@@ -15,6 +15,11 @@
         <requirement key="feedId">\d+</requirement>
     </route>
 
+    <route id="googleshoppingxml.getliafeedxml" path="/googleshoppingxml/feed/xml/{feedId}/lia.xml">
+        <default key="_controller">GoogleShoppingXml\Controller\FeedXmlController::getLiaFeedXmlAction</default>
+        <requirement key="feedId">\d+</requirement>
+    </route>
+
 
     <!-- FEED CONFIGURATION -->
 
@@ -67,6 +72,10 @@
 
     <route id="googleshoppingxml.advanced.setbrandrule" path="/admin/module/googleshoppingxml/advanced/setBrandRule" methods="GET">
         <default key="_controller">GoogleShoppingXml\Controller\GoogleFieldAssociationController::setBrandRuleAction</default>
+    </route>
+
+    <route id="googleshoppingxml.advanced.setDealerModule" path="/admin/module/googleshoppingxml/advanced/setDealerModule" methods="POST">
+        <default key="_controller">GoogleShoppingXml\Controller\GoogleFieldAssociationController::setDealerModuleAction</default>
     </route>
 
 

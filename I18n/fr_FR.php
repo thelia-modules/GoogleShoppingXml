@@ -49,4 +49,9 @@ return array(
     'You must set the store description in Configuration > Store' => 'Vous devez saisir une description pour votre magasin dans Configuration > Information boutique.',
     'You must set the store name in Configuration > Store' => 'Vous devez définir un nom de magasin dans Configuration > Information boutique.',
     'Your products may not have been included in the feed due to errors. Check the others messages in this log.' => 'Vos produits n ont peut-être pas les critères pour être inclus dans le flux. Vérifiez les autres messages d erreur.',
+    'Copy LIA link into clipboard' => 'Copier le lien LIA dans le presse-papier',
+    'Dealer module' => 'Module dealer',
+    'Select the module that provides dealer stock data (required for LIA feeds).' => 'Sélectionnez le module qui fournit les données de stock dealer (nécessaire pour les flux LIA).',
+    'None' => 'Aucun',
+    'Requires tables: %tables' => 'Nécessite les tables : %tables',
 );
