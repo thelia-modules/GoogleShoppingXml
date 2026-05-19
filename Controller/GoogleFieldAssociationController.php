@@ -10,7 +10,7 @@ use Thelia\Core\HttpFoundation\Request;
 use Thelia\Core\Security\AccessManager;
 use Thelia\Core\Security\Resource\AdminResources;
 use Thelia\Core\Translation\Translator;
-use Thelia\Model\ModuleQuery;
+
 
 class GoogleFieldAssociationController extends BaseAdminController
 {
@@ -240,13 +240,9 @@ class GoogleFieldAssociationController extends BaseAdminController
             return $response;
         }
 
-        $dealerModuleId = (int) $httpRequest->request->get('dealer_module_id') ?: null;
+        $liaEnabled = (bool) $httpRequest->request->get('lia_enabled');
 
-        if ($dealerModuleId !== null && !ModuleQuery::create()->filterByActivate(1)->findPk($dealerModuleId)) {
-            $dealerModuleId = null;
-        }
-
-        GoogleShoppingXml::setConfigValue('dealer_module_id', $dealerModuleId);
+        GoogleShoppingXml::setConfigValue('lia_enabled', $liaEnabled ? 1 : 0);
 
         $redirectParameters = array(
             'module_code' => 'GoogleShoppingXml',

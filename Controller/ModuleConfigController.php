@@ -4,10 +4,11 @@ namespace GoogleShoppingXml\Controller;
 
 use GoogleShoppingXml\GoogleShoppingXml;
 use GoogleShoppingXml\Model\GoogleshoppingxmlGoogleFieldAssociationQuery;
+use GoogleShoppingXml\Service\Provider\LiaSQLQueryService;
 use GoogleShoppingXml\Model\GoogleshoppingxmlIgnoreCategoryQuery;
 use Propel\Runtime\Propel;
 use Thelia\Controller\Admin\BaseAdminController;
-use Thelia\Model\ModuleQuery;
+
 use Thelia\Core\Security\AccessManager;
 use Thelia\Core\Security\Resource\AdminResources;
 use Thelia\Model\Map\CategoryI18nTableMap;
@@ -40,10 +41,7 @@ class ModuleConfigController extends BaseAdminController
 
         $quantityForOneProduct = GoogleShoppingXml::getConfigValue("quantityForOneProduct",null);
 
-        $dealerModuleId = ($v = GoogleShoppingXml::getConfigValue('dealer_module_id', null)) ? (int) $v : null;
-        $dealerModule = $dealerModuleId ? ModuleQuery::create()->filterByActivate(1)->findPk($dealerModuleId) : null;
-
-        $modules = ModuleQuery::create()->filterByActivate(1)->find();
+        $liaEnabled = (bool) GoogleShoppingXml::getConfigValue('lia_enabled', 0);
 
         return $this->render(
             "xml-module-configuration",
@@ -54,9 +52,8 @@ class ModuleConfigController extends BaseAdminController
                 'brand_rule' => $brandRule,
                 'ignoreCategoryList' => $ignoreCategoryList,
                 'quantity_for_one_product'=>$quantityForOneProduct,
-                'dealer_module_active' => (bool) $dealerModule,
-                'dealer_module_id' => $dealerModuleId,
-                'modules' => $modules
+                'lia_enabled' => $liaEnabled,
+                'lia_compatible' => $this->checkDealerModuleCompatibility(),
             ]
         );
     }
@@ -68,5 +65,10 @@ class ModuleConfigController extends BaseAdminController
         $stmt->execute();
         $rows = $stmt->fetchAll(\PDO::FETCH_ASSOC);
         return $rows[0]['nb'];
+    }
+
+    protected function checkDealerModuleCompatibility()
+    {
+        return LiaSQLQueryService::isCompatible();
     }
 }

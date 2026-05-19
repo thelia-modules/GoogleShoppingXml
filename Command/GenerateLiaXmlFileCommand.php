@@ -10,6 +10,7 @@ use GoogleShoppingXml\Model\GoogleshoppingxmlFeedQuery;
 use GoogleShoppingXml\Model\GoogleshoppingxmlLogQuery;
 use GoogleShoppingXml\Service\GoogleShoppingXmlService;
 use GoogleShoppingXml\Service\Provider\LiaProductProvider;
+use GoogleShoppingXml\Service\Provider\LiaSQLQueryService;
 use GoogleShoppingXml\Service\XmlGenerator;
 
 use Symfony\Component\Console\Input\InputArgument;
@@ -19,7 +20,7 @@ use Symfony\Component\Filesystem\Filesystem;
 
 use Thelia\Command\ContainerAwareCommand;
 use Thelia\Core\Translation\Translator;
-use Thelia\Model\ModuleQuery;
+
 
 class GenerateLiaXmlFileCommand extends ContainerAwareCommand
 {
@@ -38,10 +39,13 @@ class GenerateLiaXmlFileCommand extends ContainerAwareCommand
     {
         $this->initRequest();
 
-        $dealerModuleId = GoogleShoppingXml::getConfigValue('dealer_module_id', null);
-        $dealerModule = $dealerModuleId ? ModuleQuery::create()->filterByActivate(1)->findPk($dealerModuleId) : null;
-        if (null === $dealerModule) {
-            $output->write('No active dealer module configured. LIA feed generation requires a dealer module.', true);
+        if (!(bool) GoogleShoppingXml::getConfigValue('lia_enabled', 0)) {
+            $output->write('LIA feed generation is disabled. Enable it in the module configuration.', true);
+            return 1;
+        }
+
+        if (!LiaSQLQueryService::isCompatible()) {
+            $output->write('LIA feed requires column dealer_stock_config.google_merchant_store_id. Run the DB migration first.', true);
             return 1;
         }
 
