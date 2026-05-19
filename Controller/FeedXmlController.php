@@ -91,9 +91,7 @@ class FeedXmlController extends BaseFrontController
 
     public function getLiaFeedXmlAction($feedId)
     {
-        $dealerModuleId = GoogleShoppingXml::getConfigValue('dealer_module_id', null);
-        $dealerModule = $dealerModuleId ? ModuleQuery::create()->filterByActivate(1)->findPk($dealerModuleId) : null;
-        if (null === $dealerModule) {
+        if (!(bool) GoogleShoppingXml::getConfigValue('lia_enabled', 0)) {
             return $this->pageNotFound();
         }
 

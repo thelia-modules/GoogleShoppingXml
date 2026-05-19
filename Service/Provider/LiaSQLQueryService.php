@@ -6,6 +6,18 @@ use Propel\Runtime\Propel;
 
 class LiaSQLQueryService
 {
+    public static function isCompatible()
+    {
+        $stmt = Propel::getConnection()->prepare(
+            'SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS
+             WHERE TABLE_SCHEMA = DATABASE()
+               AND TABLE_NAME = :table
+               AND COLUMN_NAME = :column'
+        );
+        $stmt->execute([':table' => 'dealer_stock_config', ':column' => 'google_merchant_store_id']);
+        return (bool) $stmt->fetchColumn();
+    }
+
     /**
      * @return \PDOStatement
      */
@@ -16,7 +28,7 @@ class LiaSQLQueryService
         $sql = '
             SELECT
                 pse.id AS "id",
-                dsc.lcv_code AS "store_code",
+                dsc.google_merchant_store_id AS "store_code",
                 ds.stock AS "quantity",
                 pse.promo AS "promo",
                 pp.price AS "price",
@@ -28,8 +40,8 @@ class LiaSQLQueryService
             JOIN dealer_stock_config AS dsc ON dsc.dealer_id = ds.dealer_id
             JOIN product_price AS pp ON pp.product_sale_elements_id = pse.id AND pp.currency_id = :currency_id
             WHERE p.visible = 1
-              AND dsc.lcv_code IS NOT NULL
-              AND dsc.lcv_code != ""
+              AND dsc.google_merchant_store_id IS NOT NULL
+              AND dsc.google_merchant_store_id != ""
         ';
 
         $con = Propel::getConnection();

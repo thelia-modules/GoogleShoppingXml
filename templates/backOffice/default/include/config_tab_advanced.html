@@ -190,22 +190,27 @@
                 </div>
             </div>
             <div class="panel-body">
-                <small>{intl l='Select the module that provides dealer stock data (required for LIA feeds).'}</small>
-                <div class="alert alert-info" style="margin-top: 10px; padding: 8px;">
-                    <small>{intl l='Requires tables: %tables' tables='dealer_stock, dealer_stock_config'}</small>
+                <div class="alert alert-info" style="margin-top: 0; padding: 8px;">
+                    <small>{intl l='Tables requises : %tables' tables='dealer_stock, dealer_stock_config'}</small><br>
+                    <small>{intl l='Colonnes requises : %columns' columns='dealer_stock_config.google_merchant_store_id'}</small>
                 </div>
-                <form action="{url path='/admin/module/googleshoppingxml/advanced/setDealerModule'}" method="post">
-                    <div class="form-group">
-                        <select name="dealer_module_id" class="form-control">
-                            <option value="">-- {intl l='None'} --</option>
-                            {foreach $modules as $module}
-                            <option value="{$module->getId()}"{if $dealer_module_id !== null && $module->getId() === $dealer_module_id} selected{/if}>
-                                {$module->getCode()}
-                            </option>
-                            {/foreach}
-                        </select>
+                {if $lia_compatible}
+                    <div class="alert alert-success" style="padding: 6px 10px; margin-bottom: 8px;">
+                        <span class="glyphicon glyphicon-ok"></span> {intl l='Compatibilité vérifiée'}
                     </div>
-                    <div class="form-group">
+                {else}
+                    <div class="alert alert-danger" style="padding: 6px 10px; margin-bottom: 8px;">
+                        <span class="glyphicon glyphicon-remove"></span> {intl l='Colonne manquante : dealer_stock_config.google_merchant_store_id'}
+                    </div>
+                {/if}
+                <form action="{url path='/admin/module/googleshoppingxml/advanced/setDealerModule'}" method="post">
+                    <div class="checkbox">
+                        <label>
+                            <input type="checkbox" name="lia_enabled" value="1"{if $lia_enabled} checked{/if}>
+                            {intl l='Activer le flux LIA'}
+                        </label>
+                    </div>
+                    <div class="form-group" style="margin-top: 8px;">
                         <button class="btn btn-success form-control" type="submit"><span class="glyphicon glyphicon-ok"></span> {intl l="Save"}</button>
                     </div>
                 </form>
