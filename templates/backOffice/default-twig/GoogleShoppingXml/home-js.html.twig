@@ -1,0 +1,56 @@
+{% set d = 'googleshoppingxml.bo.default' %}
+<script>
+(function () {
+    "use strict";
+    const LOG_URL = "{{ path('googleshoppingxml.log.get') }}";
+    const L = {
+        ajaxError: {{ 'An error has occurred during the server request.'|trans({}, d)|json_encode|raw }},
+        nothing: {{ 'Nothing to show.'|trans({}, d)|json_encode|raw }},
+        date: {{ 'Date'|trans({}, d)|json_encode|raw }},
+        level: {{ 'Level'|trans({}, d)|json_encode|raw }},
+        message: {{ 'Message'|trans({}, d)|json_encode|raw }}
+    };
+    const LEVELS = {
+        1: {className: '', label: {{ 'INFO'|trans|json_encode|raw }}},
+        2: {className: 'tr_log_success', label: {{ 'SUCCESS'|trans({}, d)|json_encode|raw }}},
+        3: {className: 'tr_log_warning', label: {{ 'WARNING'|trans({}, d)|json_encode|raw }}},
+        4: {className: 'tr_log_error', label: {{ 'ERROR'|trans({}, d)|json_encode|raw }}},
+        5: {className: 'tr_log_fatal', label: {{ 'FATAL'|trans({}, d)|json_encode|raw }}}
+    };
+
+    function escapeHtml(s) {
+        return String(s == null ? '' : s)
+            .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        const table = document.getElementById('js_table_xml_log_home');
+        if (!table) { return; }
+
+        const params = new URLSearchParams();
+        params.set('limit', 10);
+
+        fetch(LOG_URL + '?' + params.toString())
+            .then(function (r) { return r.json(); })
+            .then(function (data) {
+                let html = '<tr><th>' + L.date + '</th><th>' + L.level + '</th><th>' + L.message + '</th></tr>';
+                if (data && data.length > 0) {
+                    data.forEach(function (log) {
+                        const lvl = LEVELS[log.level] || LEVELS[1];
+                        html += '<tr class="' + lvl.className + '">';
+                        html += '<td>' + escapeHtml(log.date) + '</td>';
+                        html += '<td>' + lvl.label + '</td>';
+                        html += '<td>' + escapeHtml(log.message) + '</td>';
+                        html += '</tr>';
+                    });
+                } else {
+                    html += '<tr><td colspan="3">' + L.nothing + '</td></tr>';
+                }
+                table.innerHTML = html;
+            })
+            .catch(function () {
+                table.innerHTML = '<tr><td colspan="3">' + L.ajaxError + '</td></tr>';
+            });
+    });
+})();
+</script>

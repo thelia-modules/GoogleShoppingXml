@@ -1,0 +1,12 @@
+{% set d = 'googleshoppingxml.bo.default' %}
+<div class="card">
+    <div class="card-header">{{ 'GoogleShoppingXml log'|trans({}, d) }}</div>
+    <div class="card-body gsxml_panel_table_log_container">
+        <table id="js_table_xml_log_home" class="table">
+            <tr><td>{{ 'Loading ...'|trans({}, d) }}</td></tr>
+        </table>
+        <div class="text-center">
+            <a href="{{ path('googleshoppingxml.config') }}?current_tab=log" class="btn btn-info gsxml_btn_more_log">{{ 'Details ...'|trans({}, d) }}</a>
+        </div>
+    </div>
+</div>

@@ -13,11 +13,4 @@
         <loop name="googleshoppingxml.feed" class="GoogleShoppingXml\Loop\FeedLoop" />
     </loops>
 
-    <hooks>
-        <hook id="googleshoppingxml.module.config.hook" class="GoogleShoppingXml\Hook\HookManager" scope="request">
-            <tag name="hook.event_listener" event="main.head-css" type="back" />
-            <tag name="hook.event_listener" event="home.bottom" type="back" templates="render:home-bottom.html" />
-            <tag name="hook.event_listener" event="home.js" type="back" templates="render:home-js.html" />
-        </hook>
-      </hooks>
   </config>
