@@ -1,25 +1,8 @@
-{% extends '@BackOfficeDefaultTwig/base.html.twig' %}
-
 {% set d = 'googleshoppingxml.bo.default' %}
 {% set tab = app.request.query.get('current_tab') ?: 'feeds' %}
+{% set config_url = path('admin.module.configure', {module_code: 'GoogleShoppingXml'}) %}
 
-{% block title %}{{ 'GoogleShoppingXml'|trans({}, d) }}{% endblock %}
-
-{% block breadcrumb %}
-    <nav aria-label="breadcrumb">
-        <ol class="breadcrumb">
-            <li class="breadcrumb-item"><a href="{{ path('admin.home') }}">{{ 'Home'|trans }}</a></li>
-            <li class="breadcrumb-item"><a href="{{ path('admin.module') }}">{{ 'Modules'|trans }}</a></li>
-            <li class="breadcrumb-item active" aria-current="page">{{ 'Configure'|trans }} : GoogleShoppingXml</li>
-        </ol>
-    </nav>
-{% endblock %}
-
-{% block content %}
-{% if is_granted('VIEW', {resource: 'admin.module', module: 'GoogleShoppingXml'}) %}
 <div class="modules-configure">
-
-    {{ safe_hook('module.configuration', {module_code: 'GoogleShoppingXml'}) }}
 
     <ul id="tabbed-menu" class="nav nav-tabs mb-3" role="tablist">
         <li class="nav-item"><button class="nav-link {{ tab == 'feeds' ? 'active' }}" data-bs-toggle="tab" data-bs-target="#feeds" type="button">{{ 'Feeds'|trans }}</button></li>
@@ -316,7 +299,7 @@
                         <div class="card-body">
                             <form action="{{ path('googleshoppingxml.advanced.compatibility-sql') }}" method="post">
                                 <input type="hidden" name="_token" value="{{ csrf_token('googleshoppingxml_form_compatibility_sql_form') }}">
-                                <input type="hidden" name="success_url" value="{{ path('googleshoppingxml.config') }}">
+                                <input type="hidden" name="success_url" value="{{ config_url }}">
                                 <div class="form-check form-switch">
                                     {{ form_widget(compatibility_sql_form.enable_optimisation, {attr: {class: 'form-check-input'}}) }}
                                     {{ form_label(compatibility_sql_form.enable_optimisation, null, {label_attr: {class: 'form-check-label'}}) }}
@@ -415,11 +398,7 @@
         </div>
     </div>
 </div>
-{% endif %}
-{% endblock %}
 
-{% block scripts_extra %}
-{{ parent() }}
 <script>
 (function () {
     "use strict";
@@ -646,4 +625,3 @@
     });
 })();
 </script>
-{% endblock %}

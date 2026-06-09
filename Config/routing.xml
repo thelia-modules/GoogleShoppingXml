@@ -4,9 +4,8 @@
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:schemaLocation="http://symfony.com/schema/routing http://symfony.com/schema/routing/routing-1.0.xsd">
 
-    <route id="googleshoppingxml.config" path="/admin/module/GoogleShoppingXml">
-        <default key="_controller">GoogleShoppingXml\Controller\ModuleConfigController::viewConfigAction</default>
-    </route>
+    <!-- The configuration page is served by the core module.configuration hook
+         (see GoogleShoppingXml\Hook\HookManager), not by a dedicated GET route. -->
 
     <!-- FEED XML -->
 
