@@ -29,26 +29,26 @@
 
                     <div class="card card-body bg-light mb-3">
                         <form method="post" action="{{ path('googleshoppingxml.feed.add') }}" class="row g-2 align-items-end">
-                            <input type="hidden" name="_token" value="{{ csrf_token('googleshoppingxml_form_feed_management_form') }}">
+                            <input type="hidden" name="{{ feed_form.vars.full_name }}[_token]" value="{{ feed_form._token.vars.value }}">
                             <div class="col-md-2">
                                 <label class="form-label" for="add_feed_label">{{ 'Feed label'|trans({}, d) }}</label>
-                                <input id="add_feed_label" class="form-control" name="feed_label" required>
+                                <input id="add_feed_label" class="form-control" name="{{ feed_form.vars.full_name }}[feed_label]" required>
                             </div>
                             <div class="col-md-2">
                                 <label class="form-label" for="add_lang_id">{{ 'Lang'|trans({}, d) }}</label>
-                                <select id="add_lang_id" class="form-select" name="lang_id">
+                                <select id="add_lang_id" class="form-select" name="{{ feed_form.vars.full_name }}[lang_id]">
                                     {% for lang in langs %}<option value="{{ lang.id }}">{{ lang.title }}</option>{% endfor %}
                                 </select>
                             </div>
                             <div class="col-md-2">
                                 <label class="form-label" for="add_currency_id">{{ 'Currency'|trans({}, d) }}</label>
-                                <select id="add_currency_id" class="form-select" name="currency_id">
+                                <select id="add_currency_id" class="form-select" name="{{ feed_form.vars.full_name }}[currency_id]">
                                     {% for currency in currencies %}<option value="{{ currency.id }}">{{ currency.symbol }}</option>{% endfor %}
                                 </select>
                             </div>
                             <div class="col-md-2">
                                 <label class="form-label" for="add_country_id">{{ 'Country'|trans({}, d) }}</label>
-                                <select id="add_country_id" class="form-select" name="country_id">
+                                <select id="add_country_id" class="form-select" name="{{ feed_form.vars.full_name }}[country_id]">
                                     {% for country in countries %}<option value="{{ country.id }}" {{ country.id == 64 ? 'selected' }}>{{ country.title }}</option>{% endfor %}
                                 </select>
                             </div>
@@ -61,21 +61,21 @@
                     {% for feed in feeds %}
                     <div class="row g-2 align-items-center mb-2">
                         <form method="post" action="{{ path('googleshoppingxml.feed.update') }}" class="col-md-9 row g-2 align-items-center">
-                            <input type="hidden" name="_token" value="{{ csrf_token('googleshoppingxml_form_feed_management_form') }}">
-                            <input type="hidden" name="id" value="{{ feed.id }}">
-                            <div class="col-md-3"><input class="form-control" name="feed_label" value="{{ feed.label }}" required></div>
+                            <input type="hidden" name="{{ feed_form.vars.full_name }}[_token]" value="{{ feed_form._token.vars.value }}">
+                            <input type="hidden" name="{{ feed_form.vars.full_name }}[id]" value="{{ feed.id }}">
+                            <div class="col-md-3"><input class="form-control" name="{{ feed_form.vars.full_name }}[feed_label]" value="{{ feed.label }}" required></div>
                             <div class="col-md-3">
-                                <select class="form-select" name="lang_id">
+                                <select class="form-select" name="{{ feed_form.vars.full_name }}[lang_id]">
                                     {% for lang in langs %}<option value="{{ lang.id }}" {{ lang.id == feed.lang_id ? 'selected' }}>{{ lang.title }}</option>{% endfor %}
                                 </select>
                             </div>
                             <div class="col-md-2">
-                                <select class="form-select" name="currency_id">
+                                <select class="form-select" name="{{ feed_form.vars.full_name }}[currency_id]">
                                     {% for currency in currencies %}<option value="{{ currency.id }}" {{ currency.id == feed.currency_id ? 'selected' }}>{{ currency.symbol }}</option>{% endfor %}
                                 </select>
                             </div>
                             <div class="col-md-3">
-                                <select class="form-select" name="country_id">
+                                <select class="form-select" name="{{ feed_form.vars.full_name }}[country_id]">
                                     {% for country in countries %}<option value="{{ country.id }}" {{ country.id == feed.country_id ? 'selected' }}>{{ country.title }}</option>{% endfor %}
                                 </select>
                             </div>
@@ -117,10 +117,10 @@
 
                     <div class="card card-body bg-light mb-3">
                         <form action="{{ path('googleshoppingxml.taxonomy.associate') }}" method="post" class="row g-2 align-items-end">
-                            <input type="hidden" name="_token" value="{{ csrf_token('googleshoppingxml_form_google_taxonomy_form') }}">
+                            <input type="hidden" name="{{ taxonomy_form.vars.full_name }}[_token]" value="{{ taxonomy_form._token.vars.value }}">
                             <div class="col-md-3">
                                 <label class="form-label" for="thelia-category">{{ 'Thelia category'|trans }}</label>
-                                <select id="thelia-category" class="form-select" name="thelia_category_id">
+                                <select id="thelia-category" class="form-select" name="{{ taxonomy_form.vars.full_name }}[thelia_category_id]">
                                     {% for cat in category_tree %}
                                         <option value="{{ cat.id }}">{% if cat.level > 0 %}{% for i in 1..cat.level %}&nbsp;&nbsp;&nbsp;&nbsp;{% endfor %}{% endif %}{{ cat.title }}</option>
                                     {% endfor %}
@@ -135,7 +135,7 @@
                             </div>
                             <div class="col-md-3">
                                 <label class="form-label" for="google-taxonomy">{{ 'Google Category'|trans }}</label>
-                                <select class="form-select" name="google_category_id" id="google-taxonomy"></select>
+                                <select class="form-select" name="{{ taxonomy_form.vars.full_name }}[google_category_id]" id="google-taxonomy"></select>
                             </div>
                             <div class="col-md-3">
                                 <button class="btn btn-primary" type="submit"><i class="bi bi-check-lg"></i> {{ 'Associate'|trans }}</button>
@@ -298,7 +298,7 @@
                         <div class="card-header">{{ 'Compatibility SQL'|trans }}</div>
                         <div class="card-body">
                             <form action="{{ path('googleshoppingxml.advanced.compatibility-sql') }}" method="post">
-                                <input type="hidden" name="_token" value="{{ csrf_token('googleshoppingxml_form_compatibility_sql_form') }}">
+                                <input type="hidden" name="{{ compatibility_sql_form.vars.full_name }}[_token]" value="{{ compatibility_sql_form._token.vars.value }}">
                                 <input type="hidden" name="success_url" value="{{ config_url }}">
                                 <div class="form-check form-switch">
                                     {{ form_widget(compatibility_sql_form.enable_optimisation, {attr: {class: 'form-check-input'}}) }}

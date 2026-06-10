@@ -4,6 +4,8 @@ namespace GoogleShoppingXml\Hook;
 
 use GoogleShoppingXml\Controller\FeedXmlController;
 use GoogleShoppingXml\Form\CompatibilitySqlForm;
+use GoogleShoppingXml\Form\FeedManagementForm;
+use GoogleShoppingXml\Form\GoogleTaxonomyForm;
 use GoogleShoppingXml\GoogleShoppingXml;
 use GoogleShoppingXml\Model\GoogleshoppingxmlFeedQuery;
 use GoogleShoppingXml\Model\GoogleshoppingxmlGoogleFieldAssociationQuery;
@@ -87,6 +89,8 @@ class HookManager extends BaseHook
             'features' => $this->getFeatures($locale),
             'associated_categories' => $this->getAssociatedCategories($langId, $locale),
             'compatibility_sql_form' => $compatibilitySqlForm->getForm()->createView(),
+            'feed_form' => $this->formFactory->createForm(FeedManagementForm::getName())->getForm()->createView(),
+            'taxonomy_form' => $this->formFactory->createForm(GoogleTaxonomyForm::getName())->getForm()->createView(),
         ]));
     }
 
