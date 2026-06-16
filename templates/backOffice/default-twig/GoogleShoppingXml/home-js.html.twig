@@ -11,11 +11,11 @@
         message: {{ 'Message'|trans({}, d)|json_encode|raw }}
     };
     const LEVELS = {
-        1: {className: '', label: {{ 'INFO'|trans|json_encode|raw }}},
-        2: {className: 'tr_log_success', label: {{ 'SUCCESS'|trans({}, d)|json_encode|raw }}},
-        3: {className: 'tr_log_warning', label: {{ 'WARNING'|trans({}, d)|json_encode|raw }}},
-        4: {className: 'tr_log_error', label: {{ 'ERROR'|trans({}, d)|json_encode|raw }}},
-        5: {className: 'tr_log_fatal', label: {{ 'FATAL'|trans({}, d)|json_encode|raw }}}
+        1: {variant: 'secondary', label: {{ 'INFO'|trans|json_encode|raw }}},
+        2: {variant: 'success', label: {{ 'SUCCESS'|trans({}, d)|json_encode|raw }}},
+        3: {variant: 'warning', label: {{ 'WARNING'|trans({}, d)|json_encode|raw }}},
+        4: {variant: 'danger', label: {{ 'ERROR'|trans({}, d)|json_encode|raw }}},
+        5: {variant: 'danger', label: {{ 'FATAL'|trans({}, d)|json_encode|raw }}}
     };
 
     function escapeHtml(s) {
@@ -33,19 +33,20 @@
         fetch(LOG_URL + '?' + params.toString())
             .then(function (r) { return r.json(); })
             .then(function (data) {
-                let html = '<tr><th>' + L.date + '</th><th>' + L.level + '</th><th>' + L.message + '</th></tr>';
+                let html = '<thead><tr><th>' + L.date + '</th><th>' + L.level + '</th><th>' + L.message + '</th></tr></thead><tbody>';
                 if (data && data.length > 0) {
                     data.forEach(function (log) {
                         const lvl = LEVELS[log.level] || LEVELS[1];
-                        html += '<tr class="' + lvl.className + '">';
-                        html += '<td>' + escapeHtml(log.date) + '</td>';
-                        html += '<td>' + lvl.label + '</td>';
+                        html += '<tr>';
+                        html += '<td class="text-nowrap">' + escapeHtml(log.date) + '</td>';
+                        html += '<td><span class="badge text-bg-' + lvl.variant + '">' + lvl.label + '</span></td>';
                         html += '<td>' + escapeHtml(log.message) + '</td>';
                         html += '</tr>';
                     });
                 } else {
-                    html += '<tr><td colspan="3">' + L.nothing + '</td></tr>';
+                    html += '<tr><td colspan="3" class="text-body-secondary">' + L.nothing + '</td></tr>';
                 }
+                html += '</tbody>';
                 table.innerHTML = html;
             })
             .catch(function () {

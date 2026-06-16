@@ -1,12 +1,12 @@
 {% set d = 'googleshoppingxml.bo.default' %}
 <div class="card">
     <div class="card-header">{{ 'GoogleShoppingXml log'|trans({}, d) }}</div>
-    <div class="card-body gsxml_panel_table_log_container">
-        <table id="js_table_xml_log_home" class="table">
-            <tr><td>{{ 'Loading ...'|trans({}, d) }}</td></tr>
+    <div class="card-body">
+        <table id="js_table_xml_log_home" class="table table-sm align-middle mb-3">
+            <tbody><tr><td class="text-body-secondary">{{ 'Loading ...'|trans({}, d) }}</td></tr></tbody>
         </table>
         <div class="text-center">
-            <a href="{{ path('admin.module.configure', {module_code: 'GoogleShoppingXml'}) }}?current_tab=log" class="btn btn-info gsxml_btn_more_log">{{ 'Details ...'|trans({}, d) }}</a>
+            <a href="{{ path('admin.module.configure', {module_code: 'GoogleShoppingXml'}) }}?current_tab=log" class="btn btn-sm btn-outline-secondary">{{ 'Details ...'|trans({}, d) }}</a>
         </div>
     </div>
 </div>
