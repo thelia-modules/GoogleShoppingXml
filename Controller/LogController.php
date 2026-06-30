@@ -19,15 +19,15 @@ class LogController extends BaseAdminController
         /** @var \Thelia\Core\HttpFoundation\Request $request **/
         $request = $this->getRequest();
 
-        $limit = $request->get('limit', 50);
-        $offset = $request->get('offset', null);
+        $limit = $request->attributes->get('limit', $request->query->get('limit', $request->request->get('limit', 50)));
+        $offset = $request->attributes->get('offset', $request->query->get('offset', $request->request->get('offset', null)));
         $levels_checked = [];
 
-        if ($request->get('info', null) == 1) $levels_checked[] = GoogleshoppingxmlLogQuery::LEVEL_INFORMATION;
-        if ($request->get('success', null) == 1) $levels_checked[] = GoogleshoppingxmlLogQuery::LEVEL_SUCCESS;
-        if ($request->get('warning', null) == 1) $levels_checked[] = GoogleshoppingxmlLogQuery::LEVEL_WARNING;
-        if ($request->get('error', null) == 1) $levels_checked[] = GoogleshoppingxmlLogQuery::LEVEL_ERROR;
-        if ($request->get('fatal', null) == 1) $levels_checked[] = GoogleshoppingxmlLogQuery::LEVEL_FATAL;
+        if ($request->attributes->get('info', $request->query->get('info', $request->request->get('info', null))) == 1) $levels_checked[] = GoogleshoppingxmlLogQuery::LEVEL_INFORMATION;
+        if ($request->attributes->get('success', $request->query->get('success', $request->request->get('success', null))) == 1) $levels_checked[] = GoogleshoppingxmlLogQuery::LEVEL_SUCCESS;
+        if ($request->attributes->get('warning', $request->query->get('warning', $request->request->get('warning', null))) == 1) $levels_checked[] = GoogleshoppingxmlLogQuery::LEVEL_WARNING;
+        if ($request->attributes->get('error', $request->query->get('error', $request->request->get('error', null))) == 1) $levels_checked[] = GoogleshoppingxmlLogQuery::LEVEL_ERROR;
+        if ($request->attributes->get('fatal', $request->query->get('fatal', $request->request->get('fatal', null))) == 1) $levels_checked[] = GoogleshoppingxmlLogQuery::LEVEL_FATAL;
 
         /** @var GoogleshoppingxmlLogQuery $query **/
         $query = GoogleshoppingxmlLogQuery::create()

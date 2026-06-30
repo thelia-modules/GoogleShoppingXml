@@ -21,7 +21,7 @@ class QuantityForOneProductController extends BaseAdminController
             'current_tab' => 'advanced'
         );
 
-        $quantityForOneProduct = $request->get('quantityForOneProduct');
+        $quantityForOneProduct = $request->attributes->get('quantityForOneProduct', $request->query->get('quantityForOneProduct', $request->request->get('quantityForOneProduct')));
 
         if ($quantityForOneProduct === null){
             return $this->generateRedirectFromRoute("admin.module.configure", array(), $redirectParameters);

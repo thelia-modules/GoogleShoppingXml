@@ -21,7 +21,7 @@ class CategoryController extends BaseAdminController
             'current_tab' => 'advanced'
         );
 
-        if (!$id_category = $request->get('additional_category_id')){
+        if (!$id_category = $request->attributes->get('additional_category_id', $request->query->get('additional_category_id', $request->request->get('additional_category_id')))){
             return $this->generateRedirectFromRoute("admin.module.configure", array(), $redirectParameters);
         }
 
@@ -41,7 +41,7 @@ class CategoryController extends BaseAdminController
             'current_tab' => 'advanced'
         );
 
-        if (!$id_category = $request->get('selectedId')){
+        if (!$id_category = $request->attributes->get('selectedId', $request->query->get('selectedId', $request->request->get('selectedId')))){
             return $this->generateRedirectFromRoute("admin.module.configure", array(), $redirectParameters);
         }
         GoogleshoppingxmlIgnoreCategoryQuery::create()->findOneByCategoryId($id_category)->setIsExportable(0)->save();
