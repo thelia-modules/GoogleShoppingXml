@@ -229,8 +229,13 @@ class GoogleFieldAssociationController extends BaseAdminController
         ];
 
         $gtinRule = $httpRequest->request->get('gtin_rule');
-        if ($gtinRule != null && in_array($gtinRule, $ruleArray)) {
+
+        $message = null;
+
+        if ($gtinRule !== null && in_array($gtinRule, $ruleArray)) {
             GoogleShoppingXml::setConfigValue("ean_rule", $gtinRule);
+        } elseif ($gtinRule !== null) {
+            $message = Translator::getInstance()->trans('The provided GTIN rule is invalid.', [], GoogleShoppingXml::DOMAIN_NAME);
         }
 
         $redirectParameters = array(
