@@ -127,7 +127,7 @@ class GoogleShoppingXmlService
             $this->nb_pse = 0;
             $this->nb_pse_invisible = 0;
             $this->nb_pse_error = 0;
-            if (null === $this->request->getSession()){
+            if (!$this->request->hasSession() || null === $this->request->getSession()){
                 $session = new Session(new MockArraySessionStorage());
                 $session
                     ->setLang($feed->getLang())
