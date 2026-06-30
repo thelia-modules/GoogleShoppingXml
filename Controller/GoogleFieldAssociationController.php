@@ -13,6 +13,7 @@ use Thelia\Core\Security\Resource\AdminResources;
 use Thelia\Core\Template\ParserContext;
 use Thelia\Core\Translation\Translator;
 use Thelia\Log\Tlog;
+use Thelia\Tools\TokenProvider;
 
 class GoogleFieldAssociationController extends BaseAdminController
 {
@@ -38,17 +39,19 @@ class GoogleFieldAssociationController extends BaseAdminController
         'shipping_height', 'min_handling_time', 'max_handling_time', 'tax', 'shipping_weight'
     );
 
-    public function addFieldAction()
+    public function addFieldAction(Request $httpRequest, TokenProvider $tokenProvider)
     {
         if (null !== $response = $this->checkAuth(array(AdminResources::MODULE), array('GoogleShoppingXml'), AccessManager::CREATE)) {
             return $response;
         }
 
+        $tokenProvider->checkToken((string) $httpRequest->query->get('_token'));
+
         $message = null;
 
         try {
             $fieldAssociation = new GoogleshoppingxmlGoogleFieldAssociation();
-            $this->hydrateFieldAssociationObjectWithRequestContent($fieldAssociation, $this->getRequest());
+            $this->hydrateFieldAssociationObjectWithRequestContent($fieldAssociation, $httpRequest);
             $fieldAssociation->save();
         } catch (\Exception $e) {
             $message = $e->getMessage();
@@ -67,11 +70,13 @@ class GoogleFieldAssociationController extends BaseAdminController
     }
 
 
-    public function updateFieldAction(Request $httpRequest)
+    public function updateFieldAction(Request $httpRequest, TokenProvider $tokenProvider)
     {
         if (null !== $response = $this->checkAuth(array(AdminResources::MODULE), array('GoogleShoppingXml'), AccessManager::UPDATE)) {
             return $response;
         }
+
+        $tokenProvider->checkToken((string) $httpRequest->query->get('_token'));
 
         $message = null;
 
@@ -102,11 +107,13 @@ class GoogleFieldAssociationController extends BaseAdminController
     }
 
 
-    public function deleteFieldAction(Request $httpRequest)
+    public function deleteFieldAction(Request $httpRequest, TokenProvider $tokenProvider)
     {
         if (null !== $response = $this->checkAuth(array(AdminResources::MODULE), array('GoogleShoppingXml'), AccessManager::DELETE)) {
             return $response;
         }
+
+        $tokenProvider->checkToken((string) $httpRequest->query->get('_token'));
 
         $message = null;
 
@@ -206,11 +213,13 @@ class GoogleFieldAssociationController extends BaseAdminController
         return $fieldAssociation;
     }
 
-    public function setEanRuleAction(Request $httpRequest)
+    public function setEanRuleAction(Request $httpRequest, TokenProvider $tokenProvider)
     {
         if (null !== $response = $this->checkAuth(array(AdminResources::MODULE), array('GoogleShoppingXml'), AccessManager::UPDATE)) {
             return $response;
         }
+
+        $tokenProvider->checkToken((string) $httpRequest->query->get('_token'));
 
         $ruleArray = [
             FeedXmlController::EAN_RULE_ALL,

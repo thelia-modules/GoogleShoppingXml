@@ -13,6 +13,7 @@ use Thelia\Core\Security\Resource\AdminResources;
 use Thelia\Core\Translation\Translator;
 use Thelia\Model\Lang;
 use Thelia\Model\LangQuery;
+use Thelia\Tools\TokenProvider;
 
 class GoogleTaxonomyController extends BaseAdminController
 {
@@ -113,11 +114,13 @@ class GoogleTaxonomyController extends BaseAdminController
         );
     }
 
-    public function deleteTaxonomyAction(Request $request)
+    public function deleteTaxonomyAction(Request $request, TokenProvider $tokenProvider)
     {
         if (null !== $response = $this->checkAuth(array(AdminResources::MODULE), array('GoogleShoppingXml'), AccessManager::DELETE)) {
             return $response;
         }
+
+        $tokenProvider->checkToken((string) $request->query->get('_token'));
 
         $categoryId = $request->request->get('category_id');
 

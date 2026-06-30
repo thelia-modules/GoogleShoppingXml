@@ -14,6 +14,7 @@ use Thelia\Core\HttpFoundation\Request;
 use Thelia\Core\Security\AccessManager;
 use Thelia\Core\Security\Resource\AdminResources;
 use Thelia\Core\Translation\Translator;
+use Thelia\Tools\TokenProvider;
 use Symfony\Component\Filesystem\Filesystem;
 
 class FeedConfigController extends BaseAdminController
@@ -73,11 +74,13 @@ class FeedConfigController extends BaseAdminController
         );
     }
 
-    public function deleteFeedAction(Request $request)
+    public function deleteFeedAction(Request $request, TokenProvider $tokenProvider)
     {
         if (null !== $response = $this->checkAuth(array(AdminResources::MODULE), array('GoogleShoppingXml'), AccessManager::DELETE)) {
             return $response;
         }
+
+        $tokenProvider->checkToken((string) $request->query->get('_token'));
 
         $feedId = $request->request->get('id_feed_to_delete');
 

@@ -88,7 +88,7 @@
                                 <a href="#" class="js_btn_clipboard btn btn-secondary" title="{{ 'Copy XML link into clipboard'|trans }}" data-clipboardtext="{{ path('googleshoppingxml.getfeedxml', {feedId: feed.id}) }}"><i class="bi bi-link-45deg"></i></a>
                             </div>
                             <a href="#" class="js_btn_configure_custom_xml btn btn-primary ms-1" title="{{ 'Configure custom XML'|trans }}" data-feedid="{{ feed.id }}"><i class="bi bi-wrench"></i></a>
-                            <form id="js_form_delete_feed_{{ feed.id }}" class="d-inline-block" method="post" action="{{ path('googleshoppingxml.feed.delete') }}">
+                            <form id="js_form_delete_feed_{{ feed.id }}" class="d-inline-block" method="post" action="{{ path('googleshoppingxml.feed.delete') }}?_token={{ assignToken() }}">
                                 <input type="hidden" name="id_feed_to_delete" value="{{ feed.id }}">
                                 <a class="btn btn-danger js_btn_delete_with_warning" data-formid="js_form_delete_feed_{{ feed.id }}"><i class="bi bi-trash"></i></a>
                             </form>
@@ -160,7 +160,7 @@
                                 <td>{{ cat.title }}</td>
                                 <td>{{ cat.google_category }}</td>
                                 <td class="text-end">
-                                    <form class="d-inline-block" action="{{ path('googleshoppingxml.taxonomy.delete') }}" method="post">
+                                    <form class="d-inline-block" action="{{ path('googleshoppingxml.taxonomy.delete') }}?_token={{ assignToken() }}" method="post">
                                         <input type="hidden" name="category_id" value="{{ cat.id }}">
                                         <button class="btn btn-danger" type="submit" title="{{ 'Delete association'|trans }}"><i class="bi bi-trash"></i></button>
                                     </form>
@@ -189,7 +189,7 @@
                     </div>
 
                     <div class="card card-body bg-light mb-3">
-                        <form method="post" action="{{ path('googleshoppingxml.advanced.field.add') }}" class="row g-2 align-items-start">
+                        <form method="post" action="{{ path('googleshoppingxml.advanced.field.add') }}?_token={{ assignToken() }}" class="row g-2 align-items-start">
                             <div class="col-md-3">
                                 <label class="form-label" for="advanced_input_google_attribute_new">{{ 'Google attribute'|trans }}</label>
                                 <input id="advanced_input_google_attribute_new" class="form-control" name="google_attribute" required>
@@ -232,7 +232,7 @@
 
                     {% for fa in field_association_array %}
                     <div class="row g-2 align-items-start mb-2">
-                        <form method="post" action="{{ path('googleshoppingxml.advanced.field.update') }}" class="col-md-11 row g-2 align-items-start">
+                        <form method="post" action="{{ path('googleshoppingxml.advanced.field.update') }}?_token={{ assignToken() }}" class="col-md-11 row g-2 align-items-start">
                             <input type="hidden" value="{{ fa.Id }}" name="id">
                             <div class="col-md-3"><input class="form-control" name="google_attribute" value="{{ fa.GoogleField }}" required></div>
                             <div class="col-md-3">
@@ -263,7 +263,7 @@
                             <div class="col-md-2"><button class="btn btn-success form-control" type="submit"><i class="bi bi-check-lg"></i> {{ 'Save'|trans }}</button></div>
                         </form>
                         <div class="col-md-1">
-                            <form method="post" action="{{ path('googleshoppingxml.advanced.field.delete') }}">
+                            <form method="post" action="{{ path('googleshoppingxml.advanced.field.delete') }}?_token={{ assignToken() }}">
                                 <input type="hidden" value="{{ fa.Id }}" name="id_field_to_delete">
                                 <button class="btn btn-danger form-control" type="submit" title="{{ 'Remove'|trans }}"><i class="bi bi-trash"></i></button>
                             </form>
@@ -282,7 +282,7 @@
                         </div>
                         <div class="card-body">
                             <small>{{ "Which product's EAN code should be included in the XML field \"gtin\" ?"|trans }}</small>
-                            <form action="{{ path('googleshoppingxml.advanced.seteanrule') }}" method="post">
+                            <form action="{{ path('googleshoppingxml.advanced.seteanrule') }}?_token={{ assignToken() }}" method="post">
                                 <div class="form-check"><input class="form-check-input" type="radio" id="gtin_all" name="gtin_rule" value="all" {{ ean_rule == 'all' ? 'checked' }}><label class="form-check-label" for="gtin_all">{{ 'Include all EAN codes without verification, ignore empty'|trans }}</label></div>
                                 <div class="form-check"><input class="form-check-input" type="radio" id="gtin_flex" name="gtin_rule" value="check_flexible" {{ ean_rule == 'check_flexible' ? 'checked' }}><label class="form-check-label" for="gtin_flex">{{ 'Include only valid EAN codes, ignore invalid or empty'|trans }}</label></div>
                                 <div class="form-check"><input class="form-check-input" type="radio" id="gtin_strict" name="gtin_rule" value="check_strict" {{ ean_rule == 'check_strict' ? 'checked' }}><label class="form-check-label" for="gtin_strict">{{ 'Include only valid EAN codes, launch error when invalid, ignore empty'|trans }}</label></div>
