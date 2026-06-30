@@ -11,6 +11,7 @@ use Thelia\Core\HttpFoundation\Request;
 use Thelia\Core\Security\AccessManager;
 use Thelia\Core\Security\Resource\AdminResources;
 use Thelia\Core\Translation\Translator;
+use Thelia\Log\Tlog;
 use Thelia\Model\Lang;
 use Thelia\Model\LangQuery;
 use Thelia\Tools\TokenProvider;
@@ -30,7 +31,16 @@ class GoogleTaxonomyController extends BaseAdminController
             $lang = Lang::getDefaultLanguage();
         }
 
-        $file = file_get_contents($this->getGoogleTaxonomiesFileURL($lang));
+        $url = $this->getGoogleTaxonomiesFileURL($lang);
+        $context = stream_context_create(['http' => ['timeout' => 10]]);
+
+        $file = @file_get_contents($url, false, $context);
+
+        if ($file === false) {
+            Tlog::getInstance()->error("GoogleShoppingXml: failed to fetch taxonomy from $url");
+            return [];
+        }
+
         $rows = explode("\n", $file);
         $categories = [];
 
