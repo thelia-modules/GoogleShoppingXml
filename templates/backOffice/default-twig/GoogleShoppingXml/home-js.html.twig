@@ -11,7 +11,7 @@
         message: {{ 'Message'|trans({}, d)|json_encode|raw }}
     };
     const LEVELS = {
-        1: {variant: 'secondary', label: {{ 'INFO'|trans|json_encode|raw }}},
+        1: {variant: 'secondary', label: {{ 'INFO'|trans({}, d)|json_encode|raw }}},
         2: {variant: 'success', label: {{ 'SUCCESS'|trans({}, d)|json_encode|raw }}},
         3: {variant: 'warning', label: {{ 'WARNING'|trans({}, d)|json_encode|raw }}},
         4: {variant: 'danger', label: {{ 'ERROR'|trans({}, d)|json_encode|raw }}},

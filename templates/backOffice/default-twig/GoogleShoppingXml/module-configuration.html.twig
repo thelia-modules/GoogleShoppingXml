@@ -5,17 +5,17 @@
 <div class="modules-configure">
 
     <ul id="tabbed-menu" class="nav nav-tabs mb-3" role="tablist">
-        <li class="nav-item"><button class="nav-link {{ tab == 'feeds' ? 'active' }}" data-bs-toggle="tab" data-bs-target="#feeds" type="button">{{ 'Feeds'|trans }}</button></li>
-        <li class="nav-item"><button class="nav-link {{ tab == 'taxonomy' ? 'active' }}" data-bs-toggle="tab" data-bs-target="#taxonomy" type="button">{{ 'Google taxonomy'|trans }}</button></li>
-        <li class="nav-item"><button class="nav-link {{ tab == 'advanced' ? 'active' }}" data-bs-toggle="tab" data-bs-target="#advanced" type="button">{{ 'Advanced configuration'|trans }}</button></li>
-        <li class="nav-item"><button class="nav-link js_tab_gsxml_log {{ tab == 'log' ? 'active' }}" data-bs-toggle="tab" data-bs-target="#log" type="button">{{ 'Error log'|trans }}</button></li>
+        <li class="nav-item"><button class="nav-link {{ tab == 'feeds' ? 'active' }}" data-bs-toggle="tab" data-bs-target="#feeds" type="button">{{ 'Feeds'|trans({}, d) }}</button></li>
+        <li class="nav-item"><button class="nav-link {{ tab == 'taxonomy' ? 'active' }}" data-bs-toggle="tab" data-bs-target="#taxonomy" type="button">{{ 'Google taxonomy'|trans({}, d) }}</button></li>
+        <li class="nav-item"><button class="nav-link {{ tab == 'advanced' ? 'active' }}" data-bs-toggle="tab" data-bs-target="#advanced" type="button">{{ 'Advanced configuration'|trans({}, d) }}</button></li>
+        <li class="nav-item"><button class="nav-link js_tab_gsxml_log {{ tab == 'log' ? 'active' }}" data-bs-toggle="tab" data-bs-target="#log" type="button">{{ 'Error log'|trans({}, d) }}</button></li>
     </ul>
 
     <div class="tab-content">
         {# ============ FEEDS TAB ============ #}
         <div id="feeds" class="tab-pane {{ tab == 'feeds' ? 'active show' }}">
             <div class="card mb-3">
-                <div class="card-header">{{ 'Google feeds configuration'|trans }}</div>
+                <div class="card-header">{{ 'Google feeds configuration'|trans({}, d) }}</div>
                 <div class="card-body">
                     <div class="alert alert-info">
                         <p>- {{ 'To upload your products in Google Shopping, you must first create a Google Merchant Account at %link.'|trans({'%link': '<a href="https://merchants.google.com/">https://merchants.google.com/</a>'}, d)|raw }}</p>
@@ -53,7 +53,7 @@
                                 </select>
                             </div>
                             <div class="col-md-4">
-                                <button class="btn btn-primary" type="submit"><i class="bi bi-plus-lg"></i> {{ 'Add'|trans }}</button>
+                                <button class="btn btn-primary" type="submit"><i class="bi bi-plus-lg"></i> {{ 'Add'|trans({}, d) }}</button>
                             </div>
                         </form>
                     </div>
@@ -83,11 +83,11 @@
                         </form>
                         <div class="col-md-3">
                             <div class="btn-group">
-                                <a class="btn btn-primary" href="{{ path('googleshoppingxml.generatefeedxml', {feedId: feed.id}) }}">{{ 'Generate'|trans }}</a>
-                                <a class="js_download_xml_feed btn btn-info" title="{{ 'Download XML'|trans }}" href="{{ path('googleshoppingxml.getfeedxml', {feedId: feed.id}) }}" data-feedid="{{ feed.id }}" download>{{ 'XML'|trans }}</a>
-                                <a href="#" class="js_btn_clipboard btn btn-secondary" title="{{ 'Copy XML link into clipboard'|trans }}" data-clipboardtext="{{ path('googleshoppingxml.getfeedxml', {feedId: feed.id}) }}"><i class="bi bi-link-45deg"></i></a>
+                                <a class="btn btn-primary" href="{{ path('googleshoppingxml.generatefeedxml', {feedId: feed.id}) }}">{{ 'Generate'|trans({}, d) }}</a>
+                                <a class="js_download_xml_feed btn btn-info" title="{{ 'Download XML'|trans({}, d) }}" href="{{ path('googleshoppingxml.getfeedxml', {feedId: feed.id}) }}" data-feedid="{{ feed.id }}" download>{{ 'XML'|trans({}, d) }}</a>
+                                <a href="#" class="js_btn_clipboard btn btn-secondary" title="{{ 'Copy XML link into clipboard'|trans({}, d) }}" data-clipboardtext="{{ path('googleshoppingxml.getfeedxml', {feedId: feed.id}) }}"><i class="bi bi-link-45deg"></i></a>
                             </div>
-                            <a href="#" class="js_btn_configure_custom_xml btn btn-primary ms-1" title="{{ 'Configure custom XML'|trans }}" data-feedid="{{ feed.id }}"><i class="bi bi-wrench"></i></a>
+                            <a href="#" class="js_btn_configure_custom_xml btn btn-primary ms-1" title="{{ 'Configure custom XML'|trans({}, d) }}" data-feedid="{{ feed.id }}"><i class="bi bi-wrench"></i></a>
                             <form id="js_form_delete_feed_{{ feed.id }}" class="d-inline-block" method="post" action="{{ path('googleshoppingxml.feed.delete') }}?_token={{ assignToken() }}">
                                 <input type="hidden" name="id_feed_to_delete" value="{{ feed.id }}">
                                 <a class="btn btn-danger js_btn_delete_with_warning" data-formid="js_form_delete_feed_{{ feed.id }}"><i class="bi bi-trash"></i></a>
@@ -102,7 +102,7 @@
         {# ============ TAXONOMY TAB ============ #}
         <div id="taxonomy" class="tab-pane {{ tab == 'taxonomy' ? 'active show' }}">
             <div class="card mb-3">
-                <div class="card-header">{{ 'Google taxonomy management : associate Thelia categories with Google categories'|trans }}</div>
+                <div class="card-header">{{ 'Google taxonomy management : associate Thelia categories with Google categories'|trans({}, d) }}</div>
                 <div class="card-body">
                     <div class="alert alert-info">
                         <p>- {{ "Google has its own set of product categories. This tab allows you associate your own categories with Google's ones."|trans({}, d) }}</p>
@@ -119,7 +119,7 @@
                         <form action="{{ path('googleshoppingxml.taxonomy.associate') }}" method="post" class="row g-2 align-items-end">
                             <input type="hidden" name="{{ taxonomy_form.vars.full_name }}[_token]" value="{{ taxonomy_form._token.vars.value }}">
                             <div class="col-md-3">
-                                <label class="form-label" for="thelia-category">{{ 'Thelia category'|trans }}</label>
+                                <label class="form-label" for="thelia-category">{{ 'Thelia category'|trans({}, d) }}</label>
                                 <select id="thelia-category" class="form-select" name="{{ taxonomy_form.vars.full_name }}[thelia_category_id]">
                                     {% for cat in category_tree %}
                                         <option value="{{ cat.id }}">{% if cat.level > 0 %}{% for i in 1..cat.level %}&nbsp;&nbsp;&nbsp;&nbsp;{% endfor %}{% endif %}{{ cat.title }}</option>
@@ -127,18 +127,18 @@
                                 </select>
                             </div>
                             <div class="col-md-3">
-                                <label class="form-label" for="search-taxonomy">{{ 'Search category'|trans }}</label>
+                                <label class="form-label" for="search-taxonomy">{{ 'Search category'|trans({}, d) }}</label>
                                 <div class="input-group">
                                     <input class="form-control" type="text" id="search-taxonomy">
                                     <span class="input-group-text"><i class="bi bi-arrow-right"></i></span>
                                 </div>
                             </div>
                             <div class="col-md-3">
-                                <label class="form-label" for="google-taxonomy">{{ 'Google Category'|trans }}</label>
+                                <label class="form-label" for="google-taxonomy">{{ 'Google Category'|trans({}, d) }}</label>
                                 <select class="form-select" name="{{ taxonomy_form.vars.full_name }}[google_category_id]" id="google-taxonomy"></select>
                             </div>
                             <div class="col-md-3">
-                                <button class="btn btn-primary" type="submit"><i class="bi bi-check-lg"></i> {{ 'Associate'|trans }}</button>
+                                <button class="btn btn-primary" type="submit"><i class="bi bi-check-lg"></i> {{ 'Associate'|trans({}, d) }}</button>
                             </div>
                         </form>
                     </div>
@@ -147,10 +147,10 @@
                     <table class="table table-striped">
                         <thead>
                             <tr>
-                                <th>{{ 'Thelia category Id'|trans }}</th>
-                                <th>{{ 'Thelia category Title'|trans }}</th>
-                                <th>{{ 'Associated Google category'|trans }}</th>
-                                <th class="text-center">{{ 'Action'|trans }}</th>
+                                <th>{{ 'Thelia category Id'|trans({}, d) }}</th>
+                                <th>{{ 'Thelia category Title'|trans({}, d) }}</th>
+                                <th>{{ 'Associated Google category'|trans({}, d) }}</th>
+                                <th class="text-center">{{ 'Action'|trans({}, d) }}</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -162,7 +162,7 @@
                                 <td class="text-end">
                                     <form class="d-inline-block" action="{{ path('googleshoppingxml.taxonomy.delete') }}?_token={{ assignToken() }}" method="post">
                                         <input type="hidden" name="category_id" value="{{ cat.id }}">
-                                        <button class="btn btn-danger" type="submit" title="{{ 'Delete association'|trans }}"><i class="bi bi-trash"></i></button>
+                                        <button class="btn btn-danger" type="submit" title="{{ 'Delete association'|trans({}, d) }}"><i class="bi bi-trash"></i></button>
                                     </form>
                                 </td>
                             </tr>
@@ -170,7 +170,7 @@
                         </tbody>
                     </table>
                     {% else %}
-                    <div class="alert alert-warning" role="alert">{{ 'No associated category'|trans }}</div>
+                    <div class="alert alert-warning" role="alert">{{ 'No associated category'|trans({}, d) }}</div>
                     {% endif %}
                 </div>
             </div>
@@ -179,11 +179,11 @@
         {# ============ ADVANCED TAB ============ #}
         <div id="advanced" class="tab-pane {{ tab == 'advanced' ? 'active show' }}">
             <div class="card mb-3">
-                <div class="card-header">{{ 'Advanced Google product fields configuration'|trans }}</div>
+                <div class="card-header">{{ 'Advanced Google product fields configuration'|trans({}, d) }}</div>
                 <div class="card-body">
                     <div class="alert alert-info">
-                        {{ 'In this tab, you can configure Google XML fields that are not filled by this module.'|trans }}
-                        {{ 'If your store sells clothes, you must configure the following fields as they are marked "mandatory" by Google :'|trans }}
+                        {{ 'In this tab, you can configure Google XML fields that are not filled by this module.'|trans({}, d) }}
+                        {{ 'If your store sells clothes, you must configure the following fields as they are marked "mandatory" by Google :'|trans({}, d) }}
                         "<strong>age_group</strong>", "<strong>color</strong>", "<strong>gender</strong>", "<strong>size</strong>", "<strong>size_system</strong>".
                         {{ 'More information about Google fields specifications at %link.'|trans({'%link': '<a href="https://support.google.com/merchants/answer/7052112">https://support.google.com/merchants/answer/7052112</a>'}, d)|raw }}
                     </div>
@@ -191,41 +191,41 @@
                     <div class="card card-body bg-light mb-3">
                         <form method="post" action="{{ path('googleshoppingxml.advanced.field.add') }}?_token={{ assignToken() }}" class="row g-2 align-items-start">
                             <div class="col-md-3">
-                                <label class="form-label" for="advanced_input_google_attribute_new">{{ 'Google attribute'|trans }}</label>
+                                <label class="form-label" for="advanced_input_google_attribute_new">{{ 'Google attribute'|trans({}, d) }}</label>
                                 <input id="advanced_input_google_attribute_new" class="form-control" name="google_attribute" required>
                             </div>
                             <div class="col-md-3">
-                                <label class="form-label" for="advanced_select_type_new">{{ 'Association type'|trans }}</label>
+                                <label class="form-label" for="advanced_select_type_new">{{ 'Association type'|trans({}, d) }}</label>
                                 <select id="advanced_select_type_new" class="js_advanced_select_association_type form-select" name="association_type" data-googlefieldid="new">
-                                    <option value="0">-- {{ 'Select an association type'|trans }} --</option>
-                                    <option value="1">{{ 'Fixed value'|trans }}</option>
-                                    <option value="2">{{ 'Linked to a Thelia attribute'|trans }}</option>
-                                    <option value="3">{{ 'Linked to a Thelia feature'|trans }}</option>
+                                    <option value="0">-- {{ 'Select an association type'|trans({}, d) }} --</option>
+                                    <option value="1">{{ 'Fixed value'|trans({}, d) }}</option>
+                                    <option value="2">{{ 'Linked to a Thelia attribute'|trans({}, d) }}</option>
+                                    <option value="3">{{ 'Linked to a Thelia feature'|trans({}, d) }}</option>
                                 </select>
                             </div>
                             <div class="col-md-3">
                                 <div class="js_field_related_to_association_type" data-googlefieldid="new" data-associationtype="1">
-                                    <label class="form-label" for="advanced_input_fixed_value_new">{{ 'Fixed value'|trans }}</label>
+                                    <label class="form-label" for="advanced_input_fixed_value_new">{{ 'Fixed value'|trans({}, d) }}</label>
                                     <input id="advanced_input_fixed_value_new" class="form-control" name="fixed_value">
                                 </div>
                                 <div class="js_field_related_to_association_type" data-googlefieldid="new" data-associationtype="2">
-                                    <label class="form-label" for="advanced_select_thelia_attribute_new">{{ 'Related Thelia attribute'|trans }}</label>
+                                    <label class="form-label" for="advanced_select_thelia_attribute_new">{{ 'Related Thelia attribute'|trans({}, d) }}</label>
                                     <select id="advanced_select_thelia_attribute_new" class="form-select" name="thelia_attribute">
-                                        <option value="0">-- {{ 'Select an attribute'|trans }} --</option>
+                                        <option value="0">-- {{ 'Select an attribute'|trans({}, d) }} --</option>
                                         {% for attribute in attributes %}<option value="{{ attribute.id }}">{{ attribute.title }}</option>{% endfor %}
                                     </select>
                                 </div>
                                 <div class="js_field_related_to_association_type" data-googlefieldid="new" data-associationtype="3">
-                                    <label class="form-label" for="advanced_select_thelia_feature_new">{{ 'Related Thelia feature'|trans }}</label>
+                                    <label class="form-label" for="advanced_select_thelia_feature_new">{{ 'Related Thelia feature'|trans({}, d) }}</label>
                                     <select id="advanced_select_thelia_feature_new" class="form-select" name="thelia_feature">
-                                        <option value="0">-- {{ 'Select a feature'|trans }} --</option>
+                                        <option value="0">-- {{ 'Select a feature'|trans({}, d) }} --</option>
                                         {% for feature in features %}<option value="{{ feature.id }}">{{ feature.title }}</option>{% endfor %}
                                     </select>
                                 </div>
                             </div>
                             <div class="col-md-3">
                                 <label class="form-label">&nbsp;</label>
-                                <button class="btn btn-primary form-control" type="submit"><i class="bi bi-plus-lg"></i> {{ 'Add'|trans }}</button>
+                                <button class="btn btn-primary form-control" type="submit"><i class="bi bi-plus-lg"></i> {{ 'Add'|trans({}, d) }}</button>
                             </div>
                         </form>
                     </div>
@@ -237,10 +237,10 @@
                             <div class="col-md-3"><input class="form-control" name="google_attribute" value="{{ fa.GoogleField }}" required></div>
                             <div class="col-md-3">
                                 <select class="js_advanced_select_association_type form-select" name="association_type" data-googlefieldid="{{ fa.Id }}">
-                                    <option value="0">-- {{ 'Select an association type'|trans }} --</option>
-                                    <option value="1" {{ fa.AssociationType == 1 ? 'selected' }}>{{ 'Fixed value'|trans }}</option>
-                                    <option value="2" {{ fa.AssociationType == 2 ? 'selected' }}>{{ 'Linked to a Thelia attribute'|trans }}</option>
-                                    <option value="3" {{ fa.AssociationType == 3 ? 'selected' }}>{{ 'Linked to a Thelia feature'|trans }}</option>
+                                    <option value="0">-- {{ 'Select an association type'|trans({}, d) }} --</option>
+                                    <option value="1" {{ fa.AssociationType == 1 ? 'selected' }}>{{ 'Fixed value'|trans({}, d) }}</option>
+                                    <option value="2" {{ fa.AssociationType == 2 ? 'selected' }}>{{ 'Linked to a Thelia attribute'|trans({}, d) }}</option>
+                                    <option value="3" {{ fa.AssociationType == 3 ? 'selected' }}>{{ 'Linked to a Thelia feature'|trans({}, d) }}</option>
                                 </select>
                             </div>
                             <div class="col-md-4">
@@ -249,23 +249,23 @@
                                 </div>
                                 <div class="js_field_related_to_association_type" data-googlefieldid="{{ fa.Id }}" data-associationtype="2">
                                     <select class="form-select" name="thelia_attribute">
-                                        <option value="0">-- {{ 'Select an attribute'|trans }} --</option>
+                                        <option value="0">-- {{ 'Select an attribute'|trans({}, d) }} --</option>
                                         {% for attribute in attributes %}<option value="{{ attribute.id }}" {{ attribute.id == fa.IdRelatedAttribute ? 'selected' }}>{{ attribute.title }}</option>{% endfor %}
                                     </select>
                                 </div>
                                 <div class="js_field_related_to_association_type" data-googlefieldid="{{ fa.Id }}" data-associationtype="3">
                                     <select class="form-select" name="thelia_feature">
-                                        <option value="0">-- {{ 'Select a feature'|trans }} --</option>
+                                        <option value="0">-- {{ 'Select a feature'|trans({}, d) }} --</option>
                                         {% for feature in features %}<option value="{{ feature.id }}" {{ feature.id == fa.IdRelatedFeature ? 'selected' }}>{{ feature.title }}</option>{% endfor %}
                                     </select>
                                 </div>
                             </div>
-                            <div class="col-md-2"><button class="btn btn-success form-control" type="submit"><i class="bi bi-check-lg"></i> {{ 'Save'|trans }}</button></div>
+                            <div class="col-md-2"><button class="btn btn-success form-control" type="submit"><i class="bi bi-check-lg"></i> {{ 'Save'|trans({}, d) }}</button></div>
                         </form>
                         <div class="col-md-1">
                             <form method="post" action="{{ path('googleshoppingxml.advanced.field.delete') }}?_token={{ assignToken() }}">
                                 <input type="hidden" value="{{ fa.Id }}" name="id_field_to_delete">
-                                <button class="btn btn-danger form-control" type="submit" title="{{ 'Remove'|trans }}"><i class="bi bi-trash"></i></button>
+                                <button class="btn btn-danger form-control" type="submit" title="{{ 'Remove'|trans({}, d) }}"><i class="bi bi-trash"></i></button>
                             </form>
                         </div>
                     </div>
@@ -277,17 +277,17 @@
                 <div class="col-md-4">
                     <div class="card mb-3">
                         <div class="card-header">
-                            {{ 'Field "gtin" configuration'|trans }}
+                            {{ 'Field "gtin" configuration'|trans({}, d) }}
                             <a href="https://support.google.com/merchants/answer/6324461?hl=fr&ref_topic=6324338"><i class="bi bi-question-circle"></i></a>
                         </div>
                         <div class="card-body">
-                            <small>{{ "Which product's EAN code should be included in the XML field \"gtin\" ?"|trans }}</small>
+                            <small>{{ "Which product's EAN code should be included in the XML field \"gtin\" ?"|trans({}, d) }}</small>
                             <form action="{{ path('googleshoppingxml.advanced.seteanrule') }}?_token={{ assignToken() }}" method="post">
-                                <div class="form-check"><input class="form-check-input" type="radio" id="gtin_all" name="gtin_rule" value="all" {{ ean_rule == 'all' ? 'checked' }}><label class="form-check-label" for="gtin_all">{{ 'Include all EAN codes without verification, ignore empty'|trans }}</label></div>
-                                <div class="form-check"><input class="form-check-input" type="radio" id="gtin_flex" name="gtin_rule" value="check_flexible" {{ ean_rule == 'check_flexible' ? 'checked' }}><label class="form-check-label" for="gtin_flex">{{ 'Include only valid EAN codes, ignore invalid or empty'|trans }}</label></div>
-                                <div class="form-check"><input class="form-check-input" type="radio" id="gtin_strict" name="gtin_rule" value="check_strict" {{ ean_rule == 'check_strict' ? 'checked' }}><label class="form-check-label" for="gtin_strict">{{ 'Include only valid EAN codes, launch error when invalid, ignore empty'|trans }}</label></div>
-                                <div class="form-check mb-3"><input class="form-check-input" type="radio" id="gtin_none" name="gtin_rule" value="none" {{ ean_rule == 'none' ? 'checked' }}><label class="form-check-label" for="gtin_none">{{ 'Do not include any EAN code'|trans }}</label></div>
-                                <button class="btn btn-success form-control" type="submit"><i class="bi bi-check-lg"></i> {{ 'Save'|trans }}</button>
+                                <div class="form-check"><input class="form-check-input" type="radio" id="gtin_all" name="gtin_rule" value="all" {{ ean_rule == 'all' ? 'checked' }}><label class="form-check-label" for="gtin_all">{{ 'Include all EAN codes without verification, ignore empty'|trans({}, d) }}</label></div>
+                                <div class="form-check"><input class="form-check-input" type="radio" id="gtin_flex" name="gtin_rule" value="check_flexible" {{ ean_rule == 'check_flexible' ? 'checked' }}><label class="form-check-label" for="gtin_flex">{{ 'Include only valid EAN codes, ignore invalid or empty'|trans({}, d) }}</label></div>
+                                <div class="form-check"><input class="form-check-input" type="radio" id="gtin_strict" name="gtin_rule" value="check_strict" {{ ean_rule == 'check_strict' ? 'checked' }}><label class="form-check-label" for="gtin_strict">{{ 'Include only valid EAN codes, launch error when invalid, ignore empty'|trans({}, d) }}</label></div>
+                                <div class="form-check mb-3"><input class="form-check-input" type="radio" id="gtin_none" name="gtin_rule" value="none" {{ ean_rule == 'none' ? 'checked' }}><label class="form-check-label" for="gtin_none">{{ 'Do not include any EAN code'|trans({}, d) }}</label></div>
+                                <button class="btn btn-success form-control" type="submit"><i class="bi bi-check-lg"></i> {{ 'Save'|trans({}, d) }}</button>
                             </form>
                         </div>
                     </div>
@@ -295,7 +295,7 @@
 
                 <div class="col-md-4">
                     <div class="card mb-3">
-                        <div class="card-header">{{ 'Compatibility SQL'|trans }}</div>
+                        <div class="card-header">{{ 'Compatibility SQL'|trans({}, d) }}</div>
                         <div class="card-body">
                             <form action="{{ path('googleshoppingxml.advanced.compatibility-sql') }}" method="post">
                                 <input type="hidden" name="{{ compatibility_sql_form.vars.full_name }}[_token]" value="{{ compatibility_sql_form._token.vars.value }}">
@@ -304,7 +304,7 @@
                                     {{ form_widget(compatibility_sql_form.enable_optimisation, {attr: {class: 'form-check-input'}}) }}
                                     {{ form_label(compatibility_sql_form.enable_optimisation, null, {label_attr: {class: 'form-check-label'}}) }}
                                 </div>
-                                <button class="btn btn-success form-control mt-2" type="submit"><i class="bi bi-check-lg"></i> {{ 'Save'|trans }}</button>
+                                <button class="btn btn-success form-control mt-2" type="submit"><i class="bi bi-check-lg"></i> {{ 'Save'|trans({}, d) }}</button>
                             </form>
                         </div>
                     </div>
@@ -316,13 +316,13 @@
         <div id="log" class="tab-pane {{ tab == 'log' ? 'active show' }}">
             <div class="card">
                 <div class="card-header d-flex flex-wrap align-items-center gap-2">
-                    <a href="#" class="js_btn_gsxml_log_refresh btn btn-info"><i class="bi bi-arrow-clockwise"></i> {{ 'Refresh log'|trans }}</a>
+                    <a href="#" class="js_btn_gsxml_log_refresh btn btn-info"><i class="bi bi-arrow-clockwise"></i> {{ 'Refresh log'|trans({}, d) }}</a>
                     <span class="gsxml_checkbox_container">
-                        <label class="me-2"><input type="checkbox" class="js_checkbox_level_log" data-level="1" checked> {{ 'INFO'|trans }}</label>
-                        <label class="me-2 gsxml_checkbox_success"><input type="checkbox" class="js_checkbox_level_log" data-level="2" checked> {{ 'SUCCESS'|trans }}</label>
-                        <label class="me-2 gsxml_checkbox_warning"><input type="checkbox" class="js_checkbox_level_log" data-level="3" checked> {{ 'WARNING'|trans }}</label>
-                        <label class="me-2 gsxml_checkbox_error"><input type="checkbox" class="js_checkbox_level_log" data-level="4" checked> {{ 'ERROR'|trans }}</label>
-                        <label class="me-2 gsxml_checkbox_fatal"><input type="checkbox" class="js_checkbox_level_log" data-level="5" checked> {{ 'FATAL'|trans }}</label>
+                        <label class="me-2"><input type="checkbox" class="js_checkbox_level_log" data-level="1" checked> {{ 'INFO'|trans({}, d) }}</label>
+                        <label class="me-2 gsxml_checkbox_success"><input type="checkbox" class="js_checkbox_level_log" data-level="2" checked> {{ 'SUCCESS'|trans({}, d) }}</label>
+                        <label class="me-2 gsxml_checkbox_warning"><input type="checkbox" class="js_checkbox_level_log" data-level="3" checked> {{ 'WARNING'|trans({}, d) }}</label>
+                        <label class="me-2 gsxml_checkbox_error"><input type="checkbox" class="js_checkbox_level_log" data-level="4" checked> {{ 'ERROR'|trans({}, d) }}</label>
+                        <label class="me-2 gsxml_checkbox_fatal"><input type="checkbox" class="js_checkbox_level_log" data-level="5" checked> {{ 'FATAL'|trans({}, d) }}</label>
                     </span>
                     <div class="ms-auto">
                         <select class="form-select form-select-sm" id="js_select_log_limit" style="width:auto">
@@ -340,7 +340,7 @@
                         <a href="#" class="btn btn-secondary js_log_next_page"><i class="bi bi-chevron-right"></i></a>
                     </div>
                     <table id="js_table_xml_log" class="table">
-                        <tr><td colspan="5">{{ 'Please click on the refresh button.'|trans }}</td></tr>
+                        <tr><td colspan="5">{{ 'Please click on the refresh button.'|trans({}, d) }}</td></tr>
                     </table>
                     <div class="text-center mt-2 gsxml_log_pager">
                         <a href="#" class="btn btn-secondary js_log_first_page"><i class="bi bi-skip-backward-fill"></i></a>
@@ -358,13 +358,13 @@
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">{{ 'Delete confirmation'|trans }}</h5>
+                <h5 class="modal-title">{{ 'Delete confirmation'|trans({}, d) }}</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div id="js_body_modal_confirm_delete" class="modal-body"></div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"><i class="bi bi-x-lg"></i> {{ 'No'|trans }}</button>
-                <button type="button" id="js_btn_modal_confirm_delete_confirm" class="btn btn-primary"><i class="bi bi-check-lg"></i> {{ 'Yes'|trans }}</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"><i class="bi bi-x-lg"></i> {{ 'No'|trans({}, d) }}</button>
+                <button type="button" id="js_btn_modal_confirm_delete_confirm" class="btn btn-primary"><i class="bi bi-check-lg"></i> {{ 'Yes'|trans({}, d) }}</button>
             </div>
         </div>
     </div>
@@ -375,7 +375,7 @@
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">{{ 'Custom XML generation'|trans }}</h5>
+                <h5 class="modal-title">{{ 'Custom XML generation'|trans({}, d) }}</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
@@ -386,14 +386,14 @@
                     {{ 'If you choose the custom XML files generation, you will have to upload them manually in Google Merchant Center.'|trans({}, d) }}
                 </div>
                 <div class="mb-3">
-                    <label class="form-label" for="js_input_xml_divide_time">{{ 'Divide your catalog into X parts'|trans }} : </label>
+                    <label class="form-label" for="js_input_xml_divide_time">{{ 'Divide your catalog into X parts'|trans({}, d) }} : </label>
                     <input class="form-control" id="js_input_xml_divide_time" type="number">
                 </div>
-                <a id="js_btn_generate_custom_xml" href="#" class="btn btn-primary">{{ 'Generate custom XML links'|trans }}</a>
+                <a id="js_btn_generate_custom_xml" href="#" class="btn btn-primary">{{ 'Generate custom XML links'|trans({}, d) }}</a>
                 <div id="js_xml_divided_link_container" class="card card-body mt-3"></div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"><i class="bi bi-x-lg"></i> {{ 'Close'|trans }}</button>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal"><i class="bi bi-x-lg"></i> {{ 'Close'|trans({}, d) }}</button>
             </div>
         </div>
     </div>
@@ -407,23 +407,23 @@
     const TAXONOMY_URL = "{{ path('googleshoppingxml.taxonomy.get', {langId: current_lang_id}) }}";
     const PRODUCT_UPDATE_URL = "{{ path('admin.products.update') }}";
     const L = {
-        copied: {{ 'Copied!'|trans|json_encode|raw }},
-        deleteFeedLine1: {{ 'Do you really want to delete this feed ?'|trans|json_encode|raw }},
-        deleteFeedLine2: {{ "Please note that it won't delete the feed in your Google Merchant account. You will have to do it manually in the Google Merchant Center page."|trans|json_encode|raw }},
-        ajaxError: {{ 'An error has occurred during the server request.'|trans|json_encode|raw }},
-        nothing: {{ 'Nothing to show.'|trans|json_encode|raw }},
-        date: {{ 'Date'|trans|json_encode|raw }},
-        feed: {{ 'Feed'|trans|json_encode|raw }},
-        level: {{ 'Level'|trans|json_encode|raw }},
-        message: {{ 'Message'|trans|json_encode|raw }},
-        productItem: {{ 'Product item'|trans|json_encode|raw }}
+        copied: {{ 'Copied!'|trans({}, d)|json_encode|raw }},
+        deleteFeedLine1: {{ 'Do you really want to delete this feed ?'|trans({}, d)|json_encode|raw }},
+        deleteFeedLine2: {{ "Please note that it won't delete the feed in your Google Merchant account. You will have to do it manually in the Google Merchant Center page."|trans({}, d)|json_encode|raw }},
+        ajaxError: {{ 'An error has occurred during the server request.'|trans({}, d)|json_encode|raw }},
+        nothing: {{ 'Nothing to show.'|trans({}, d)|json_encode|raw }},
+        date: {{ 'Date'|trans({}, d)|json_encode|raw }},
+        feed: {{ 'Feed'|trans({}, d)|json_encode|raw }},
+        level: {{ 'Level'|trans({}, d)|json_encode|raw }},
+        message: {{ 'Message'|trans({}, d)|json_encode|raw }},
+        productItem: {{ 'Product item'|trans({}, d)|json_encode|raw }}
     };
     const LEVELS = {
-        1: {className: '', label: {{ 'INFO'|trans|json_encode|raw }}, name: 'info'},
-        2: {className: 'tr_log_success', label: {{ 'SUCCESS'|trans|json_encode|raw }}, name: 'success'},
-        3: {className: 'tr_log_warning', label: {{ 'WARNING'|trans|json_encode|raw }}, name: 'warning'},
-        4: {className: 'tr_log_error', label: {{ 'ERROR'|trans|json_encode|raw }}, name: 'error'},
-        5: {className: 'tr_log_fatal', label: {{ 'FATAL'|trans|json_encode|raw }}, name: 'fatal'}
+        1: {className: '', label: {{ 'INFO'|trans({}, d)|json_encode|raw }}, name: 'info'},
+        2: {className: 'tr_log_success', label: {{ 'SUCCESS'|trans({}, d)|json_encode|raw }}, name: 'success'},
+        3: {className: 'tr_log_warning', label: {{ 'WARNING'|trans({}, d)|json_encode|raw }}, name: 'warning'},
+        4: {className: 'tr_log_error', label: {{ 'ERROR'|trans({}, d)|json_encode|raw }}, name: 'error'},
+        5: {className: 'tr_log_fatal', label: {{ 'FATAL'|trans({}, d)|json_encode|raw }}, name: 'fatal'}
     };
 
     document.addEventListener('DOMContentLoaded', function () {

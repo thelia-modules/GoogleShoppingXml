@@ -1,6 +1,11 @@
 <?php
 
 return array(
+    'Compatibility SQL' => 'Compatibilité SQL',
+    'Country' => 'Pays',
+    'Currency' => 'Devise',
+    'Feed label' => 'Libellé du flux',
+    'Lang' => 'Langue',
     'Action' => 'Action',
     'Add' => 'Ajouter',
     'Advanced Google product fields configuration' => 'Configuration avancée des champs XML',

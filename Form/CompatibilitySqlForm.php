@@ -16,7 +16,7 @@ class CompatibilitySqlForm extends BaseForm
                 'enable_optimisation',
                 CheckboxType::class,
                 [
-                    'label' => Translator::getInstance()->trans("Enable sql 8 optimisations"),
+                    'label' => Translator::getInstance()->trans('Enable SQL 8 optimisations', [], GoogleShoppingXml::DOMAIN_NAME),
                     'label_attr' => array(
                         'for' => 'enable_sql_8'
                     ),

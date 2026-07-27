@@ -1,6 +1,7 @@
 <?php
 
 return array(
+    'Enable SQL 8 optimisations' => 'Activer les optimisations SQL 8',
     '%nb product item(s) have been skipped because of errors.' => '%nb produit(s) ou déclinaison(s) ont été ignoré(s) car ils contiennent des erreurs.',
     '%nb product item(s) have been skipped because they were set as not visible.' => '%nb produit(s) ou déclinaison(s) ont été ignoré(s) car ils n étaient pas en ligne.',
     'Check that this product has a valid description in this langage.' => 'Vérifiez que ce produit a une description valide dans cette langue.',
