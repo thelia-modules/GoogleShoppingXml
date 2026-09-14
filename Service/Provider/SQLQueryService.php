@@ -48,7 +48,6 @@ class SQLQueryService
                 SELECT pseimg.`product_sale_elements_id` as pseid, pimg.file as pse_image_file, pimg.id as pse_image_id
                 FROM product_sale_elements_product_image AS pseimg
                 JOIN product_image AS pimg ON pimg.id=pseimg.product_image_id
-                WHERE pimg.`product_id`=1
                 GROUP BY pseimg.`product_sale_elements_id`
             )
             
@@ -66,6 +65,7 @@ class SQLQueryService
                 pse.ean_code AS "gtin",
                 p.ref AS "item_group_id",
                 pse.weight AS "shipping_weight",
+                p.`virtual` AS "is_virtual",
                 gt.google_category AS "google_product_category",
                 cp.path AS "product_type",
                 "new" AS "condition",
@@ -130,6 +130,7 @@ class SQLQueryService
                 pse.ean_code AS "gtin",
                 p.ref AS "item_group_id",
                 pse.weight AS "shipping_weight",
+                p.`virtual` AS "is_virtual",
                 gt.google_category AS "google_product_category",
                 "new" AS "condition",
                 p.tax_rule_id AS "TAX_RULE_ID",

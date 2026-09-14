@@ -28,10 +28,11 @@ class GtinChecker
 
         $codeArray = str_split($code);
         foreach (array_values($codeArray) as $i => $c) {
+            $number = (int) $c;
             if ($i % 2 == 1) {
-                $total = $total + $c;
+                $total = $total + $number;
             } else {
-                $total = $total + (3*$c);
+                $total = $total + (3*$number);
             }
         }
         $checkDigit = (10 - ($total % 10)) % 10;

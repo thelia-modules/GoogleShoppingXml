@@ -63,7 +63,7 @@ class ProductProvider
 
         $taxCalculator = new Calculator();
         $taxeRules = $this->getTaxeRules();
-        $shipping = $this->shipingService->buildShippingArray($feed, $moneyFormat);
+        $shippingMatrix = $this->shipingService->buildShippingMatrix($feed, $moneyFormat);
 
         $optimisation = GoogleShoppingXml::getConfigValue(GoogleShoppingXml::ENABLE_SQL_8_COMPATIBILITY);
 
@@ -108,6 +108,12 @@ class ProductProvider
 
                 $row['product_type'] = implode(' > ', $path);
             }
+
+            $shipping = $this->shipingService->entriesFor(
+                $shippingMatrix,
+                isset($row['shipping_weight']) ? (float) $row['shipping_weight'] : null,
+                (bool) ($row['is_virtual'] ?? false)
+            );
 
             yield (new GoogleProductModel($taxCalculator, $moneyFormat, $shipping, $feed->getCurrency(), 'g:'))->build($row);
         }

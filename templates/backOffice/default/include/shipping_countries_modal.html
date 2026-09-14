@@ -1,0 +1,52 @@
+{* Shipping country picker. Expects: modal_key (unique dom suffix), field_name (form field name),
+   selected (array of country ids already picked). *}
+{$gsxml_list_id = "js_shipping_countries_`$modal_key`"}
+
+<div class="modal fade" id="js_modal_shipping_countries_{$modal_key}" role="dialog" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                <h3>{intl l="Shipping countries"}</h3>
+            </div>
+
+            <div class="modal-body">
+                <p class="help-block">{intl l="Tick the countries the feed advertises a delivery rate for. Leave empty to cover them all."}</p>
+
+                <div class="row gsxml-country-tools">
+                    <div class="col-md-8">
+                        <input type="text" class="form-control js_shipping_countries_search" data-list="{$gsxml_list_id}" placeholder="{intl l='Search a country...'}"/>
+                    </div>
+                    <div class="col-md-4">
+                        <button type="button" class="btn btn-default btn-block js_shipping_countries_toggle" data-list="{$gsxml_list_id}">{intl l="Select all"}</button>
+                    </div>
+                </div>
+
+                <div id="{$gsxml_list_id}" class="gsxml-country-list js_shipping_countries">
+                    {loop type="googleshoppingxml.served.country" name="loop_shipping_country_modal"}
+                    <div class="gsxml-country-row{if in_array($ID, $selected)} is-checked{/if}">
+                        <label>
+                            <input type="checkbox" name="{$field_name}" value="{$ID}"{if in_array($ID, $selected)} checked{/if}/>
+                            <span class="gsxml-country-name">{$TITLE}</span>
+                        </label>
+                    </div>
+                    {/loop}
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <div class="gsxml-country-summary pull-left">
+                    <strong class="js_shipping_country_summary" data-list="{$gsxml_list_id}"></strong>
+                    <span class="help-block">{intl l="Empty means every country served by an active delivery module."}</span>
+                </div>
+                <button type="button" class="btn btn-default js_shipping_countries_cancel" data-list="{$gsxml_list_id}" data-dismiss="modal">
+                    {intl l="Cancel"}
+                </button>
+                <button type="button" class="btn btn-primary" data-dismiss="modal">
+                    <span class="glyphicon glyphicon-ok"></span>
+                    {intl l="Validate"}
+                </button>
+            </div>
+        </div>
+    </div>
+</div>

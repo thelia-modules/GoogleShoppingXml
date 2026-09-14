@@ -4,6 +4,8 @@ namespace GoogleShoppingXml\Controller;
 
 use GoogleShoppingXml\Form\FeedManagementForm;
 use GoogleShoppingXml\GoogleShoppingXml;
+use GoogleShoppingXml\Model\GoogleshoppingxmlFeedCountry;
+use GoogleShoppingXml\Model\GoogleshoppingxmlFeedCountryQuery;
 use GoogleShoppingXml\Model\GoogleshoppingxmlFeedQuery;
 use GoogleShoppingXml\Model\GoogleshoppingxmlLogQuery;
 use GoogleShoppingXml\Service\GoogleShoppingXmlService;
@@ -53,6 +55,8 @@ class FeedConfigController extends BaseAdminController
                 ->setCountryId($formData['country_id'])
                 ->save();
 
+            $this->saveShippingCountries($feed->getId(), $formData['shipping_country_ids'] ?? []);
+
         } catch (\Exception $e) {
             $message = $e->getMessage();
             $this->setupFormErrorContext(
@@ -71,6 +75,27 @@ class FeedConfigController extends BaseAdminController
                 'current_tab' => 'feeds'
             )
         );
+    }
+
+    /**
+     * Countries this feed advertises delivery to. Replaced wholesale: the form always posts the
+     * complete selection, and an empty one means "every country a live carrier serves".
+     *
+     * @param int   $feedId
+     * @param int[] $countryIds
+     */
+    protected function saveShippingCountries($feedId, array $countryIds)
+    {
+        GoogleshoppingxmlFeedCountryQuery::create()
+            ->filterByFeedId($feedId)
+            ->delete();
+
+        foreach (array_unique($countryIds) as $countryId) {
+            (new GoogleshoppingxmlFeedCountry())
+                ->setFeedId($feedId)
+                ->setCountryId($countryId)
+                ->save();
+        }
     }
 
     public function deleteFeedAction(Request $request)

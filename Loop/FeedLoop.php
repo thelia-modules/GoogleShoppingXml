@@ -3,6 +3,7 @@
 namespace GoogleShoppingXml\Loop;
 
 use GoogleShoppingXml\Model\GoogleshoppingxmlFeed;
+use GoogleShoppingXml\Model\GoogleshoppingxmlFeedCountryQuery;
 use GoogleShoppingXml\Model\GoogleshoppingxmlFeedQuery;
 use Thelia\Core\Template\Element\BaseLoop;
 use Thelia\Core\Template\Element\LoopResult;
@@ -35,10 +36,23 @@ class FeedLoop extends BaseLoop implements PropelSearchLoopInterface
             $loopResultRow->set("LANG_ID", $data->getLangId());
             $loopResultRow->set("CURRENCY_ID", $data->getCurrencyId());
             $loopResultRow->set("COUNTRY_ID", $data->getCountryId());
+            $loopResultRow->set("SHIPPING_COUNTRY_IDS", $this->getShippingCountryIds($data->getId()));
 
             $loopResult->addRow($loopResultRow);
         }
 
         return $loopResult;
+    }
+
+    /**
+     * @return int[]
+     */
+    protected function getShippingCountryIds($feedId)
+    {
+        return GoogleshoppingxmlFeedCountryQuery::create()
+            ->filterByFeedId($feedId)
+            ->select('CountryId')
+            ->find()
+            ->getData();
     }
 }

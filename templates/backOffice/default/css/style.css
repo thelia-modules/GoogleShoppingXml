@@ -66,3 +66,60 @@ tr.tr_log_warning > td{
 .custom-form-inline{
     display: inline-block;
 }
+/* Shipping country picker */
+
+.gsxml-country-btn{
+    padding-left: 6px;
+    padding-right: 6px;
+}
+
+.gsxml-country-tools{
+    margin-bottom: 10px;
+}
+
+.gsxml-country-list{
+    max-height: 320px;
+    overflow-y: auto;
+    border: 1px solid #ddd;
+    border-radius: 3px;
+}
+
+.gsxml-country-row{
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.gsxml-country-row:last-child{
+    border-bottom: none;
+}
+
+.gsxml-country-row > label{
+    display: block;
+    margin: 0;
+    padding: 7px 12px;
+    font-weight: normal;
+    cursor: pointer;
+}
+
+.gsxml-country-row:hover{
+    background-color: #f7f7f7;
+}
+
+.gsxml-country-row.is-checked{
+    background-color: #eaf3fb;
+}
+
+.gsxml-country-row.is-hidden{
+    display: none;
+}
+
+.gsxml-country-name{
+    margin-left: 6px;
+}
+
+.gsxml-country-summary{
+    text-align: left;
+}
+
+.gsxml-country-summary .help-block{
+    margin: 0;
+}

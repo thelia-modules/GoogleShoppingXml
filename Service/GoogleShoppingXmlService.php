@@ -25,21 +25,17 @@ use Thelia\Core\HttpFoundation\Request;
 use Thelia\Core\HttpFoundation\Session\Session;
 use Thelia\Core\Translation\Translator;
 use Thelia\Log\Tlog;
-use Thelia\Model\AreaDeliveryModuleQuery;
 use Thelia\Model\Base\BrandI18nQuery;
 use Thelia\Model\Base\ProductCategoryQuery;
 use Thelia\Model\ConfigQuery;
 use Thelia\Model\CurrencyQuery;
 use Thelia\Model\LangQuery;
 use Thelia\Model\Module;
-use Thelia\Model\ModuleQuery;
-use Thelia\Model\OrderPostage;
 use Thelia\Model\ProductImageQuery;
 use Thelia\Model\ProductPriceQuery;
 use Thelia\Model\RewritingUrlQuery;
 use Thelia\Model\TaxRule;
 use Thelia\Model\TaxRuleQuery;
-use Thelia\Module\BaseModule;
 use Thelia\TaxEngine\Calculator;
 use Thelia\Tools\MoneyFormat;
 use Thelia\Tools\URL;
@@ -75,8 +71,15 @@ class GoogleShoppingXmlService
 
     const DEFAULT_EAN_RULE = self::EAN_RULE_CHECK_STRICT;
 
-    public function __construct(ContainerInterface $container, EventDispatcherInterface $eventDispatcher, Request $request)
-    {
+    /** Weight this engine quotes every product at, the lightest bracket of the matrix. */
+    const SHIPPING_REFERENCE_BRACKET = '0.25';
+
+    public function __construct(
+        ContainerInterface $container,
+        EventDispatcherInterface $eventDispatcher,
+        Request $request,
+        private ShippingMatrixBuilder $shippingMatrixBuilder
+    ) {
         $this->container = $container;
         $this->eventDispatcher = $eventDispatcher;
         $this->request = $request;
@@ -230,7 +233,7 @@ class GoogleShoppingXmlService
                 $shipping['price'],
                 null,
                 '.',
-                null,
+                '',
                 CurrencyQuery::create()->filterById($shipping['currency_id'])->findOne()->getCode() ?? $this->currencyCode
             );
             $shippingStr .= '<g:price>' . $formattedPrice . '</g:price>' . PHP_EOL;
@@ -357,7 +360,7 @@ class GoogleShoppingXmlService
             $pse['TAXED_PRICE'],
             null,
             '.',
-            null,
+            '',
             $this->currencyCode
         );
 
@@ -368,7 +371,7 @@ class GoogleShoppingXmlService
                 $pse['TAXED_PROMO_PRICE'],
                 null,
                 '.',
-                null,
+                '',
                 $this->currencyCode);
             $str .= '<g:sale_price>' . $formattedTaxedPromoPrice . '</g:sale_price>' . PHP_EOL;
         }
@@ -859,22 +862,30 @@ class GoogleShoppingXmlService
     }
 
     /**
+     * The <g:shipping> entries of the feed: the cheapest carrier of every selected country.
+     *
+     * This engine writes one shipping block shared by every item, so rates are read at a single
+     * reference weight rather than per product. The optimised engine, which the back office and
+     * the console command both use by default, prices each product on its own weight.
+     *
      * @param GoogleshoppingxmlFeed $feed
+     *
      * @return array
      */
     protected function buildShippingArray($feed)
     {
+        $matrix = $this->shippingMatrixBuilder->build($feed);
+        $rate = $feed->getCurrency()->getRate();
+
         $resultArray = [];
 
-        $shippingInfoArray = $this->getShippings($feed);
-
-        foreach ($shippingInfoArray as $moduleTitle => $postagePrice) {
-            $shippingItem = [];
-            $shippingItem['country'] = $feed->getCountry()->getIsoalpha2();
-            $shippingItem['service'] = $moduleTitle;
-            $shippingItem['price'] = $postagePrice;
-            $shippingItem['currency_id'] = $feed->getCurrencyId();
-            $resultArray[] = $shippingItem;
+        foreach ($matrix[self::SHIPPING_REFERENCE_BRACKET] ?? [] as $entry) {
+            $resultArray[] = [
+                'country' => $entry['country'],
+                'service' => $entry['service'],
+                'price' => $entry['price'] * $rate,
+                'currency_id' => $feed->getCurrencyId(),
+            ];
         }
 
         if (empty($resultArray)) {
@@ -887,45 +898,6 @@ class GoogleShoppingXmlService
         }
 
         return $resultArray;
-    }
-
-    /**
-     * @param GoogleshoppingxmlFeed $feed
-     * @return array
-     */
-    protected function getShippings($feed)
-    {
-        $country = $feed->getCountry();
-
-        $search = ModuleQuery::create()
-            ->filterByActivate(1)
-            ->filterByType(BaseModule::DELIVERY_MODULE_TYPE, Criteria::EQUAL)
-            ->find();
-
-        $deliveries = array();
-
-        /** @var Module $deliveryModule */
-        foreach ($search as $deliveryModule) {
-            $deliveryModule->setLocale($feed->getLang()->getLocale());
-
-            $areaDeliveryModule = AreaDeliveryModuleQuery::create()
-                ->findByCountryAndModule($country, $deliveryModule);
-
-            if (null === $areaDeliveryModule) {
-                continue;
-            }
-
-            $moduleInstance = $deliveryModule->getDeliveryModuleInstance($this->container);
-
-            if ($moduleInstance->isValidDelivery($country)) {
-                $postage = OrderPostage::loadFromPostage($moduleInstance->getPostage($country));
-                $price = $postage->getAmount() * $feed->getCurrency()->getRate();
-
-                $deliveries[$deliveryModule->getTitle()] = $price;
-            }
-        }
-
-        return $deliveries;
     }
 
     protected function getGoogleAndTheliaCategories($feed)

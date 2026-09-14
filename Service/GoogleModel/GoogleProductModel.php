@@ -199,8 +199,8 @@ class GoogleProductModel
         $this->price = $this->moneyFormat->format(
             $this->taxCalculator->getTaxedPrice($price),
             null,
-            ',',
-            null,
+            '.',
+            '',
             $this->currency->getCode()
         );
         return $this;

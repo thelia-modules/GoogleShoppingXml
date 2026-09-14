@@ -48,5 +48,6 @@ return array(
     'You manually specified a field that is already defined by the module and that does not support overriding. It may cause issues as the field is defined twice.' => 'Vous avez spécifié manuellement un champ XML déjà défini par ce module et qui n autorise pas la redéfinition. Cela peut provoquer des erreurs dans la mesure où le champ est défini deux fois.',
     'You must set the store description in Configuration > Store' => 'Vous devez saisir une description pour votre magasin dans Configuration > Information boutique.',
     'You must set the store name in Configuration > Store' => 'Vous devez définir un nom de magasin dans Configuration > Information boutique.',
+    'Shipping countries' => 'Pays de livraison',
     'Your products may not have been included in the feed due to errors. Check the others messages in this log.' => 'Vos produits n ont peut-être pas les critères pour être inclus dans le flux. Vérifiez les autres messages d erreur.',
 );

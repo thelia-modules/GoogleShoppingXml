@@ -11,6 +11,7 @@
     <loops>
         <loop name="googleshoppingxml.category.associated" class="GoogleShoppingXml\Loop\AssociatedCategoryLoop" />
         <loop name="googleshoppingxml.feed" class="GoogleShoppingXml\Loop\FeedLoop" />
+        <loop name="googleshoppingxml.served.country" class="GoogleShoppingXml\Loop\ServedCountryLoop" />
     </loops>
 
     <hooks>

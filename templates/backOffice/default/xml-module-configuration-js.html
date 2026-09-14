@@ -16,6 +16,106 @@
         //            FEED MANAGEMENT TAB
         // ***********************************************
 
+        // Shipping countries picker
+
+        var shippingCountryAllLabel = "{intl l='all'}";
+        var shippingCountrySelectAll = "{intl l='Select all'}";
+        var shippingCountryClear = "{intl l='Clear'}";
+        var shippingCountrySummaryOne = "{intl l='%count country selected'}";
+        var shippingCountrySummaryMany = "{intl l='%count countries selected'}";
+        var shippingCountrySnapshots = {};
+
+        function shippingCountryBoxes(listId) {
+            return $('#' + listId).find('input[type="checkbox"]');
+        }
+
+        function refreshShippingCountries(listId) {
+            var $boxes = shippingCountryBoxes(listId);
+            var checked = $boxes.filter(':checked').length;
+
+            $boxes.each(function(){
+                $(this).closest('.gsxml-country-row').toggleClass('is-checked', this.checked);
+            });
+
+            $('.js_shipping_country_badge[data-list="' + listId + '"]')
+                .text(checked > 0 ? checked : shippingCountryAllLabel);
+
+            $('.js_shipping_country_summary[data-list="' + listId + '"]')
+                .text((checked > 1 ? shippingCountrySummaryMany : shippingCountrySummaryOne).replace('%count', checked));
+
+            // The button acts on what the search leaves visible, so its label follows that subset.
+            var $visible = $boxes.filter(function(){
+                return !$(this).closest('.gsxml-country-row').hasClass('is-hidden');
+            });
+
+            $('.js_shipping_countries_toggle[data-list="' + listId + '"]')
+                .text($visible.length > 0 && $visible.filter(':not(:checked)').length === 0 ? shippingCountryClear : shippingCountrySelectAll);
+        }
+
+        $('.js_shipping_countries').on('change', 'input[type="checkbox"]', function(){
+            refreshShippingCountries($(this).closest('.js_shipping_countries').attr('id'));
+        });
+
+        $('.js_shipping_countries_toggle').on('click', function(){
+            var listId = this.dataset.list;
+            var $visible = shippingCountryBoxes(listId).filter(function(){
+                return !$(this).closest('.gsxml-country-row').hasClass('is-hidden');
+            });
+
+            $visible.prop('checked', $visible.filter(':not(:checked)').length > 0);
+            refreshShippingCountries(listId);
+        });
+
+        $('.js_shipping_countries_search').on('input', function(){
+            var listId = this.dataset.list;
+            var needle = this.value.trim().toLowerCase();
+
+            $('#' + listId).find('.gsxml-country-row').each(function(){
+                var name = $(this).find('.gsxml-country-name').text().toLowerCase();
+                $(this).toggleClass('is-hidden', needle !== '' && name.indexOf(needle) === -1);
+            });
+
+            refreshShippingCountries(listId);
+        });
+
+        // Cancel puts back the selection the modal was opened with, so a misclick costs nothing.
+        $('.modal').on('show.bs.modal', function(){
+            var $list = $(this).find('.js_shipping_countries');
+
+            if ($list.length === 0) {
+                return;
+            }
+
+            var listId = $list.attr('id');
+
+            shippingCountrySnapshots[listId] = shippingCountryBoxes(listId).map(function(){
+                return this.checked;
+            }).get();
+
+            refreshShippingCountries(listId);
+        });
+
+        $('.js_shipping_countries_cancel').on('click', function(){
+            var listId = this.dataset.list;
+            var snapshot = shippingCountrySnapshots[listId];
+
+            if (!snapshot) {
+                return;
+            }
+
+            shippingCountryBoxes(listId).each(function(index){
+                this.checked = snapshot[index];
+            });
+
+            $('.js_shipping_countries_search[data-list="' + listId + '"]').val('');
+            $('#' + listId).find('.gsxml-country-row').removeClass('is-hidden');
+            refreshShippingCountries(listId);
+        });
+
+        $('.js_shipping_countries').each(function(){
+            refreshShippingCountries(this.id);
+        });
+
         // Copy link to clipboard
 
         $('.js_btn_clipboard').on('click', function(e){

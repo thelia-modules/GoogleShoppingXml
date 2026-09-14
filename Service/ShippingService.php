@@ -3,84 +3,49 @@
 namespace GoogleShoppingXml\Service;
 
 use GoogleShoppingXml\Model\GoogleshoppingxmlFeed;
-use Propel\Runtime\ActiveQuery\Criteria;
-use Symfony\Component\DependencyInjection\ContainerInterface;
-use Thelia\Model\AreaDeliveryModuleQuery;
-use Thelia\Model\Module;
-use Thelia\Model\ModuleQuery;
-use Thelia\Model\OrderPostage;
-use Thelia\Module\BaseModule;
 use Thelia\Tools\MoneyFormat;
 
+/**
+ * Turns the delivery rate matrix into the <g:shipping> entries of a feed.
+ */
 class ShippingService
 {
-    public function __construct(private ContainerInterface $container)
+    public function __construct(private ShippingMatrixBuilder $matrixBuilder)
     {
     }
 
     /**
-     * @param GoogleshoppingxmlFeed $feed
-     * @param MoneyFormat $moneyFormat
-     * @return array
+     * Every bracket, prices already formatted for the feed currency. Built once per generation,
+     * then read per product through entriesFor().
+     *
+     * @return array<string, array<int, array{country: string, service: string, price: string}>>
      */
-    public function buildShippingArray(GoogleshoppingxmlFeed $feed, MoneyFormat $moneyFormat)
+    public function buildShippingMatrix(GoogleshoppingxmlFeed $feed, MoneyFormat $moneyFormat): array
     {
-        $resultArray = [];
+        $rate = $feed->getCurrency()->getRate();
+        $currencyCode = $feed->getCurrency()->getCode();
 
-        $shippingInfoArray = $this->getShippings($feed);
+        $matrix = [];
 
-        foreach ($shippingInfoArray as $moduleTitle => $postagePrice) {
-            $shippingItem['country'] = $feed->getCountry()->getIsoalpha2();
-            $shippingItem['service'] = $moduleTitle;
-            $shippingItem['price'] = $moneyFormat->format(
-                $postagePrice,
-                null,
-                ',',
-                null,
-                $feed->getCurrency()->getCode());
-
-            $resultArray[] = $shippingItem;
+        foreach ($this->matrixBuilder->build($feed) as $bracket => $entries) {
+            foreach ($entries as $entry) {
+                $entry['price'] = $moneyFormat->format($entry['price'] * $rate, null, '.', '', $currencyCode);
+                $matrix[$bracket][] = $entry;
+            }
         }
 
-        return $resultArray;
+        return $matrix;
     }
 
     /**
-     * @param GoogleshoppingxmlFeed $feed
-     * @return array
+     * The <g:shipping> entries of one product, picked from the matrix by weight.
+     *
+     * @param array<string, array<int, array{country: string, service: string, price: string}>> $matrix
+     *
+     * @return array<int, array{country: string, service: string, price: string}>
      */
-    protected function getShippings(GoogleshoppingxmlFeed $feed)
+    public function entriesFor(array $matrix, ?float $weight, bool $isVirtual): array
     {
-        $country = $feed->getCountry();
-
-        $search = ModuleQuery::create()
-            ->filterByActivate(1)
-            ->filterByType(BaseModule::DELIVERY_MODULE_TYPE, Criteria::EQUAL)
-            ->find();
-
-        $deliveries = array();
-
-        /** @var Module $deliveryModule */
-        foreach ($search as $deliveryModule) {
-            $deliveryModule->setLocale($feed->getLang()->getLocale());
-
-            $areaDeliveryModule = AreaDeliveryModuleQuery::create()
-                ->findByCountryAndModule($country, $deliveryModule);
-
-            if (null === $areaDeliveryModule) {
-                continue;
-            }
-
-            $moduleInstance = $deliveryModule->getDeliveryModuleInstance($this->container);
-
-            if ($moduleInstance->isValidDelivery($country)) {
-                $postage = OrderPostage::loadFromPostage($moduleInstance->getPostage($country));
-                $price = $postage->getAmount() * $feed->getCurrency()->getRate();
-
-                $deliveries[$deliveryModule->getTitle()] = $price;
-            }
-        }
-
-        return $deliveries;
+        return $matrix[$this->matrixBuilder->bracketFor($weight, $isVirtual)] ?? [];
     }
 }

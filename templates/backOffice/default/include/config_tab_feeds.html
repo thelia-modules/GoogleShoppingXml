@@ -61,6 +61,18 @@
                     </div>
                     {/form_field}
 
+                    {form_field form=$form field="shipping_country_ids"}
+                    <div class="form-group col-md-1 {if $error}has-error{/if}">
+                        <label class="control-label">&nbsp;</label>
+                        <button type="button" class="btn btn-default form-control gsxml-country-btn" data-toggle="modal" data-target="#js_modal_shipping_countries_add" title="{$label}">
+                            <span class="glyphicon glyphicon-globe"></span>
+                            <span class="badge js_shipping_country_badge" data-list="js_shipping_countries_add">{intl l="all"}</span>
+                        </button>
+                    </div>
+
+                    {include file="include/shipping_countries_modal.html" modal_key="add" field_name=$name selected=[]}
+                    {/form_field}
+
                     <div class="form-group col-md-4">
                         <label class="control-label">&nbsp;</label>
                         <button class="btn btn-default btn-primary form-control" type="submit">
@@ -84,11 +96,12 @@
 
                 {form_field form=$form field="id"}
                 {$ID_FEED = $ID}
+                {$FEED_SHIPPING_COUNTRY_IDS = $SHIPPING_COUNTRY_IDS}
                 <input type="hidden" name="{$name}" value="{$ID}"/>
                 {/form_field}
 
                 {form_field form=$form field="feed_label"}
-                <div class="form-group col-md-2 {if $error}has-error{/if}">
+                <div class="form-group col-md-1 {if $error}has-error{/if}">
                     <input class="form-control" name="{$name}" value="{$LABEL}" required/>
                 </div>
                 {/form_field}
@@ -121,6 +134,17 @@
                         {/loop}
                     </select>
                 </div>
+                {/form_field}
+
+                {form_field form=$form field="shipping_country_ids"}
+                <div class="form-group col-md-1 {if $error}has-error{/if}">
+                    <button type="button" class="btn btn-default form-control gsxml-country-btn" data-toggle="modal" data-target="#js_modal_shipping_countries_{$ID_FEED}" title="{$label}">
+                        <span class="glyphicon glyphicon-globe"></span>
+                        <span class="badge js_shipping_country_badge" data-list="js_shipping_countries_{$ID_FEED}">{if $FEED_SHIPPING_COUNTRY_IDS|@count > 0}{$FEED_SHIPPING_COUNTRY_IDS|@count}{else}{intl l="all"}{/if}</span>
+                    </button>
+                </div>
+
+                {include file="include/shipping_countries_modal.html" modal_key=$ID_FEED field_name=$name selected=$FEED_SHIPPING_COUNTRY_IDS}
                 {/form_field}
 
                 <div class="form-group col-md-1">
