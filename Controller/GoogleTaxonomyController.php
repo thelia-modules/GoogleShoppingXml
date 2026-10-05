@@ -130,7 +130,7 @@ class GoogleTaxonomyController extends BaseAdminController
             return $response;
         }
 
-        $tokenProvider->checkToken((string) $request->query->get('_token'));
+        $tokenProvider->checkToken((string) $request->request->get('_token'));
 
         $categoryId = $request->request->get('category_id');
 

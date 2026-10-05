@@ -80,7 +80,7 @@ class FeedConfigController extends BaseAdminController
             return $response;
         }
 
-        $tokenProvider->checkToken((string) $request->query->get('_token'));
+        $tokenProvider->checkToken((string) $request->request->get('_token'));
 
         $feedId = $request->request->get('id_feed_to_delete');
 

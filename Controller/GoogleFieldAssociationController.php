@@ -45,7 +45,7 @@ class GoogleFieldAssociationController extends BaseAdminController
             return $response;
         }
 
-        $tokenProvider->checkToken((string) $httpRequest->query->get('_token'));
+        $tokenProvider->checkToken((string) $httpRequest->request->get('_token'));
 
         $message = null;
 
@@ -76,7 +76,7 @@ class GoogleFieldAssociationController extends BaseAdminController
             return $response;
         }
 
-        $tokenProvider->checkToken((string) $httpRequest->query->get('_token'));
+        $tokenProvider->checkToken((string) $httpRequest->request->get('_token'));
 
         $message = null;
 
@@ -113,7 +113,7 @@ class GoogleFieldAssociationController extends BaseAdminController
             return $response;
         }
 
-        $tokenProvider->checkToken((string) $httpRequest->query->get('_token'));
+        $tokenProvider->checkToken((string) $httpRequest->request->get('_token'));
 
         $message = null;
 
@@ -219,7 +219,7 @@ class GoogleFieldAssociationController extends BaseAdminController
             return $response;
         }
 
-        $tokenProvider->checkToken((string) $httpRequest->query->get('_token'));
+        $tokenProvider->checkToken((string) $httpRequest->request->get('_token'));
 
         $ruleArray = [
             FeedXmlController::EAN_RULE_ALL,
