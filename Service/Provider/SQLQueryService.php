@@ -35,7 +35,7 @@ class SQLQueryService
                 cp.path AS "product_type",
                 "new" AS "condition",
                 p.tax_rule_id AS "TAX_RULE_ID"
-            ' . $this->getEligibilityFromClause() . '
+            ' . $this->getEligibilityFromAndWhereClause() . '
             GROUP BY pse.id';
 
         $con = Propel::getConnection();
@@ -85,8 +85,9 @@ class SQLQueryService
     /**
      * FROM and WHERE clauses selecting the PSEs eligible to the main feed (alias "pse").
      * The LIA feed reuses them so that every LIA offer also exists in the main feed.
+     * Must end with the WHERE clause: callers append their own GROUP BY.
      */
-    public function getEligibilityFromClause(): string
+    public function getEligibilityFromAndWhereClause(): string
     {
         return '
             FROM `product_sale_elements`AS pse

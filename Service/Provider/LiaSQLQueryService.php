@@ -26,7 +26,8 @@ class LiaSQLQueryService
     }
 
     /**
-     * Only PSEs eligible to the main feed are exported: Google rejects any LIA offer missing from it.
+     * Only PSEs eligible to the main feed are exported, including its online stock rule:
+     * Google rejects any LIA offer missing from it.
      *
      * @return \PDOStatement
      */
@@ -38,7 +39,7 @@ class LiaSQLQueryService
             WITH RECURSIVE ' . $this->sqlQueryService->getEligibilityCommonTableExpressions() . ',
             eligible_pse AS (
                 SELECT pse.id
-                ' . $this->sqlQueryService->getEligibilityFromClause() . '
+                ' . $this->sqlQueryService->getEligibilityFromAndWhereClause() . '
                 GROUP BY pse.id
             )
 
