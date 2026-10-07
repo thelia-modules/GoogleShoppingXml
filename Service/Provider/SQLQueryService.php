@@ -11,6 +11,15 @@ class SQLQueryService
     const ELIGIBILITY_CURRENCY_PARAMETER = ':eligibility_currency_id';
 
     /**
+     * Same rule as ProductSaleElements::getPricesByCurrency(): the price stored for the feed currency,
+     * unless missing or flagged from_default_currency, in which case the default currency price is converted.
+     * currency.rate is a FLOAT column: going through CHAR reads it as PHP does (1.26, not 1.2599999905).
+     */
+    const ELIGIBILITY_RATE = 'CAST(CAST(feed_currency.rate AS CHAR) AS DECIMAL(20,10)) / CAST(CAST(default_currency.rate AS CHAR) AS DECIMAL(20,10))';
+    const ELIGIBILITY_PRICE = 'COALESCE(feed_price.price, CAST(default_price.price * ' . self::ELIGIBILITY_RATE . ' AS DECIMAL(16,6)))';
+    const ELIGIBILITY_PROMO_PRICE = 'COALESCE(feed_price.promo_price, CAST(default_price.promo_price * ' . self::ELIGIBILITY_RATE . ' AS DECIMAL(16,6)))';
+
+    /**
      * @param string $locale
      * @param int $currencyId
      */
@@ -28,7 +37,7 @@ class SQLQueryService
                 IF(pse.quantity>0, "in stock", "out of stock") AS "availability",
                 CONCAT(@BASEURL := "' . $baseUrl . '",rurl.url) AS "link",
                 productimg.id AS "image_link",
-                IF(pse.promo=1, pp.promo_price, pp.price) AS "price",
+                IF(pse.promo=1, ' . self::ELIGIBILITY_PROMO_PRICE . ', ' . self::ELIGIBILITY_PRICE . ') AS "price",
                 bi.title AS "brand",
                 IF(pse.ean_code!="", "yes", "no") AS "identifier_exists",
                 pse.ean_code AS "gtin",
@@ -98,7 +107,10 @@ class SQLQueryService
             JOIN product_i18n AS pi ON p.id = pi.id
             JOIN attribute_title AS attrib ON attrib.id = pse.id
             JOIN rewriting_url AS rurl ON rurl.view = "product" AND rurl.view_id = p.id
-            JOIN product_price AS pp ON pp.product_sale_elements_id = pse.id AND pp.currency_id = ' . self::ELIGIBILITY_CURRENCY_PARAMETER . '
+            JOIN currency AS feed_currency ON feed_currency.id = ' . self::ELIGIBILITY_CURRENCY_PARAMETER . '
+            JOIN currency AS default_currency ON default_currency.by_default = 1
+            JOIN product_price AS default_price ON default_price.product_sale_elements_id = pse.id AND default_price.currency_id = default_currency.id
+            LEFT JOIN product_price AS feed_price ON feed_price.product_sale_elements_id = pse.id AND feed_price.currency_id = feed_currency.id AND feed_price.from_default_currency = 0
             JOIN brand AS b ON b.id = p.brand_id
             JOIN brand_i18n AS bi ON b.id = bi.id
             JOIN product_category AS pc ON pc.product_id=p.id AND pc.default_category=1
