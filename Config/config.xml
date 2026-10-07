@@ -36,6 +36,7 @@
         <service id="googleshoppingxml.sqlQueryService" class="GoogleShoppingXml\Service\Provider\SQLQueryService">
         </service>
         <service id="googleshoppingxml.liaSqlQueryService" class="GoogleShoppingXml\Service\Provider\LiaSQLQueryService">
+            <argument type="service" id="googleshoppingxml.sqlQueryService" />
         </service>
         <service id="googleshoppingxml.shippingService" class="GoogleShoppingXml\Service\ShippingService">
             <argument type="service" id="service_container" />

@@ -57,7 +57,10 @@ class LiaProductProvider
         $taxCalculator = new Calculator();
         $taxeRules = $this->getTaxeRules();
 
-        $resultStatement = $this->liaSqlQueryService->getPses($feed->getCurrencyId());
+        $resultStatement = $this->liaSqlQueryService->getPses(
+            $feed->getCurrencyId(),
+            $feed->getLang()->getLocale()
+        );
 
         $skippedPseIds = [];
 
