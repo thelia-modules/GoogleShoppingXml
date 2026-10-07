@@ -67,7 +67,7 @@ class LiaSQLQueryService
         /** @var \PDOStatement $stmt */
         $stmt = $con->prepare($sql);
         $stmt->bindValue(':currency_id', $currencyId, \PDO::PARAM_INT);
-        $this->sqlQueryService->bindEligibilityLocale($stmt, $locale);
+        $this->sqlQueryService->bindEligibilityParameters($stmt, $locale, $currencyId);
         $stmt->execute();
 
         return $stmt;

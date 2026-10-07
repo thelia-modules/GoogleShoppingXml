@@ -8,11 +8,13 @@ use Thelia\Tools\URL;
 class SQLQueryService
 {
     const ELIGIBILITY_LOCALE_PARAMETERS = [':p0', ':p1', ':p2', ':p3', ':p4'];
+    const ELIGIBILITY_CURRENCY_PARAMETER = ':eligibility_currency_id';
 
     /**
      * @param string $locale
+     * @param int $currencyId
      */
-    public function getPses(string $locale)
+    public function getPses(string $locale, int $currencyId)
     {
         $baseUrl = URL::getInstance()->absoluteUrl('/');
 
@@ -43,7 +45,7 @@ class SQLQueryService
         /** @var PDOStatement $stmt */
         $stmt = $con->prepare($sql);
 
-        $this->bindEligibilityLocale($stmt, $locale);
+        $this->bindEligibilityParameters($stmt, $locale, $currencyId);
 
         $stmt->execute();
 
@@ -96,7 +98,7 @@ class SQLQueryService
             JOIN product_i18n AS pi ON p.id = pi.id
             JOIN attribute_title AS attrib ON attrib.id = pse.id
             JOIN rewriting_url AS rurl ON rurl.view = "product" AND rurl.view_id = p.id
-            JOIN product_price AS pp ON pp.product_sale_elements_id = pse.id
+            JOIN product_price AS pp ON pp.product_sale_elements_id = pse.id AND pp.currency_id = ' . self::ELIGIBILITY_CURRENCY_PARAMETER . '
             JOIN brand AS b ON b.id = p.brand_id
             JOIN brand_i18n AS bi ON b.id = bi.id
             JOIN product_category AS pc ON pc.product_id=p.id AND pc.default_category=1
@@ -124,11 +126,14 @@ class SQLQueryService
     /**
      * @param \PDOStatement $stmt
      * @param string $locale
+     * @param int $currencyId
      */
-    public function bindEligibilityLocale($stmt, string $locale)
+    public function bindEligibilityParameters($stmt, string $locale, int $currencyId)
     {
         foreach (self::ELIGIBILITY_LOCALE_PARAMETERS as $parameter) {
             $stmt->bindValue($parameter, $locale);
         }
+
+        $stmt->bindValue(self::ELIGIBILITY_CURRENCY_PARAMETER, $currencyId, \PDO::PARAM_INT);
     }
 }

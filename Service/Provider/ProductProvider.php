@@ -71,7 +71,7 @@ class ProductProvider
         $taxeRules = $this->getTaxeRules();
 
         /** @var  $resultStatement */
-        $resultStatement = $this->sqlQueryService->getPses($locale);
+        $resultStatement = $this->sqlQueryService->getPses($locale, $feed->getCurrencyId());
         $shipping = $this->shipingService->buildShippingArray($feed, $moneyFormat);
 
         while ($row = $resultStatement->fetch(PDO::FETCH_ASSOC)) {
