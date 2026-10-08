@@ -6,6 +6,13 @@ use Propel\Runtime\Propel;
 
 class LiaSQLQueryService
 {
+    protected $sqlQueryService;
+
+    public function __construct(SQLQueryService $sqlQueryService)
+    {
+        $this->sqlQueryService = $sqlQueryService;
+    }
+
     public static function isCompatible()
     {
         $stmt = Propel::getConnection()->prepare(
@@ -19,27 +26,40 @@ class LiaSQLQueryService
     }
 
     /**
+     * Only PSEs eligible to the main feed are exported, including its online stock rule:
+     * Google rejects any LIA offer missing from it.
+     *
      * @return \PDOStatement
      */
-    public function getPses(int $currencyId)
+    public function getPses(int $currencyId, string $locale)
     {
-        // TODO: When per-store pricing is implemented, replace the JOIN on product_price
+        // TODO: When per-store pricing is implemented, replace the eligible_pse prices
         // with a JOIN on a future dealer_product_price table (dealer_id + pse_id -> price).
         $sql = '
+            WITH RECURSIVE ' . $this->sqlQueryService->getEligibilityCommonTableExpressions() . ',
+            eligible_pse AS (
+                SELECT
+                    pse.id,
+                    ' . SQLQueryService::ELIGIBILITY_PRICE . ' AS price,
+                    ' . SQLQueryService::ELIGIBILITY_PROMO_PRICE . ' AS promo_price
+                ' . $this->sqlQueryService->getEligibilityFromAndWhereClause() . '
+                GROUP BY pse.id
+            )
+
             SELECT
                 pse.id AS "id",
                 dsc.google_merchant_store_id AS "store_code",
                 ds.stock AS "quantity",
                 pse.promo AS "promo",
-                pp.price AS "price",
-                pp.promo_price AS "promo_price",
+                eligible_pse.price AS "price",
+                eligible_pse.promo_price AS "promo_price",
                 p.tax_rule_id AS "TAX_RULE_ID"
-            FROM product_sale_elements AS pse
+            FROM eligible_pse
+            JOIN product_sale_elements AS pse ON pse.id = eligible_pse.id
             JOIN product AS p ON pse.product_id = p.id
             JOIN dealer_stock AS ds ON ds.pse_id = pse.id
             JOIN dealer_stock_config AS dsc ON dsc.dealer_id = ds.dealer_id
-            JOIN product_price AS pp ON pp.product_sale_elements_id = pse.id AND pp.currency_id = :currency_id
-            WHERE p.visible = 1
+            WHERE ds.stock > 0
               AND dsc.google_merchant_store_id IS NOT NULL
               AND dsc.google_merchant_store_id != ""
         ';
@@ -48,7 +68,7 @@ class LiaSQLQueryService
 
         /** @var \PDOStatement $stmt */
         $stmt = $con->prepare($sql);
-        $stmt->bindValue(':currency_id', $currencyId, \PDO::PARAM_INT);
+        $this->sqlQueryService->bindEligibilityParameters($stmt, $locale, $currencyId);
         $stmt->execute();
 
         return $stmt;
