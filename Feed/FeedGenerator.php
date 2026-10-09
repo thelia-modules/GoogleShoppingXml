@@ -61,15 +61,15 @@ final class FeedGenerator
     }
 
     /**
-     * Takes the lock of the generation, so that two runs (overlapping scheduled tasks) never write the
-     * same files at once. Null when another run holds it; released when the handle is closed.
+     * Takes the lock of the generation of a feed, so that two runs (an overlapping scheduled task, the back
+     * office) never write its file at once. Null when another run holds it; released when the handle is closed.
      *
      * @return resource|null
      */
-    public static function tryLock()
+    private static function tryLock(GoogleshoppingxmlFeed $feed)
     {
         self::ensureDirectory();
-        $handle = fopen(self::FILES_DIRECTORY.'.generate.lock', 'c');
+        $handle = fopen(self::FILES_DIRECTORY.'.generate-'.(int) $feed->getId().'.lock', 'c');
         if (false === $handle) {
             throw FeedGenerationException::notWritable(self::FILES_DIRECTORY);
         }
@@ -83,12 +83,17 @@ final class FeedGenerator
     }
 
     /**
-     * @return int the number of items written
+     * @return int|null the number of items written, null when another generation of the feed is running (nothing done)
      *
      * @throws FeedGenerationException when the file is not replaced
      */
-    public function generate(GoogleshoppingxmlFeed $feed, ?FeedSettings $settings = null, ?int $limit = null): int
+    public function generate(GoogleshoppingxmlFeed $feed, ?FeedSettings $settings = null, ?int $limit = null): ?int
     {
+        $lock = self::tryLock($feed);
+        if (null === $lock) {
+            return null;
+        }
+
         $logger = GoogleshoppingxmlLogQuery::create();
 
         try {
@@ -97,6 +102,8 @@ final class FeedGenerator
             $logger->logFatal($feed, null, $failure->getMessage(), $failure instanceof FeedGenerationException ? null : $failure->getFile().' at line '.$failure->getLine());
 
             throw $failure instanceof FeedGenerationException ? $failure : new FeedGenerationException($failure->getMessage(), 0, $failure);
+        } finally {
+            fclose($lock);
         }
     }
 
@@ -214,6 +221,11 @@ final class FeedGenerator
         $additionalFieldEvent = new AdditionalFieldEvent($row->productSaleElementsId);
         $this->dispatcher->dispatch($additionalFieldEvent, AdditionalFieldEvent::ADD_FIELD_EVENT);
         foreach ($additionalFieldEvent->getFields() as $name => $value) {
+            // A name that is not an XML element name would break the whole file: left out and logged.
+            if (1 !== preg_match(FeedItem::FIELD_NAME, (string) $name)) {
+                $logger->logWarning($feed, $row->productSaleElementsId, $this->translator->trans('Field "%field" left out: not a valid XML field name.', ['%field' => (string) $name], GoogleShoppingXml::DOMAIN_NAME));
+                continue;
+            }
             $item->set((string) $name, (string) $value);
         }
 
@@ -483,7 +495,7 @@ final class FeedGenerator
         $associations = ['fixed' => [], 'attributes' => [], 'features' => [], 'feature_ids' => []];
         foreach (GoogleshoppingxmlGoogleFieldAssociationQuery::create()->find() as $association) {
             $name = (string) $association->getGoogleField();
-            if (1 !== preg_match('/^[a-z][a-z0-9_]*$/', $name) || \in_array($name, GoogleFieldAssociationController::FIELDS_NATIVELY_DEFINED, true)) {
+            if (1 !== preg_match(FeedItem::FIELD_NAME, $name) || \in_array($name, GoogleFieldAssociationController::FIELDS_NATIVELY_DEFINED, true)) {
                 continue;
             }
 

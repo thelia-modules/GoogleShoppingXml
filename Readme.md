@@ -56,7 +56,8 @@ php bin/console googleshopping:generateXML --feed="Feed label"   # one feed, by 
 Each feed is generated in its own language: when the shop has one domain per language, its links and image
 addresses are on the domain of that language. The file is written next to its final name
 (`local/GoogleShoppingXML/<label>.xml`) and renamed once complete: a failed generation leaves the previous feed
-in place, is written in the feed log, and the command exits with code 1. Two runs never overlap (lock file).
+in place, is written in the feed log, and the command exits with code 1. Two generations of the same feed never
+overlap (lock file per feed, taken by the command and by the back office alike).
 
 Rules, in this order: a combination of a product offline, excluded in the back office (Modules tab of the
 product), or without stock when the module leaves those out, is skipped; listeners of `FeedItemEvent` may then
@@ -92,3 +93,21 @@ public function applyRules(FeedItemEvent $event): void
 ```
 
 `AdditionalFieldEvent` is still dispatched for every item, before `FeedItemEvent`.
+
+## Upgrade notes (4.0 to 4.1)
+
+- Links: `?variant=<id>` is replaced by `?ref=<reference of the combination>`, the parameter Flexy reads. A listener
+  of `FeedItemEvent` can set another link (`getProductUrl()` gives the address of the product on the feed domain).
+- `googleshopping:generateXML` without `--feed` now generates every feed (4.0: the first one only). `--feed` takes
+  the label or the id.
+- Items missing a title, description, link, image, price or brand, or with an EAN refused by the EAN rule, are left
+  out and logged (4.0 wrote them as they were). Check the Log tab after the first generation.
+- A feed with no item, an unknown feed or any error leaves the previous file and exits with code 1: plug the exit
+  code into the supervision of the scheduled task.
+- The back-office generation is a POST with the session token, reserved to administrators who may update the module
+  (route `googleshoppingxml.generatefeedxml`, now under `/admin`).
+- `Service\Provider\ProductProvider`, `Service\Provider\SQLQueryService`, `Service\XmlGenerator` and
+  `Service\GoogleModel\GoogleProductModel` are no longer used by the module and will be removed in the next major;
+  the "Enable SQL 8 optimisations" switch has no effect any more.
+- New table `googleshoppingxml_product_excluded` (`Config/update/4.1.0.sql`), exposed on the admin API of the
+  combinations (`GoogleShoppingXmlProductExcluded.isExcluded`).

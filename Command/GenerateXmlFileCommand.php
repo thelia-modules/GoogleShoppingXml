@@ -59,13 +59,6 @@ class GenerateXmlFileCommand extends ContainerAwareCommand
             return Command::SUCCESS;
         }
 
-        $lock = FeedGenerator::tryLock();
-        if (null === $lock) {
-            $output->writeln('<comment>Another generation is running: nothing done.</comment>');
-
-            return Command::SUCCESS;
-        }
-
         $limit = filter_var($input->getOption('limit'), \FILTER_VALIDATE_INT);
         $failed = false;
 
@@ -74,7 +67,9 @@ class GenerateXmlFileCommand extends ContainerAwareCommand
 
             try {
                 $written = $this->feedGenerator->generate($feed, null, false !== $limit && $limit > 0 ? $limit : null);
-                $output->writeln(sprintf('%s: %d items, %s', $feed->getLabel(), $written, FeedGenerator::pathOf($feed)));
+                $output->writeln(null === $written
+                    ? sprintf('<comment>%s: another generation is running, nothing done.</comment>', $feed->getLabel())
+                    : sprintf('%s: %d items, %s', $feed->getLabel(), $written, FeedGenerator::pathOf($feed)));
             } catch (FeedGenerationException $exception) {
                 $output->writeln(sprintf('<error>%s: %s</error>', $feed->getLabel(), $exception->getMessage()));
                 $failed = true;
@@ -82,8 +77,6 @@ class GenerateXmlFileCommand extends ContainerAwareCommand
                 $this->getContainer()->get('request_stack')?->pop();
             }
         }
-
-        fclose($lock);
 
         return $failed ? Command::FAILURE : Command::SUCCESS;
     }

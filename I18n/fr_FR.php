@@ -68,4 +68,5 @@ return array(
     'This product has no combination.' => 'Ce produit n a aucune déclinaison.',
     'Check the combinations to keep out of the Google Shopping feeds.' => 'Cochez les déclinaisons à écarter des flux Google Shopping.',
     'Google Shopping exclusions' => 'Exclusions Google Shopping',
+    'Field "%field" left out: not a valid XML field name.' => 'Champ "%field" écarté : ce n est pas un nom de champ XML valide.',
 );

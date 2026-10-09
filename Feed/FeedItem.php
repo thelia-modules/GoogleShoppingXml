@@ -11,6 +11,9 @@ namespace GoogleShoppingXml\Feed;
  */
 final class FeedItem
 {
+    /** The names Google expects, written after "g:": lowercase letters, digits, underscores. */
+    public const FIELD_NAME = '/^[a-z][a-z0-9_]*$/';
+
     /**
      * @param array<string, string|list<string>|list<array<string, string>>> $fields
      */
@@ -38,7 +41,7 @@ final class FeedItem
      */
     public function set(string $name, string|array $value): self
     {
-        if (1 !== preg_match('/^[a-z][a-z0-9_]*$/', $name)) {
+        if (1 !== preg_match(self::FIELD_NAME, $name)) {
             throw new \InvalidArgumentException(\sprintf('"%s" is not a valid Google Shopping field name.', $name));
         }
 
