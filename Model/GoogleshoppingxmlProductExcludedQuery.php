@@ -1,0 +1,9 @@
+<?php
+
+namespace GoogleShoppingXml\Model;
+
+use GoogleShoppingXml\Model\Base\GoogleshoppingxmlProductExcludedQuery as BaseGoogleshoppingxmlProductExcludedQuery;
+
+class GoogleshoppingxmlProductExcludedQuery extends BaseGoogleshoppingxmlProductExcludedQuery
+{
+}

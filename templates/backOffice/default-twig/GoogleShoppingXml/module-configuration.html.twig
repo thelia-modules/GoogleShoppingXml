@@ -304,6 +304,25 @@
 
                 <div class="col-md-4">
                     <div class="card mb-3">
+                        <div class="card-header">{{ 'Feed content'|trans({}, 'googleshoppingxml') }}</div>
+                        <div class="card-body">
+                            {% form_theme feed_settings_form with bo_form_themes only %}
+                            {{ form_start(feed_settings_form, {action: path('googleshoppingxml.feed_settings.save'), method: 'post'}) }}
+                            {{ form_row(feed_settings_form.exclude_out_of_stock, {label: 'Leave out the combinations without stock'|trans({}, 'googleshoppingxml')}) }}
+                            {{ form_row(feed_settings_form.color_feature_ids, {label: 'Features read for the color (ids)'|trans({}, 'googleshoppingxml')}) }}
+                            {{ form_row(feed_settings_form.gender_feature_ids, {label: 'Features read for the gender (ids)'|trans({}, 'googleshoppingxml')}) }}
+                            {{ form_row(feed_settings_form.material_feature_ids, {label: 'Features read for the material (ids)'|trans({}, 'googleshoppingxml')}) }}
+                            {{ form_row(feed_settings_form.size_attribute_ids, {label: 'Attributes read for the size (ids, every attribute when empty)'|trans({}, 'googleshoppingxml')}) }}
+                            {{ form_row(feed_settings_form.subtitle_detail, {label: 'Send the product subtitle as a product detail'|trans({}, 'googleshoppingxml')}) }}
+                            {{ form_row(feed_settings_form.image_filter, {label: 'Image filter set'|trans({}, 'googleshoppingxml')}) }}
+                            <button class="btn btn-success form-control mt-2" type="submit"><i class="bi bi-check-lg"></i> {{ 'Save'|trans({}, d) }}</button>
+                            {{ form_end(feed_settings_form) }}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="card mb-3">
                         <div class="card-header">{{ 'Compatibility SQL'|trans({}, d) }}</div>
                         <div class="card-body">
                             <form action="{{ path('googleshoppingxml.advanced.compatibility-sql') }}" method="post">

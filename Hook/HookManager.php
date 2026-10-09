@@ -3,13 +3,17 @@
 namespace GoogleShoppingXml\Hook;
 
 use GoogleShoppingXml\Controller\FeedXmlController;
+use GoogleShoppingXml\Feed\FeedSettings;
 use GoogleShoppingXml\Form\CompatibilitySqlForm;
+use GoogleShoppingXml\Form\ExclusionForm;
+use GoogleShoppingXml\Form\FeedSettingsForm;
 use GoogleShoppingXml\Form\FeedManagementForm;
 use GoogleShoppingXml\Form\GoogleTaxonomyForm;
 use GoogleShoppingXml\GoogleShoppingXml;
 use GoogleShoppingXml\Model\GoogleshoppingxmlFeedQuery;
 use GoogleShoppingXml\Model\GoogleshoppingxmlGoogleFieldAssociationQuery;
 use GoogleShoppingXml\Model\Map\GoogleshoppingxmlTaxonomyTableMap;
+use GoogleShoppingXml\Service\ExclusionRepository;
 use Propel\Runtime\ActiveQuery\Criteria;
 use Propel\Runtime\ActiveQuery\Join;
 use Propel\Runtime\Propel;
@@ -30,6 +34,7 @@ class HookManager extends BaseHook
 {
     public function __construct(
         private readonly TheliaFormFactory $formFactory,
+        private readonly ExclusionRepository $exclusionRepository,
         ?EventDispatcherInterface $dispatcher = null,
         ?ParserResolver $parserResolver = null,
     ) {
@@ -50,6 +55,9 @@ class HookManager extends BaseHook
             ],
             'home.js' => [
                 ['type' => 'back', 'method' => 'onHomeJs'],
+            ],
+            'product.tab-content' => [
+                ['type' => 'back', 'method' => 'onProductTabContent'],
             ],
         ];
     }
@@ -89,9 +97,42 @@ class HookManager extends BaseHook
             'features' => $this->getFeatures($locale),
             'associated_categories' => $this->getAssociatedCategories($langId, $locale),
             'compatibility_sql_form' => $compatibilitySqlForm->getForm()->createView(),
+            'feed_settings_form' => $this->feedSettingsForm(),
             'feed_form' => $this->formFactory->createForm(FeedManagementForm::getName())->getForm()->createView(),
             'taxonomy_form' => $this->formFactory->createForm(GoogleTaxonomyForm::getName())->getForm()->createView(),
         ]));
+    }
+
+    /**
+     * The combinations of the product, each with a box to keep it out of the feeds.
+     */
+    public function onProductTabContent(HookRenderEvent $event): void
+    {
+        $productId = (int) $event->getArgument('product');
+
+        $exclusionForm = $this->formFactory->createForm(ExclusionForm::class, data: [
+            'excluded_combinations' => $this->exclusionRepository->excludedCombinationIdsOfProduct($productId),
+        ]);
+
+        $event->add($this->render('GoogleShoppingXml/product-tab-content.html.twig', [
+            'product_id' => $productId,
+            'exclusion_form' => $exclusionForm->createView()->getView(),
+        ]));
+    }
+
+    private function feedSettingsForm(): mixed
+    {
+        $settings = FeedSettings::fromConfiguration();
+
+        return $this->formFactory->createForm(FeedSettingsForm::getName(), data: [
+            'exclude_out_of_stock' => $settings->excludeOutOfStock,
+            'color_feature_ids' => implode(',', $settings->colorFeatureIds),
+            'gender_feature_ids' => implode(',', $settings->genderFeatureIds),
+            'material_feature_ids' => implode(',', $settings->materialFeatureIds),
+            'size_attribute_ids' => implode(',', $settings->sizeAttributeIds),
+            'subtitle_detail' => $settings->subtitleDetail,
+            'image_filter' => $settings->imageFilter,
+        ])->getForm()->createView();
     }
 
     public function onHomeBottom(HookRenderEvent $event): void
