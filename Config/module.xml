@@ -12,8 +12,9 @@
     <languages>
         <language>en_US</language>
         <language>fr_FR</language>
+        <language>de_DE</language>
     </languages>
-    <version>4.0.1</version>
+    <version>4.1.0</version>
     <authors>
         <author>
             <name>Bertrand TOURLONIAS</name>

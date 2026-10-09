@@ -19,6 +19,17 @@ class GoogleShoppingXml extends BaseModule
 
     const ENABLE_SQL_8_COMPATIBILITY = 'enable_sql_8_compatibility';
 
+    /** Settings of the feed content (Feed\FeedSettings). */
+    public const EAN_RULE = 'ean_rule';
+    public const EXCLUDE_OUT_OF_STOCK = 'googleshoppingxml.exclude_out_of_stock';
+    public const FEATURE_COLOR_IDS = 'googleshoppingxml.feature_color_ids';
+    public const FEATURE_GENDER_IDS = 'googleshoppingxml.feature_gender_ids';
+    public const FEATURE_MATERIAL_IDS = 'googleshoppingxml.feature_material_ids';
+    public const ATTRIBUTE_SIZE_IDS = 'googleshoppingxml.attribute_size_ids';
+    public const SUBTITLE_DETAIL = 'googleshoppingxml.subtitle_detail';
+    public const IMAGE_FILTER = 'googleshoppingxml.image_filter';
+    public const DEFAULT_IMAGE_FILTER = 'default';
+
     public function preActivation(?ConnectionInterface $con = null): bool
     {
         if (!$this->getConfigValue('is_initialized', false)) {
@@ -53,7 +64,7 @@ class GoogleShoppingXml extends BaseModule
     public static function configureServices(ServicesConfigurator $servicesConfigurator): void
     {
         $servicesConfigurator->load(self::getModuleCode().'\\', __DIR__)
-            ->exclude([__DIR__.'/I18n/*', __DIR__.'/Config/**/*.php', __DIR__.'/GoogleShoppingXml.php'])
+            ->exclude([__DIR__.'/I18n/*', __DIR__.'/Config/**/*.php', __DIR__.'/GoogleShoppingXml.php', __DIR__.'/Tests/*'])
             ->autowire(true)
             ->autoconfigure(true);
     }

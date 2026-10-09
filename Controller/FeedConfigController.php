@@ -5,17 +5,16 @@ namespace GoogleShoppingXml\Controller;
 use GoogleShoppingXml\Form\FeedManagementForm;
 use GoogleShoppingXml\GoogleShoppingXml;
 use GoogleShoppingXml\Model\GoogleshoppingxmlFeedQuery;
-use GoogleShoppingXml\Model\GoogleshoppingxmlLogQuery;
-use GoogleShoppingXml\Service\GoogleShoppingXmlService;
-use GoogleShoppingXml\Service\Provider\ProductProvider;
-use GoogleShoppingXml\Service\XmlGenerator;
+use GoogleShoppingXml\Exception\FeedGenerationException;
+use GoogleShoppingXml\Feed\FeedGenerator;
 use Thelia\Controller\Admin\BaseAdminController;
 use Thelia\Core\HttpFoundation\Request;
 use Thelia\Core\Security\AccessManager;
+use Thelia\Core\Security\Exception\TokenAuthenticationException;
 use Thelia\Core\Security\Resource\AdminResources;
 use Thelia\Core\Translation\Translator;
 use Thelia\Tools\TokenProvider;
-use Symfony\Component\Filesystem\Filesystem;
+use Symfony\Component\HttpFoundation\Response;
 
 class FeedConfigController extends BaseAdminController
 {
@@ -80,7 +79,11 @@ class FeedConfigController extends BaseAdminController
             return $response;
         }
 
-        $tokenProvider->checkToken((string) $request->request->get('_token'));
+        try {
+            $tokenProvider->checkRequestToken($request);
+        } catch (TokenAuthenticationException $exception) {
+            return $this->errorPage($exception, Response::HTTP_FORBIDDEN);
+        }
 
         $feedId = $request->request->get('id_feed_to_delete');
 
@@ -101,42 +104,34 @@ class FeedConfigController extends BaseAdminController
 
 
 
-    public function generateFeedXmlAction($feedId, ProductProvider $productProviderService, XmlGenerator $xmlGenerator)
+    /**
+     * Generates a feed from the back office, with the same generator as the command. Reserved to an
+     * administrator who may update the module, with the token of the session: a generation reads the
+     * whole catalogue.
+     */
+    public function generateFeedXmlAction($feedId, Request $httpRequest, TokenProvider $tokenProvider, FeedGenerator $feedGenerator)
     {
-        $this->logger = GoogleshoppingxmlLogQuery::create();
+        if (null !== $response = $this->checkAuth(array(AdminResources::MODULE), array('GoogleShoppingXml'), AccessManager::UPDATE)) {
+            return $response;
+        }
+
+        try {
+            $tokenProvider->checkRequestToken($httpRequest);
+        } catch (TokenAuthenticationException $exception) {
+            return $this->errorPage($exception, Response::HTTP_FORBIDDEN);
+        }
+
         $feed = GoogleshoppingxmlFeedQuery::create()->findOneById($feedId);
 
         if ($feed == null) {
             $this->pageNotFound();
         }
 
-        $fs = new Filesystem();
-
-        if (!$fs->exists(GoogleShoppingXmlService::XML_FILES_DIR)) {
-            $fs->mkdir(GoogleShoppingXmlService::XML_FILES_DIR);
-        }
-
         try {
-            $fileName = $feed->getLabel() . '.xml';
-            $filePath = GoogleShoppingXmlService::XML_FILES_DIR . $fileName;
-
-            if ($fs->exists($filePath)) {
-                $fs->remove($filePath);
-            }
-
-            $xmlGenerator->export($productProviderService->getContent($feed), $filePath);
-
-        } catch (Exception $ex) {
-            $this->logger->logFatal($feed, null, $ex->getMessage());
+            $feedGenerator->generate($feed);
+        } catch (FeedGenerationException) {
+            // Already in the feed log, shown in the Log tab; the previous file is still served.
         }
-
-        $this->logger->logSuccess($feed, null,
-            Translator::getInstance()->trans(
-                'The XML file has been successfully generated.',
-                [],
-                GoogleShoppingXml::DOMAIN_NAME
-            )
-        );
 
         return $this->generateRedirectFromRoute(
             "admin.module.configure",

@@ -82,8 +82,11 @@
                             <div class="col-md-1"><button class="btn btn-success" type="submit"><i class="bi bi-check-lg"></i></button></div>
                         </form>
                         <div class="col-md-3">
+                            <form class="d-inline-block" method="post" action="{{ path('googleshoppingxml.generatefeedxml', {feedId: feed.id}) }}">
+                                <input type="hidden" name="_token" value="{{ assignToken() }}">
+                                <button class="btn btn-primary" type="submit">{{ 'Generate'|trans({}, d) }}</button>
+                            </form>
                             <div class="btn-group">
-                                <a class="btn btn-primary" href="{{ path('googleshoppingxml.generatefeedxml', {feedId: feed.id}) }}">{{ 'Generate'|trans({}, d) }}</a>
                                 <a class="js_download_xml_feed btn btn-info" title="{{ 'Download XML'|trans({}, d) }}" href="{{ path('googleshoppingxml.getfeedxml', {feedId: feed.id}) }}" data-feedid="{{ feed.id }}" download>{{ 'XML'|trans({}, d) }}</a>
                                 <a href="#" class="js_btn_clipboard btn btn-secondary" title="{{ 'Copy XML link into clipboard'|trans({}, d) }}" data-clipboardtext="{{ path('googleshoppingxml.getfeedxml', {feedId: feed.id}) }}"><i class="bi bi-link-45deg"></i></a>
                             </div>
@@ -295,6 +298,25 @@
                                 <div class="form-check mb-3"><input class="form-check-input" type="radio" id="gtin_none" name="gtin_rule" value="none" {{ ean_rule == 'none' ? 'checked' }}><label class="form-check-label" for="gtin_none">{{ 'Do not include any EAN code'|trans({}, d) }}</label></div>
                                 <button class="btn btn-success form-control" type="submit"><i class="bi bi-check-lg"></i> {{ 'Save'|trans({}, d) }}</button>
                             </form>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="card mb-3">
+                        <div class="card-header">{{ 'Feed content'|trans({}, 'googleshoppingxml') }}</div>
+                        <div class="card-body">
+                            {% form_theme feed_settings_form with bo_form_themes only %}
+                            {{ form_start(feed_settings_form, {action: path('googleshoppingxml.feed_settings.save'), method: 'post'}) }}
+                            {{ form_row(feed_settings_form.exclude_out_of_stock, {label: 'Leave out the combinations without stock'|trans({}, 'googleshoppingxml')}) }}
+                            {{ form_row(feed_settings_form.color_feature_ids, {label: 'Features read for the color (ids)'|trans({}, 'googleshoppingxml')}) }}
+                            {{ form_row(feed_settings_form.gender_feature_ids, {label: 'Features read for the gender (ids)'|trans({}, 'googleshoppingxml')}) }}
+                            {{ form_row(feed_settings_form.material_feature_ids, {label: 'Features read for the material (ids)'|trans({}, 'googleshoppingxml')}) }}
+                            {{ form_row(feed_settings_form.size_attribute_ids, {label: 'Attributes read for the size (ids, no size when empty)'|trans({}, 'googleshoppingxml')}) }}
+                            {{ form_row(feed_settings_form.subtitle_detail, {label: 'Send the product subtitle as a product detail'|trans({}, 'googleshoppingxml')}) }}
+                            {{ form_row(feed_settings_form.image_filter, {label: 'Image filter set'|trans({}, 'googleshoppingxml')}) }}
+                            <button class="btn btn-success form-control mt-2" type="submit"><i class="bi bi-check-lg"></i> {{ 'Save'|trans({}, d) }}</button>
+                            {{ form_end(feed_settings_form) }}
                         </div>
                     </div>
                 </div>
