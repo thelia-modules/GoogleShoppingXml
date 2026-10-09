@@ -82,8 +82,11 @@
                             <div class="col-md-1"><button class="btn btn-success" type="submit"><i class="bi bi-check-lg"></i></button></div>
                         </form>
                         <div class="col-md-3">
+                            <form class="d-inline-block" method="post" action="{{ path('googleshoppingxml.generatefeedxml', {feedId: feed.id}) }}">
+                                <input type="hidden" name="_token" value="{{ assignToken() }}">
+                                <button class="btn btn-primary" type="submit">{{ 'Generate'|trans({}, d) }}</button>
+                            </form>
                             <div class="btn-group">
-                                <a class="btn btn-primary" href="{{ path('googleshoppingxml.generatefeedxml', {feedId: feed.id}) }}">{{ 'Generate'|trans({}, d) }}</a>
                                 <a class="js_download_xml_feed btn btn-info" title="{{ 'Download XML'|trans({}, d) }}" href="{{ path('googleshoppingxml.getfeedxml', {feedId: feed.id}) }}" data-feedid="{{ feed.id }}" download>{{ 'XML'|trans({}, d) }}</a>
                                 <a href="#" class="js_btn_clipboard btn btn-secondary" title="{{ 'Copy XML link into clipboard'|trans({}, d) }}" data-clipboardtext="{{ path('googleshoppingxml.getfeedxml', {feedId: feed.id}) }}"><i class="bi bi-link-45deg"></i></a>
                             </div>

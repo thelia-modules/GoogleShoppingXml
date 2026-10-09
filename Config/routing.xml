@@ -29,7 +29,7 @@
         <default key="_controller">GoogleShoppingXml\Controller\FeedConfigController::deleteFeedAction</default>
     </route>
 
-    <route id="googleshoppingxml.generatefeedxml" path="/googleshoppingxml/feed/xml/{feedId}/generate">
+    <route id="googleshoppingxml.generatefeedxml" path="/admin/module/googleshoppingxml/feed/xml/{feedId}/generate" methods="POST">
         <default key="_controller">GoogleShoppingXml\Controller\FeedConfigController::generateFeedXmlAction</default>
         <requirement key="feedId">\d+</requirement>
     </route>
@@ -79,8 +79,4 @@
         <default key="_controller">GoogleShoppingXml\Controller\LogController::getLogAction</default>
     </route>
 
-    <!-- IMAGE GENERATION  -->
-    <route id="googleshoppingxml.image.get" path="/cache/images/product/{image}" methods="GET">
-        <default key="_controller">GoogleShoppingXml\Controller\ImageGenerationController::getImage</default>
-    </route>
 </routes>

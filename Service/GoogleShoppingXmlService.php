@@ -455,7 +455,7 @@ class GoogleShoppingXmlService
         }
 
         $additionalFieldEvent = new AdditionalFieldEvent($pse['ID']);
-        $this->eventDispatcher->dispatch(AdditionalFieldEvent::ADD_FIELD_EVENT, $additionalFieldEvent);
+        $this->eventDispatcher->dispatch($additionalFieldEvent, AdditionalFieldEvent::ADD_FIELD_EVENT);
 
         foreach ($additionalFieldEvent->getFields() as $fieldName => $fieldValue) {
             $str .= "<g:{$fieldName}>{$this->xmlSafeEncode($fieldValue)}</g:{$fieldName}>".PHP_EOL;
@@ -745,7 +745,7 @@ class GoogleShoppingXmlService
         if ($pse['IMAGE_NAME'] != null) {
             $imageEvent = $this->createImageEvent($pse['IMAGE_NAME'], 'product');
             try {
-                $this->eventDispatcher->dispatch(TheliaEvents::IMAGE_PROCESS, $imageEvent);
+                $this->eventDispatcher->dispatch($imageEvent, TheliaEvents::IMAGE_PROCESS);
                 $pse['IMAGE_PATH'] = $imageEvent->getFileUrl();
             }catch (\Exception $e){
                 $pse['IMAGE_PATH'] = null;

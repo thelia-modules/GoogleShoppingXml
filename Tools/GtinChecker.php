@@ -22,17 +22,17 @@ class GtinChecker
         return $lastPart == $checkSum;
     }
 
+    /**
+     * The weights run from the right of the code without its check digit: 3 for the last digit, then 1, 3...
+     * (GS1). Counted from the left, an EAN-13 (twelve digits before the check digit) got the weights of the
+     * other lengths swapped and most valid codes were refused.
+     */
     protected function gtinCheckSum($code)
     {
         $total = 0;
 
-        $codeArray = str_split($code);
-        foreach (array_values($codeArray) as $i => $c) {
-            if ($i % 2 == 1) {
-                $total = $total + $c;
-            } else {
-                $total = $total + (3*$c);
-            }
+        foreach (array_reverse(str_split($code)) as $i => $c) {
+            $total += 0 === $i % 2 ? 3 * (int) $c : (int) $c;
         }
         $checkDigit = (10 - ($total % 10)) % 10;
         return $checkDigit;

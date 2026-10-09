@@ -101,8 +101,18 @@ class FeedConfigController extends BaseAdminController
 
 
 
-    public function generateFeedXmlAction($feedId, ProductProvider $productProviderService, XmlGenerator $xmlGenerator)
+    /**
+     * Reserved to an administrator who may update the module, with the token of the session: a generation reads the
+     * whole catalogue.
+     */
+    public function generateFeedXmlAction($feedId, Request $httpRequest, TokenProvider $tokenProvider, ProductProvider $productProviderService, XmlGenerator $xmlGenerator)
     {
+        if (null !== $response = $this->checkAuth(array(AdminResources::MODULE), array('GoogleShoppingXml'), AccessManager::UPDATE)) {
+            return $response;
+        }
+
+        $tokenProvider->checkToken((string) $httpRequest->request->get('_token'));
+
         $this->logger = GoogleshoppingxmlLogQuery::create();
         $feed = GoogleshoppingxmlFeedQuery::create()->findOneById($feedId);
 
