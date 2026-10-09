@@ -66,7 +66,7 @@ whose EAN is refused by the EAN rule, is logged as an error and skipped.
 
 Settings of the feed content (Advanced configuration tab): leave out combinations without stock, features read
 for the color (three values at most, a `#rrggbb` code removed), the gender and the material, attributes read for
-the size (every attribute when empty), product subtitle sent as a `product_detail` (labels translated in the
+the size (no `g:size` when empty), product subtitle sent as a `product_detail` (labels translated in the
 language of the feed), image filter set (`default`: the original image).
 
 ## FeedItemEvent (4.1)
@@ -106,6 +106,12 @@ public function applyRules(FeedItemEvent $event): void
   code into the supervision of the scheduled task.
 - The back-office generation is a POST with the session token, reserved to administrators who may update the module
   (route `googleshoppingxml.generatefeedxml`, now under `/admin`).
+- The store name, the store description and the address of the shop (or of the language, with one domain per
+  language) are now required: a feed whose language has none of them fails with an error instead of being written
+  with an empty channel (`store_name`, `store_description` in the configuration variables, optionally suffixed
+  with the locale, e.g. `store_name_de_DE`).
+- `g:size`: only the attributes listed in the size setting are sent; with an empty setting no `g:size` is written
+  (4.0 sent the value of every attribute of the combination as the size).
 - `Service\Provider\ProductProvider`, `Service\Provider\SQLQueryService`, `Service\XmlGenerator` and
   `Service\GoogleModel\GoogleProductModel` are no longer used by the module and will be removed in the next major;
   the "Enable SQL 8 optimisations" switch has no effect any more.

@@ -27,7 +27,7 @@ class FeedSettingsForm extends BaseForm
             ->add('color_feature_ids', TextType::class, ['required' => false, 'label' => 'Features read for the color (ids)', 'constraints' => [$idList]])
             ->add('gender_feature_ids', TextType::class, ['required' => false, 'label' => 'Features read for the gender (ids)', 'constraints' => [$idList]])
             ->add('material_feature_ids', TextType::class, ['required' => false, 'label' => 'Features read for the material (ids)', 'constraints' => [$idList]])
-            ->add('size_attribute_ids', TextType::class, ['required' => false, 'label' => 'Attributes read for the size (ids, every attribute when empty)', 'constraints' => [$idList]])
+            ->add('size_attribute_ids', TextType::class, ['required' => false, 'label' => 'Attributes read for the size (ids, no size when empty)', 'constraints' => [$idList]])
             ->add('subtitle_detail', CheckboxType::class, ['required' => false, 'label' => 'Send the product subtitle as a product detail'])
             ->add('image_filter', TextType::class, ['required' => false, 'label' => 'Image filter set', 'empty_data' => GoogleShoppingXml::DEFAULT_IMAGE_FILTER]);
     }

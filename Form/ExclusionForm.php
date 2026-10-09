@@ -27,6 +27,9 @@ class ExclusionForm extends BaseForm
         $choices = [];
         foreach ($this->exclusionRepository->combinationsOfProduct($productId, $this->editionLocale->of($this->request)) as $combination) {
             $label = '' === $combination['label'] ? $combination['reference'] : \sprintf('%s (%s)', $combination['reference'], $combination['label']);
+            if (isset($choices[$label])) {
+                $label = \sprintf('%s #%d', $label, $combination['id']);
+            }
             $choices[$label] = $combination['id'];
         }
 
@@ -36,6 +39,7 @@ class ExclusionForm extends BaseForm
             'expanded' => true,
             'label' => false,
             'choices' => $choices,
+            'choice_translation_domain' => false,
         ]);
     }
 

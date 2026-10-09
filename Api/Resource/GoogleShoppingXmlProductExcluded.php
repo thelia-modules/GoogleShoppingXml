@@ -35,15 +35,15 @@ class GoogleShoppingXmlProductExcluded implements ResourceAddonInterface
      */
     public function buildFromModel(ActiveRecordInterface|ProductSaleElements $activeRecord, PropelResourceInterface $abstractPropelResource): ResourceAddonInterface
     {
-        if (null === $productExcluded = GoogleshoppingxmlProductExcludedQuery::create()->filterByProductSaleElements($activeRecord)->findOne()) {
+        if ($activeRecord->hasVirtualColumn('GoogleShoppingXmlProductExcluded_is_excluded')) {
+            $this->setIsExcluded((bool) $activeRecord->getVirtualColumn('GoogleShoppingXmlProductExcluded_is_excluded'));
+
             return $this;
         }
 
-        $this->setIsExcluded(
-            $activeRecord->hasVirtualColumn('GoogleShoppingXmlProductExcluded_is_excluded')
-                ? (bool) $activeRecord->getVirtualColumn('GoogleShoppingXmlProductExcluded_is_excluded')
-                : (bool) $productExcluded->getIsExcluded()
-        );
+        if (null !== $productExcluded = GoogleshoppingxmlProductExcludedQuery::create()->filterByProductSaleElements($activeRecord)->findOne()) {
+            $this->setIsExcluded((bool) $productExcluded->getIsExcluded());
+        }
 
         return $this;
     }

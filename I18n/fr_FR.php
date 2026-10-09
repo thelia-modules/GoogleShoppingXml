@@ -62,7 +62,7 @@ return array(
     'Features read for the color (ids)' => 'Caractéristiques lues pour la couleur (identifiants)',
     'Features read for the gender (ids)' => 'Caractéristiques lues pour le sexe (identifiants)',
     'Features read for the material (ids)' => 'Caractéristiques lues pour la matière (identifiants)',
-    'Attributes read for the size (ids, every attribute when empty)' => 'Déclinaisons lues pour la taille (identifiants, toutes si vide)',
+    'Attributes read for the size (ids, no size when empty)' => 'Déclinaisons lues pour la taille (identifiants, aucune taille si vide)',
     'Send the product subtitle as a product detail' => 'Envoyer le sous-titre du produit comme détail du produit',
     'Image filter set' => 'Filtre d images',
     'This product has no combination.' => 'Ce produit n a aucune déclinaison.',

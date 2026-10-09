@@ -12,7 +12,7 @@ use GoogleShoppingXml\GoogleShoppingXml;
  * - excludeOutOfStock: a combination without stock is left out, when the shop checks the stock;
  * - colorFeatureIds: the features read for <g:color> (at most three values, a "#rrggbb" code removed);
  * - genderFeatureIds, materialFeatureIds: the features read for <g:gender> and <g:material>;
- * - sizeAttributeIds: the attributes read for <g:size>; empty, every attribute of the combination;
+ * - sizeAttributeIds: the attributes read for <g:size>; empty, no <g:size>;
  * - subtitleDetail: the product subtitle (chapo) sent as a <g:product_detail>;
  * - imageFilter: the image library filter set the image addresses are built with.
  */

@@ -20,6 +20,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
 use Symfony\Contracts\Translation\TranslatorInterface;
 use Thelia\Domain\Taxation\TaxEngine\TaxCalculatorFactoryInterface;
+use Thelia\Log\Tlog;
 use Thelia\Model\ConfigQuery;
 use Thelia\Model\Country;
 use Thelia\Tools\URL;
@@ -356,7 +357,7 @@ final class FeedGenerator
             $item->set('product_type', $path);
         }
 
-        $size = $this->size($row, $settings);
+        $size = self::size($row, $settings);
         if ('' !== $size) {
             $item->set('size', $size);
         }
@@ -366,7 +367,7 @@ final class FeedGenerator
                 $item->set($name, $value);
             }
         }
-        $color = $this->colors($row, $settings);
+        $color = self::colors($row, $settings);
         if ('' !== $color) {
             $item->set('color', $color);
         }
@@ -439,11 +440,14 @@ final class FeedGenerator
         return FeedSettings::EAN_RULE_CHECK_STRICT === $rule ? false : null;
     }
 
-    private function size(FeedRow $row, FeedSettings $settings): string
+    /**
+     * The values of the attributes set for the size; no attribute set, no size.
+     */
+    public static function size(FeedRow $row, FeedSettings $settings): string
     {
         $titles = [];
         foreach ($row->attributeValues as $value) {
-            if ([] === $settings->sizeAttributeIds || \in_array($value['attribute_id'], $settings->sizeAttributeIds, true)) {
+            if (\in_array($value['attribute_id'], $settings->sizeAttributeIds, true)) {
                 $titles[] = $value['title'];
             }
         }
@@ -469,7 +473,7 @@ final class FeedGenerator
      * Up to three colors, in the order of the features set, without the "#rrggbb" code some shops put
      * after the name ("Brown/#8B4513"): Google wants names.
      */
-    private function colors(FeedRow $row, FeedSettings $settings): string
+    public static function colors(FeedRow $row, FeedSettings $settings): string
     {
         $colors = [];
         foreach ($settings->colorFeatureIds as $featureId) {
@@ -647,9 +651,15 @@ final class FeedGenerator
      */
     private static function text(string $value): string
     {
-        $value = (string) preg_replace('/[^\x{9}\x{A}\x{D}\x{20}-\x{D7FF}\x{E000}-\x{FFFD}\x{10000}-\x{10FFFF}]/u', '', $value);
+        $forbidden = '/[^\x{9}\x{A}\x{D}\x{20}-\x{D7FF}\x{E000}-\x{FFFD}\x{10000}-\x{10FFFF}]/u';
+        $cleaned = preg_replace($forbidden, '', $value);
+        if (null === $cleaned) {
+            // Not valid UTF-8: the invalid bytes are replaced, and the text is reported.
+            Tlog::getInstance()->warning('GoogleShoppingXml: invalid UTF-8 in a feed text, invalid bytes replaced: '.mb_substr(mb_scrub($value, 'UTF-8'), 0, 80, 'UTF-8'));
+            $cleaned = (string) preg_replace($forbidden, '', mb_scrub($value, 'UTF-8'));
+        }
 
-        return htmlspecialchars($value, \ENT_XML1, 'UTF-8');
+        return htmlspecialchars($cleaned, \ENT_XML1, 'UTF-8');
     }
 
     private static function plainText(string $html): string
