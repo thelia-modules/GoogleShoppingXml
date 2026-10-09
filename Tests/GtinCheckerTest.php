@@ -36,6 +36,9 @@ final class GtinCheckerTest extends TestCase
         yield 'wrong check digit' => ['4006381333932'];
         yield 'too short' => ['1234'];
         yield 'not a number' => ['40063813339A1'];
+        yield 'leading space' => [' 4006381333931'];
+        yield 'exponent notation' => ['1e12'];
+        yield 'exponent notation of a valid length' => ['1e1234567890'];
         yield 'empty' => [''];
     }
 

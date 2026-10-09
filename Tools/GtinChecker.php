@@ -6,7 +6,7 @@ class GtinChecker
 {
     public function isValidGtin($gtin)
     {
-        if (!is_numeric($gtin)) {
+        if (!ctype_digit((string) $gtin)) {
             return false;
         } elseif (!in_array(strlen($gtin), array(8, 12, 13, 14, 18))) {
             return false;
