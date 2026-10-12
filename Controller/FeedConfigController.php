@@ -12,10 +12,12 @@ use GoogleShoppingXml\Service\XmlGenerator;
 use Thelia\Controller\Admin\BaseAdminController;
 use Thelia\Core\HttpFoundation\Request;
 use Thelia\Core\Security\AccessManager;
+use Thelia\Core\Security\Exception\TokenAuthenticationException;
 use Thelia\Core\Security\Resource\AdminResources;
 use Thelia\Core\Translation\Translator;
 use Thelia\Tools\TokenProvider;
 use Symfony\Component\Filesystem\Filesystem;
+use Symfony\Component\HttpFoundation\Response;
 
 class FeedConfigController extends BaseAdminController
 {
@@ -80,7 +82,11 @@ class FeedConfigController extends BaseAdminController
             return $response;
         }
 
-        $tokenProvider->checkToken((string) $request->request->get('_token'));
+        try {
+            $tokenProvider->checkRequestToken($request);
+        } catch (TokenAuthenticationException $exception) {
+            return $this->errorPage($exception, Response::HTTP_FORBIDDEN);
+        }
 
         $feedId = $request->request->get('id_feed_to_delete');
 
@@ -101,8 +107,22 @@ class FeedConfigController extends BaseAdminController
 
 
 
-    public function generateFeedXmlAction($feedId, ProductProvider $productProviderService, XmlGenerator $xmlGenerator)
+    /**
+     * Reserved to an administrator who may update the module, with the token of the session: a generation reads the
+     * whole catalogue.
+     */
+    public function generateFeedXmlAction($feedId, Request $httpRequest, TokenProvider $tokenProvider, ProductProvider $productProviderService, XmlGenerator $xmlGenerator)
     {
+        if (null !== $response = $this->checkAuth(array(AdminResources::MODULE), array('GoogleShoppingXml'), AccessManager::UPDATE)) {
+            return $response;
+        }
+
+        try {
+            $tokenProvider->checkRequestToken($httpRequest);
+        } catch (TokenAuthenticationException $exception) {
+            return $this->errorPage($exception, Response::HTTP_FORBIDDEN);
+        }
+
         $this->logger = GoogleshoppingxmlLogQuery::create();
         $feed = GoogleshoppingxmlFeedQuery::create()->findOneById($feedId);
 
