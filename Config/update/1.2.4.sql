@@ -3,9 +3,7 @@
 -- googleshoppingxml_ignore_category
 -- ---------------------------------------------------------------------
 
-DROP TABLE IF EXISTS `googleshoppingxml_ignore_category`;
-
-CREATE TABLE `googleshoppingxml_ignore_category`
+CREATE TABLE IF NOT EXISTS `googleshoppingxml_ignore_category`
 (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `is_exportable` INTEGER DEFAULT 1 NOT NULL,
