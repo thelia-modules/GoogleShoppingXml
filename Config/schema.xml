@@ -72,5 +72,13 @@
         <behavior name="timestampable" />
     </table>
 
+    <table name="googleshoppingxml_product_excluded" namespace="GoogleShoppingXml\Model">
+        <column name="pse_id" primaryKey="true" required="true" type="INTEGER" />
+        <column name="is_excluded" default="0" type="TINYINT" size="4" />
+        <foreign-key foreignTable="product_sale_elements" name="fk_googleshoppingxml_product_excluded_pse_id" onDelete="CASCADE" onUpdate="RESTRICT">
+            <reference foreign="id" local="pse_id" />
+        </foreign-key>
+    </table>
+
     <external-schema filename="local/config/schema.xml" referenceOnly="true"/>
 </database>
