@@ -7,6 +7,7 @@ namespace GoogleShoppingXml\Tests;
 use GoogleShoppingXml\Api\ExclusionTable;
 use GoogleShoppingXml\Api\Resource\GoogleShoppingXmlProductExcluded;
 use GoogleShoppingXml\Model\GoogleshoppingxmlProductExcludedQuery;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Propel\Runtime\ActiveQuery\ModelCriteria;
 use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
@@ -31,6 +32,52 @@ final class ApiExtensionTest extends TestCase
     protected function tearDown(): void
     {
         ExclusionTable::replaceLookup(null);
+        ExclusionTable::replaceConnection(null);
+    }
+
+    /**
+     * Runs the real metadata query of ExclusionTable on a connection that answers like Propel's: the statement
+     * wrapper returns an empty string, not false, when no row matches.
+     */
+    #[DataProvider('metadataAnswers')]
+    public function testTheMetadataQueryTellsWhetherTheTableExists(string $answer, bool $expected): void
+    {
+        ExclusionTable::replaceConnection(static fn (): object => new class($answer) {
+            public function __construct(private readonly string $answer)
+            {
+            }
+
+            public function prepare(string $sql): object
+            {
+                return new class($this->answer) {
+                    public function __construct(private readonly string $answer)
+                    {
+                    }
+
+                    public function execute(array $parameters = []): bool
+                    {
+                        return true;
+                    }
+
+                    public function fetchColumn(): string
+                    {
+                        return $this->answer;
+                    }
+                };
+            }
+        });
+
+        self::assertSame($expected, ExclusionTable::exists());
+    }
+
+    /**
+     * @return iterable<string, array{string, bool}>
+     */
+    public static function metadataAnswers(): iterable
+    {
+        yield 'table missing (count 0)' => ['0', false];
+        yield 'no row at all (empty string of the wrapper)' => ['', false];
+        yield 'table present' => ['1', true];
     }
 
     public function testCombinationsAreReadWithoutTheJoinWhenTheTableIsMissing(): void

@@ -24,6 +24,8 @@ final class ExclusionTable
 
     private static ?\Closure $lookup = null;
 
+    private static ?\Closure $connection = null;
+
     public static function exists(): bool
     {
         if (self::$exists) {
@@ -42,13 +44,28 @@ final class ExclusionTable
         self::$exists = false;
     }
 
+    /**
+     * For the tests: replaces the connection the metadata query runs on, to exercise the query itself.
+     */
+    public static function replaceConnection(?\Closure $connection): void
+    {
+        self::$connection = $connection;
+        self::$exists = false;
+    }
+
     private static function queryDatabase(): bool
     {
-        $statement = Propel::getConnection(ProductSaleElementsTableMap::DATABASE_NAME)->prepare(
-            'SELECT 1 FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = ?'
+        $connection = null !== self::$connection
+            ? (self::$connection)()
+            : Propel::getConnection(ProductSaleElementsTableMap::DATABASE_NAME);
+
+        // COUNT(*) always returns a row. The Propel statement wrapper casts the "no row" answer of fetchColumn()
+        // (false) to an empty string, so it cannot be compared to false.
+        $statement = $connection->prepare(
+            'SELECT COUNT(*) FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = ?'
         );
         $statement->execute([self::NAME]);
 
-        return false !== $statement->fetchColumn();
+        return 1 === (int) $statement->fetchColumn();
     }
 }
