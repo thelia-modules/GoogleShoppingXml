@@ -1,2 +1,3 @@
 # Sqlfile -> Database map
 thelia.sql=thelia
+TheliaMain.sql=TheliaMain

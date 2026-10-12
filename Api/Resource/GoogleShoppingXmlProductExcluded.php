@@ -4,12 +4,16 @@ declare(strict_types=1);
 
 namespace GoogleShoppingXml\Api\Resource;
 
+use GoogleShoppingXml\Api\ExclusionTable;
 use GoogleShoppingXml\Model\GoogleshoppingxmlProductExcluded as GoogleshoppingxmlProductExcludedModel;
 use GoogleShoppingXml\Model\GoogleshoppingxmlProductExcludedQuery;
 use GoogleShoppingXml\Model\Map\GoogleshoppingxmlProductExcludedTableMap;
+use ApiPlatform\Metadata\Operation;
+use Propel\Runtime\ActiveQuery\ModelCriteria;
 use Propel\Runtime\ActiveRecord\ActiveRecordInterface;
 use Propel\Runtime\Exception\PropelException;
 use Propel\Runtime\Map\TableMap;
+use Symfony\Component\HttpKernel\Exception\UnprocessableEntityHttpException;
 use Symfony\Component\Serializer\Attribute\Groups;
 use Thelia\Api\Resource\ProductSaleElements as ProductSaleElementsResource;
 use Thelia\Api\Resource\PropelResourceInterface;
@@ -23,7 +27,9 @@ use Thelia\Model\ProductSaleElements;
  */
 class GoogleShoppingXmlProductExcluded implements ResourceAddonInterface
 {
-    use ResourceAddonTrait;
+    use ResourceAddonTrait {
+        extendQuery as private extendQueryWithJoin;
+    }
 
     public ProductSaleElementsResource $productSaleElements;
 
@@ -31,10 +37,27 @@ class GoogleShoppingXmlProductExcluded implements ResourceAddonInterface
     public bool $isExcluded = false;
 
     /**
+     * Without the table (module flagged active but its tables not created yet) the combinations are read without
+     * the join, and none of them is reported as excluded.
+     */
+    public static function extendQuery(ModelCriteria $query, ?Operation $operation = null, array $context = []): void
+    {
+        if (!ExclusionTable::exists()) {
+            return;
+        }
+
+        self::extendQueryWithJoin($query, $operation, $context);
+    }
+
+    /**
      * @throws PropelException
      */
     public function buildFromModel(ActiveRecordInterface|ProductSaleElements $activeRecord, PropelResourceInterface $abstractPropelResource): ResourceAddonInterface
     {
+        if (!ExclusionTable::exists()) {
+            return $this;
+        }
+
         if ($activeRecord->hasVirtualColumn('GoogleShoppingXmlProductExcluded_is_excluded')) {
             $this->setIsExcluded((bool) $activeRecord->getVirtualColumn('GoogleShoppingXmlProductExcluded_is_excluded'));
 
@@ -62,6 +85,14 @@ class GoogleShoppingXmlProductExcluded implements ResourceAddonInterface
      */
     public function doSave(ActiveRecordInterface|ProductSaleElements $activeRecord, PropelResourceInterface $abstractPropelResource): void
     {
+        if (!ExclusionTable::exists()) {
+            if (!$this->isExcluded()) {
+                return;
+            }
+
+            throw new UnprocessableEntityHttpException(sprintf('The combination cannot be excluded from Google Shopping: the table "%s" is missing. Run "php bin/console module:schema:apply GoogleShoppingXml".', ExclusionTable::NAME));
+        }
+
         $model = GoogleshoppingxmlProductExcludedQuery::create()->filterByPseId($activeRecord->getId())->findOne();
         if (null === $model) {
             $model = new GoogleshoppingxmlProductExcludedModel();
@@ -70,6 +101,15 @@ class GoogleShoppingXmlProductExcluded implements ResourceAddonInterface
 
         $model->setIsExcluded($this->isExcluded() ? 1 : 0);
         $model->save();
+    }
+
+    public function doDelete(ActiveRecordInterface $activeRecord, PropelResourceInterface $abstractPropelResource): void
+    {
+        if (!ExclusionTable::exists()) {
+            return;
+        }
+
+        GoogleshoppingxmlProductExcludedQuery::create()->filterByPseId($activeRecord->getId())->delete();
     }
 
     public function isExcluded(): bool
