@@ -15,8 +15,8 @@ require_once __DIR__.'/../Feed/FeedRow.php';
 require_once __DIR__.'/../Feed/FeedRowReader.php';
 
 /*
- * Needs an EMPTY throwaway MySQL or MariaDB database: the test creates the few tables the reader queries, then drops
- * them. It refuses to run on a database that already has a `product` table.
+ * Needs a throwaway MySQL or MariaDB database: the test creates the few tables the reader queries, then drops the
+ * ones it created, and only those. It refuses to run when any of these tables already exists in the database.
  *
  *   GOOGLESHOPPINGXML_TEST_DSN='mysql:host=db;dbname=gsx_collation_test' \
  *   GOOGLESHOPPINGXML_TEST_USER=root GOOGLESHOPPINGXML_TEST_PASSWORD=root \
@@ -51,6 +51,9 @@ final class FeedRowReaderCollationTest extends TestCase
 
     private ?ConnectionInterface $connection = null;
 
+    /** @var list<string> */
+    private array $createdTables = [];
+
     protected function setUp(): void
     {
         $dsn = getenv('GOOGLESHOPPINGXML_TEST_DSN');
@@ -63,13 +66,21 @@ final class FeedRowReaderCollationTest extends TestCase
             getenv('GOOGLESHOPPINGXML_TEST_USER') ?: null,
             getenv('GOOGLESHOPPINGXML_TEST_PASSWORD') ?: null,
         ));
-        if ([] !== $connection->query("SHOW TABLES LIKE 'product'")->fetchAll()) {
-            self::fail('The test database already has a product table: use an empty throwaway database.');
+        $names = array_keys(self::TABLES);
+        $existing = $connection->prepare(sprintf(
+            'SELECT TABLE_NAME FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME IN (%s)',
+            implode(',', array_fill(0, \count($names), '?')),
+        ));
+        $existing->execute($names);
+        $found = $existing->fetchAll(\PDO::FETCH_COLUMN);
+        if ([] !== $found) {
+            self::fail(sprintf('The test database already has %s: use a throwaway database without these tables.', implode(', ', $found)));
         }
         $this->connection = $connection;
 
         foreach (self::TABLES as $table => $columns) {
             $connection->exec(sprintf('CREATE TABLE `%s` (%s) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci', $table, $columns));
+            $this->createdTables[] = $table;
         }
         $connection->exec('SET NAMES utf8mb4 COLLATE utf8mb4_unicode_ci');
 
@@ -87,15 +98,17 @@ final class FeedRowReaderCollationTest extends TestCase
         if (null === $this->connection) {
             return;
         }
-        foreach (array_keys(self::TABLES) as $table) {
-            $this->connection->exec(sprintf('DROP TABLE IF EXISTS `%s`', $table));
+        foreach ($this->createdTables as $table) {
+            $this->connection->exec(sprintf('DROP TABLE `%s`', $table));
         }
+        $this->createdTables = [];
         $this->connection = null;
     }
 
     public function testTheRewrittenUrlIsReadWhenTheColumnsAndTheConnectionHaveDifferentCollations(): void
     {
-        $collations = $this->connection?->query(
+        self::assertNotNull($this->connection);
+        $collations = $this->connection->query(
             "SELECT @@collation_connection, (SELECT COLLATION_NAME FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'rewriting_url' AND COLUMN_NAME = 'view_id')"
         )->fetch(\PDO::FETCH_NUM);
         self::assertSame(['utf8mb4_unicode_ci', 'utf8mb4_general_ci'], $collations);
