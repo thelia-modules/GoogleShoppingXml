@@ -14,7 +14,11 @@ use Propel\Runtime\Propel;
  * the currency: the rules (visibility, exclusion, stock) belong to the generator.
  *
  * `rewriting_url.view_id` is a text column: it is compared with a text, or its index is not used (a
- * dependent subquery per combination over the whole table).
+ * dependent subquery per combination over the whole table). That text is `CONCAT('', product.id)`, not
+ * `CAST(product.id AS CHAR)`: a CAST takes the collation of the connection with the same weight as the
+ * column's, and fails ("Illegal mix of collations") when they differ, as on a database created with
+ * utf8mb4_general_ci and read through a utf8mb4_unicode_ci connection. A CONCAT with a literal is coercible:
+ * it takes the collation of the column, whatever it is, and the index stays in use.
  *
  * Price on the feed currency: the price of that currency, or the price of the default currency times
  * the rate of the feed currency when the product follows the default currency (or has no price for it).
@@ -77,7 +81,7 @@ final class FeedRowReader
             .'   WHERE product_category.product_id = product.id AND product_category.default_category = 1 LIMIT 1) AS default_category_id,'
             .' COALESCE(IF(price_on_currency.from_default_currency = 1, NULL, price_on_currency.price), ROUND(default_price.price * :rate, 2)) AS price,'
             .' COALESCE(IF(price_on_currency.from_default_currency = 1, NULL, price_on_currency.promo_price), ROUND(default_price.promo_price * :rate_promo, 2)) AS promo_price,'
-            .' (SELECT rewriting_url.url FROM rewriting_url WHERE rewriting_url.view = \'product\' AND rewriting_url.view_id = CAST(product.id AS CHAR)'
+            .' (SELECT rewriting_url.url FROM rewriting_url WHERE rewriting_url.view = \'product\' AND rewriting_url.view_id = CONCAT(\'\', product.id)'
             .'   AND rewriting_url.view_locale = :url_locale AND rewriting_url.redirected IS NULL ORDER BY rewriting_url.id DESC LIMIT 1) AS rewritten_url,'
             .' COALESCE(excluded.is_excluded, 0) AS is_excluded'
             .' FROM product_sale_elements AS pse'
