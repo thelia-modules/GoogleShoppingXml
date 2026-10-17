@@ -9,7 +9,6 @@ use GoogleShoppingXml\Model\GoogleshoppingxmlFeed;
 use GoogleShoppingXml\Model\GoogleshoppingxmlFeedQuery;
 use GoogleShoppingXml\Model\GoogleshoppingxmlGoogleFieldAssociation;
 use GoogleShoppingXml\Model\GoogleshoppingxmlGoogleFieldAssociationQuery;
-use GoogleShoppingXml\Model\GoogleshoppingxmlIgnoreCategoryQuery;
 use GoogleShoppingXml\Model\GoogleshoppingxmlLogQuery;
 use GoogleShoppingXml\Tools\GtinChecker;
 use Propel\Runtime\ActiveQuery\Criteria;

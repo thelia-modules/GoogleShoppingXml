@@ -67,6 +67,9 @@ class GoogleProductModel
     /** @var array */
     protected $shipping;
 
+    /** @var MoneyFormat */
+    private $moneyFormat;
+
     /** @var Currency */
     private $currency;
 
