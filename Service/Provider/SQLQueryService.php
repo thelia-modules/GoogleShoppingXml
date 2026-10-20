@@ -39,16 +39,17 @@ class SQLQueryService
                 GROUP BY ac.product_sale_elements_id 
                 
             ), product_images_query AS (
-                SELECT pimg.product_id as pid, pimg.file AS product_image_file, pimg.id as product_image_id
+                SELECT pimg.product_id as pid, pimgi.file AS product_image_file, pimg.id as product_image_id
                 FROM product_image AS pimg
+                LEFT JOIN product_image_i18n AS pimgi ON pimgi.id = pimg.id AND pimgi.locale=:p5
                 GROUP BY pimg.product_id 
                 ORDER BY pimg.position
                 
             ), pse_images_query AS (
-                SELECT pseimg.`product_sale_elements_id` as pseid, pimg.file as pse_image_file, pimg.id as pse_image_id
+                SELECT pseimg.`product_sale_elements_id` as pseid, pimgi.file as pse_image_file, pimg.id as pse_image_id
                 FROM product_sale_elements_product_image AS pseimg
                 JOIN product_image AS pimg ON pimg.id=pseimg.product_image_id
-                WHERE pimg.`product_id`=1
+                LEFT JOIN product_image_i18n AS pimgi ON pimgi.id = pimg.id AND pimgi.locale=:p6
                 GROUP BY pseimg.`product_sale_elements_id`
             )
             
@@ -106,6 +107,8 @@ class SQLQueryService
         $stmt->bindValue(':p2', $locale);
         $stmt->bindValue(':p3', $locale);
         $stmt->bindValue(':p4', $locale);
+        $stmt->bindValue(':p5', $locale);
+        $stmt->bindValue(':p6', $locale);
 
         $stmt->execute();
 

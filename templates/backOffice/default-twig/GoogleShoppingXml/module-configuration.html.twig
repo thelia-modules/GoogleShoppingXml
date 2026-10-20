@@ -88,7 +88,7 @@
                             </form>
                             <div class="btn-group">
                                 <a class="js_download_xml_feed btn btn-info" title="{{ 'Download XML'|trans({}, d) }}" href="{{ path('googleshoppingxml.getfeedxml', {feedId: feed.id}) }}" data-feedid="{{ feed.id }}" download>{{ 'XML'|trans({}, d) }}</a>
-                                <a href="#" class="js_btn_clipboard btn btn-secondary" title="{{ 'Copy XML link into clipboard'|trans({}, d) }}" data-clipboardtext="{{ path('googleshoppingxml.getfeedxml', {feedId: feed.id}) }}"><i class="bi bi-link-45deg"></i></a>
+                                <a href="#" class="js_btn_clipboard btn btn-secondary" title="{{ 'Copy XML link into clipboard'|trans({}, d) }}" data-clipboardtext="{{ url('googleshoppingxml.getfeedxml', {feedId: feed.id}) }}"><i class="bi bi-link-45deg"></i></a>
                             </div>
                             <a href="#" class="js_btn_configure_custom_xml btn btn-primary ms-1" title="{{ 'Configure custom XML'|trans({}, d) }}" data-feedid="{{ feed.id }}"><i class="bi bi-wrench"></i></a>
                             <form id="js_form_delete_feed_{{ feed.id }}" class="d-inline-block" method="post" action="{{ path('googleshoppingxml.feed.delete') }}">

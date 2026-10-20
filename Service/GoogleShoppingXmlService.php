@@ -116,7 +116,7 @@ class GoogleShoppingXmlService
                 $this->injectTaxedPrices($pse, $taxCalculatorsArray, $feed, $this->getTaxedRules());
                 $this->injectCustomAssociationFields($pse, $feed, $fieldAssociationCollection);
                 $this->injectAttributesInTitle($pse, $feed);
-                $this->injectImages($pse);
+                $this->injectImages($pse, $feed);
                 $this->injectBrand($pse, $feed);
 
                 $pseArray[] = $pse;
@@ -723,7 +723,7 @@ class GoogleShoppingXmlService
     /**
      * @param array $pseArray
      */
-    protected function injectImages(&$pse)
+    protected function injectImages(&$pse, $feed)
     {
         $productImageDefault = ProductImageQuery::create()
             ->filterByProductId($pse['ID_PRODUCT'])
@@ -735,10 +735,12 @@ class GoogleShoppingXmlService
             ->endUse()
             ->findOne();
 
-        $pse['IMAGE_NAME'] = $productImageDefault ? $productImageDefault->getFile() : null;
+        $locale = $feed->getLang()->getLocale();
+
+        $pse['IMAGE_NAME'] = $productImageDefault ? $productImageDefault->setLocale($locale)->getFile() : null;
 
         if (null !== $productImagePse){
-            $pse['IMAGE_NAME'] = $productImagePse ? $productImagePse->getFile() : null;
+            $pse['IMAGE_NAME'] = $productImagePse->setLocale($locale)->getFile();
         }
 
         if ($pse['IMAGE_NAME'] != null) {
