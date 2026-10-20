@@ -50,7 +50,6 @@ class SQLQueryService
                 FROM product_sale_elements_product_image AS pseimg
                 JOIN product_image AS pimg ON pimg.id=pseimg.product_image_id
                 LEFT JOIN product_image_i18n AS pimgi ON pimgi.id = pimg.id AND pimgi.locale=:p6
-                WHERE pimg.`product_id`=1
                 GROUP BY pseimg.`product_sale_elements_id`
             )
             
